@@ -1,0 +1,267 @@
+/* ===== Register Page Styles ===== */
+:root {
+    --register-primary: #2d2b7f;
+    --register-primary-dark: #1e1b5e;
+    --register-accent: #e8a020;
+    --register-border: #d4a94e;
+    --register-text: #2d2b7f;
+    --register-bg: #ffffff;
+    --register-input-bg: #fefefe;
+    --register-input-border: #d4a94e;
+    --register-link: #3b39a0;
+}
+
+.auth-body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    background: var(--register-bg);
+}
+
+/* ===== Main Container ===== */
+.register-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* ===== Left Panel (Form) ===== */
+.register-left {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 60px;
+    background: var(--register-bg);
+    position: relative;
+    overflow-y: auto;
+}
+
+.register-form-wrapper {
+    width: 100%;
+    max-width: 580px;
+}
+
+/* ===== Title ===== */
+.register-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--register-primary);
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.register-subtitle {
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: #4a4880;
+    margin-bottom: 36px;
+}
+
+/* ===== Form Grid ===== */
+.register-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 30px;
+}
+
+/* ===== Form Group ===== */
+.register-form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.register-form-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--register-text);
+    margin-bottom: 6px;
+    letter-spacing: 0.01em;
+}
+
+.register-form-group .form-control {
+    border: 2px solid var(--register-input-border);
+    border-radius: 14px;
+    padding: 12px 18px;
+    font-size: 0.95rem;
+    font-family: 'Poppins', sans-serif;
+    background: var(--register-input-bg);
+    color: #333;
+    transition: all 0.3s ease;
+    outline: none;
+    box-shadow: none;
+}
+
+.register-form-group .form-control:focus {
+    border-color: var(--register-primary);
+    box-shadow: 0 0 0 3px rgba(45, 43, 127, 0.12);
+    background: #fff;
+}
+
+.register-form-group .form-control::placeholder {
+    color: #b0aec8;
+    font-weight: 400;
+}
+
+/* Validation error styles */
+.register-form-group .form-control.is-invalid,
+.register-form-group .has-error .form-control {
+    border-color: #dc3545;
+}
+
+.register-form-group .invalid-feedback,
+.register-form-group .help-block {
+    font-size: 0.8rem;
+    color: #dc3545;
+    margin-top: 4px;
+}
+
+/* ===== Bottom Area ===== */
+.register-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 32px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.register-login-link {
+    font-size: 0.88rem;
+    color: #555;
+}
+
+.register-login-link a {
+    color: var(--register-link);
+    font-weight: 600;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.register-login-link a:hover {
+    color: var(--register-primary-dark);
+}
+
+/* ===== Sign Up Button ===== */
+.btn-register {
+    background: var(--register-primary);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 48px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    box-shadow: 0 4px 16px rgba(45, 43, 127, 0.3);
+}
+
+.btn-register:hover {
+    background: var(--register-primary-dark);
+    box-shadow: 0 6px 24px rgba(45, 43, 127, 0.45);
+    transform: translateY(-2px);
+}
+
+.btn-register:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(45, 43, 127, 0.3);
+}
+
+/* ===== Right Panel (Illustration) ===== */
+.register-right {
+    flex: 1;
+    background: linear-gradient(135deg, var(--register-primary) 0%, var(--register-primary-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.register-right::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 40%, rgba(255,255,255,0.03) 0%, transparent 60%),
+                radial-gradient(circle at 70% 80%, rgba(255,255,255,0.02) 0%, transparent 50%);
+    animation: subtleFloat 20s ease-in-out infinite;
+}
+
+@keyframes subtleFloat {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-20px, -15px); }
+}
+
+.register-illustration {
+    position: relative;
+    z-index: 1;
+    max-width: 85%;
+    max-height: 75vh;
+    object-fit: contain;
+    filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.3));
+    animation: floatIn 1s ease-out;
+}
+
+@keyframes floatIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 991px) {
+    .register-container {
+        flex-direction: column;
+    }
+
+    .register-right {
+        display: none;
+    }
+
+    .register-left {
+        padding: 40px 24px;
+    }
+
+    .auth-body {
+        overflow-y: auto;
+    }
+}
+
+@media (max-width: 576px) {
+    .register-form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .register-title {
+        font-size: 1.6rem;
+    }
+
+    .register-subtitle {
+        font-size: 1rem;
+        margin-bottom: 24px;
+    }
+
+    .register-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-register {
+        width: 100%;
+        text-align: center;
+    }
+}
