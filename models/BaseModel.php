@@ -2,13 +2,23 @@
 
 namespace app\models;
 
-
 use Yii;
+use yii\behaviors\AttributeBehavior;
 use yii\caching\TagDependency;
 use yii\db\ActiveRecord;
+use Ramsey\Uuid\Uuid;
 
 class BaseModel extends ActiveRecord
 {
+
+    public function beforeSave($insert)
+    {
+        if (empty($this->uuid)) {
+            $this->uuid = Uuid::uuid4()->toString();
+        }
+
+        return parent::beforeSave($insert);
+    }
 
     public function setAttributes($values, $safeOnly = true, $exceptFieldName = 'name')
     {
