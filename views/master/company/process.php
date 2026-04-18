@@ -10,12 +10,12 @@ use yii\helpers\Html;
 
 $isNewRecord = $model->isNewRecord;
 if ($isNewRecord) {
-    $this->title = 'Create Company';
-    $this->params['breadcrumbs'][] = ['label' => 'Companies', 'url' => ['index']];
+    $this->title = 'Tambah Perusahaan';
+    $this->params['breadcrumbs'][] = ['label' => 'Perusahaan', 'url' => ['index']];
     $this->params['breadcrumbs'][] = $this->title;
 } else {
-    $this->title = 'Update Company: ' . $model->name;
-    $this->params['breadcrumbs'][] = ['label' => 'Companies', 'url' => ['index']];
+    $this->title = 'Update Perusahaan: ' . $model->name;
+    $this->params['breadcrumbs'][] = ['label' => 'Perusahaan', 'url' => ['index']];
     $this->params['breadcrumbs'][] = ['label' => $model->name];
     $this->params['breadcrumbs'][] = 'Update';
 }

@@ -33,11 +33,11 @@ class ShiftController extends BaseController
         ]);
     }
 
-    public function actionProcess($id_department = null)
+    public function actionProcess($id = null)
     {
         $model = null;
-        if ($id_department) {
-            $model = $this->findModel($id_department);
+        if ($id) {
+            $model = $this->findModel($id);
         }
         if (!$model) {
             $model = new Shift();
@@ -58,9 +58,9 @@ class ShiftController extends BaseController
         ]);
     }
 
-    public function actionDelete($id_shift)
+    public function actionDelete($id)
     {
-        $this->findModel($id_shift)->delete();
+        $this->findModel($id)->delete();
 
         return $this->redirect(['index']);
     }
@@ -68,13 +68,13 @@ class ShiftController extends BaseController
     /**
      * Finds the Shift model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param string $id_shift Id Shift
+     * @param string $id Uuid
      * @return Shift the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
-    protected function findModel($id_shift)
+    protected function findModel($id)
     {
-        if (($model = Shift::findOne(['id_shift' => $id_shift])) !== null) {
+        if (($model = Shift::findOne(['uuid' => $id])) !== null) {
             return $model;
         }
 

@@ -80,20 +80,20 @@ class Payroll extends BaseModel
     {
         return [
             'id_payroll' => 'Id Payroll',
-            'id_company' => 'Id Company',
-            'id_user' => 'Id User',
-            'period_start' => 'Period Start',
-            'period_end' => 'Period End',
-            'basic_salary' => 'Basic Salary',
-            'allowance' => 'Allowance',
-            'overtime' => 'Overtime',
-            'dedection' => 'Dedection',
-            'tax' => 'Tax',
-            'net_salary' => 'Net Salary',
+            'id_company' => 'Perusahaan',
+            'id_user' => 'Karyawan',
+            'period_start' => 'Periode Awal',
+            'period_end' => 'Periode Akhir',
+            'basic_salary' => 'Gaji Pokok',
+            'allowance' => 'Tunjangan',
+            'overtime' => 'Lembur',
+            'dedection' => 'Potongan',
+            'tax' => 'Pajak',
+            'net_salary' => 'Gaji Bersih',
             'status' => 'Status',
             'id_user_approve' => 'User Approval',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'created_at' => 'Tgl Buat',
+            'updated_at' => 'Tgl Update',
         ];
     }
 

@@ -65,7 +65,7 @@ class ShiftSearch extends Shift
             'checkin_start' => $this->checkin_start,
             'workhour_start' => $this->workhour_start,
             'workhour_end' => $this->workhour_end,
-            'created_at' => $this->created_at,
+            'DATE(created_at)' => $this->created_at,
             'updated_at' => $this->updated_at,
         ]);
 

@@ -10,12 +10,12 @@ use yii\helpers\Html;
 
 $isNewRecord = $model->isNewRecord;
 if ($isNewRecord) {
-    $this->title = 'Create Department';
-    $this->params['breadcrumbs'][] = ['label' => 'Departments', 'url' => ['index']];
+    $this->title = 'Tambah Departemen';
+    $this->params['breadcrumbs'][] = ['label' => 'Departemen', 'url' => ['index']];
     $this->params['breadcrumbs'][] = $this->title;
 } else {
-    $this->title = 'Update Department: ' . $model->name;
-    $this->params['breadcrumbs'][] = ['label' => 'Departments', 'url' => ['index']];
+    $this->title = 'Update Departemen: ' . $model->name;
+    $this->params['breadcrumbs'][] = ['label' => 'Departemen', 'url' => ['index']];
     $this->params['breadcrumbs'][] = ['label' => $model->name];
     $this->params['breadcrumbs'][] = 'Update';
 }

@@ -57,11 +57,11 @@ class Client extends BaseModel
     {
         return [
             'id_client' => 'Id Client',
-            'name' => 'Name',
-            'expired_at' => 'Expired At',
+            'name' => 'Nama',
+            'expired_at' => 'Tgl Berakhir',
             'email' => 'Email',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'created_at' => 'Tgl Buat',
+            'updated_at' => 'Tgl Update',
         ];
     }
 

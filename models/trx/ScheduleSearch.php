@@ -52,8 +52,24 @@ class ScheduleSearch extends Schedule
             'checkout_datetime' => $this->checkout_datetime,
         ]);
 
-        $query->andFilterWhere(['like', 'shift_name', $this->shift_name])
-            ->andFilterWhere(['like', 'status', $this->status]);
+        $query->andFilterWhere(['like', 'shift_name', $this->shift_name]);
+
+        $nowStr = \app\helpers\DBHelper::now();
+        if ($this->status === 'Belum Checkin') {
+            $query->andWhere(['checkin_datetime' => null])
+                  ->andWhere(['>=', new \yii\db\Expression('CAST("date" AS VARCHAR) || \' \' || CAST("workhour_end" AS VARCHAR)'), $nowStr]);
+        } elseif ($this->status === 'Absent') {
+            $query->andWhere(['checkin_datetime' => null])
+                  ->andWhere(['<', new \yii\db\Expression('CAST("date" AS VARCHAR) || \' \' || CAST("workhour_end" AS VARCHAR)'), $nowStr]);
+        } elseif ($this->status === 'Checkin') {
+            $query->andWhere(['not', ['checkin_datetime' => null]])
+                  ->andWhere(['checkout_datetime' => null]);
+        } elseif ($this->status === 'Selesai') {
+            $query->andWhere(['not', ['checkin_datetime' => null]])
+                  ->andWhere(['not', ['checkout_datetime' => null]]);
+        } elseif (!empty($this->status)) {
+            $query->andFilterWhere(['like', 'status', $this->status]);
+        }
 
         return $dataProvider;
     }

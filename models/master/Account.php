@@ -85,21 +85,21 @@ class Account extends BaseModel
     {
         return [
             'id_user' => 'Id User',
-            'id_client' => 'Id Client',
-            'id_company' => 'Id Company',
-            'name' => 'Name',
+            'id_client' => 'Client',
+            'id_company' => 'Perusahaan',
+            'name' => 'Nama',
             'email' => 'Email',
             'password' => 'Password',
             'status' => 'Status',
-            'join_date' => 'Join Date',
-            'employee_code' => 'Employee Code',
-            'phone' => 'Phone',
-            'id_department' => 'Id Department',
-            'id_position' => 'Id Position',
-            'basic_salary' => 'Basic Salary',
-            'is_online' => 'Is Online',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'join_date' => 'Tanggal Bergabung',
+            'employee_code' => 'Kode Karyawan',
+            'phone' => 'No. Telepon',
+            'id_department' => 'Departemen',
+            'id_position' => 'Jabatan',
+            'basic_salary' => 'Gaji Pokok',
+            'is_online' => 'Online',
+            'created_at' => 'Tgl Buat',
+            'updated_at' => 'Tgl Update',
         ];
     }
 

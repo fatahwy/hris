@@ -32,11 +32,11 @@ class RoleController extends BaseController
         ]);
     }
 
-    public function actionProcess($id_role = null)
+    public function actionProcess($id = null)
     {
         $model = null;
-        if ($id_role) {
-            $model = $this->findModel($id_role);
+        if ($id) {
+            $model = $this->findModel($id);
         }
         if (!$model) {
             $model = new AuthItem();
@@ -70,25 +70,24 @@ class RoleController extends BaseController
      * @return \yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionDelete($id_role)
+    public function actionDelete($id)
     {
-        $model = $this->findModel($id_role);
+        $model = $this->findModel($id);
         $model->delete();
         GeneralHelper::flashSucceed();
 
         return $this->redirect(['index']);
     }
 
-    protected function findModel($id_role)
+    protected function findModel($id)
     {
         $model = AuthItem::getQuery()
-            ->andWhere(['name' => $id_role])
+            ->andWhere(['name' => $id])
             ->one();
 
         if ($model) {
             return $model;
         }
-        die;
 
         throw new NotFoundHttpException('The requested page does not exist.');
     }

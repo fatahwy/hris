@@ -62,7 +62,7 @@ class DepartmentSearch extends Department
         $query->andFilterWhere([
             'id_company' => GeneralHelper::session('id_company'),
             'id_department' => $this->id_department,
-            'created_at' => $this->created_at,
+            'DATE(created_at)' => $this->created_at,
             'updated_at' => $this->updated_at,
         ]);
 

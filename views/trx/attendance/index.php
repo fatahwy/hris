@@ -53,7 +53,12 @@ $nowStr = date('Y-m-d H:i:s');
 
                 return Html::tag('span', Html::encode($statusName), ['class' => "badge $badgeClass"]);
             },
-            'filter' => false
+            'filter' => [
+                'Belum Checkin' => 'Belum Checkin',
+                'Checkin' => 'Checkin',
+                'Absent' => 'Absent',
+                'Selesai' => 'Selesai',
+            ]
         ],
         'checkin_datetime:datetime',
         'checkout_datetime:datetime',

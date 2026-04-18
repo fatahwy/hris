@@ -50,11 +50,11 @@ class Position extends BaseModel
     public function attributeLabels()
     {
         return [
-            'id_position' => 'Id Position',
-            'id_company' => 'Id Company',
-            'name' => 'Name',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'id_position' => 'Id Posisi',
+            'id_company' => 'Perusahaan',
+            'name' => 'Nama',
+            'created_at' => 'Tgl Buat',
+            'updated_at' => 'Tgl Update',
         ];
     }
 

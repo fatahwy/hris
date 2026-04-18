@@ -81,9 +81,9 @@ class DBHelper
             ['Payroll', $report, '/report/payroll/index', 1, $defIcon],
             // Master
             ['Client', $master, '/master/client/index', 1, $defIcon],
-            ['Company', $master, '/master/company/index', 1, $defIcon],
-            ['Department', $master, '/master/department/index', 1, $defIcon],
-            ['Position', $master, '/master/position/index', 1, $defIcon],
+            ['Perusahaan', $master, '/master/company/index', 1, $defIcon],
+            ['Departemen', $master, '/master/department/index', 1, $defIcon],
+            ['Jabatan', $master, '/master/position/index', 1, $defIcon],
             ['User', $master, '/master/user/index', 1, $defIcon],
             ['Izin & Cuti', $master, '/master/leave-type/index', 1, $defIcon],
             ['Shift', $master, '/master/shift/index', 1, $defIcon],

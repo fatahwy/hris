@@ -60,11 +60,17 @@ echo GridView::widget([
     'columns' => [
         ['class' => 'yii\grid\SerialColumn'],
         // 'idlog',
-        'created_at:datetime',
         [
             'attribute' => 'created_at',
             'format' => 'datetime',
-            'filter' => Html::activeTextInput($model, 'created_at', ['type' => 'date', 'class' => 'form-control'])
+            'filterType' => GridView::FILTER_DATE,
+            'filterWidgetOptions' => [
+                'options' => ['prompt' => 'Pilih'],
+                'pluginOptions' => [
+                    'autoclose' => true,
+                    'format' => 'yyyy-mm-dd'
+                ],
+            ],
         ],
         [
             'label' => 'Username',

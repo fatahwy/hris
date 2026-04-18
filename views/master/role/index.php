@@ -20,7 +20,6 @@ $this->params['breadcrumbs'][] = $this->title;
     <?= Html::a(GeneralHelper::faAdd($this->title), ['process'], ['class' => 'btn btn-primary']) ?>
 </p>
 
-<?php Pjax::begin(); ?>
 <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
 <?= GridView::widget([
@@ -34,7 +33,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'class' => ButtonActionColumn::className(),
             'template' => '{process} {delete}',
             'urlCreator' => function ($action, $model, $key, $index, $column) {
-                return Url::toRoute([$action, 'id_role' => $model->name]);
+                return Url::toRoute([$action, 'id' => $model->name]);
             },
             'visibleButtons' => [
                 'process' => function ($model) {
@@ -48,4 +47,3 @@ $this->params['breadcrumbs'][] = $this->title;
     ],
 ]); ?>
 
-<?php Pjax::end(); ?>

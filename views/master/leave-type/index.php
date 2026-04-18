@@ -19,7 +19,6 @@ $this->params['breadcrumbs'][] = $this->title;
     <?= Html::a(GeneralHelper::faAdd($this->title), ['process'], ['class' => 'btn btn-primary']) ?>
 </p>
 
-<?php Pjax::begin(); ?>
 <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
 <?= GridView::widget([
@@ -39,16 +38,26 @@ $this->params['breadcrumbs'][] = $this->title;
             'filter' => LeaveType::optsCategory(),
         ],
         'max_day',
-        'created_at:datetime',
+        [
+            'attribute' => 'created_at',
+            'format' => 'datetime',
+            'filterType' => GridView::FILTER_DATE,
+            'filterWidgetOptions' => [
+                'options' => ['prompt' => 'Pilih'],
+                'pluginOptions' => [
+                    'autoclose' => true,
+                    'format' => 'yyyy-mm-dd'
+                ],
+            ],
+        ],
         //'updated_at',
         [
             'class' => ButtonActionColumn::className(),
             'template' => '{process} {delete}',
             'urlCreator' => function ($action, LeaveType $model, $key, $index, $column) {
-                return Url::toRoute([$action, 'id_leave_type' => $model->id_leave_type]);
+                return Url::toRoute([$action, 'id' => $model->uuid]);
             }
         ],
     ],
 ]); ?>
 
-<?php Pjax::end(); ?>

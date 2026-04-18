@@ -36,28 +36,28 @@ class UserController extends BaseController
 
     /**
      * Displays a single Account model.
-     * @param int $id_user Id User
+     * @param string $id Uuid
      * @return string
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionView($id_user)
+    public function actionView($id)
     {
         return $this->render('view', [
-            'model' => $this->findModel($id_user),
+            'model' => $this->findModel($id),
         ]);
     }
 
     /**
      * Creates or Updates Account model.
      *
-     * @param int|null $id_user Id User
+     * @param string|null $id Uuid
      * @return string|\yii\web\Response
      */
-    public function actionProcess($id_user = null)
+    public function actionProcess($id = null)
     {
         $model = null;
-        if ($id_user) {
-            $model = $this->findModel($id_user);
+        if ($id) {
+            $model = $this->findModel($id);
         }
 
         if (!$model) {
@@ -81,9 +81,9 @@ class UserController extends BaseController
                 $postData = $this->request->post($model->formName());
                 if (!empty($postData['password'])) {
                     $model->password = Yii::$app->getSecurity()->generatePasswordHash($postData['password']);
-                } else if ($id_user) {
+                } else if ($id) {
                     // If updating and password is not provided, keep the old password
-                    $oldModel = $this->findModel($id_user);
+                    $oldModel = $this->findModel($id);
                     $model->password = $oldModel->password;
                 }
 
@@ -115,12 +115,12 @@ class UserController extends BaseController
 
     /**
      * Deletes an existing Account model.
-     * @param int $id_user Id User
+     * @param string $id Uuid
      * @return \yii\web\Response
      */
-    public function actionDelete($id_user)
+    public function actionDelete($id)
     {
-        $this->findModel($id_user)->delete();
+        $this->findModel($id)->delete();
         GeneralHelper::flashSucceed('Berhasil dihapus.');
         return $this->redirect(['index']);
     }
@@ -128,14 +128,14 @@ class UserController extends BaseController
     /**
      * Finds the Account model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param int $id_user Id User
+     * @param string $id Uuid
      * @return Account the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
-    protected function findModel($id_user)
+    protected function findModel($id)
     {
         $model = Account::find()
-            ->where(['id_user' => $id_user])
+            ->where(['uuid' => $id])
             ->andWhere(['id_client' => $this->id_client])
             ->one();
 

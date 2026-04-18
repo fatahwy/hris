@@ -10,12 +10,12 @@ use yii\widgets\ActiveForm;
 
 $isNewRecord = $model->isNewRecord;
 if ($isNewRecord) {
-    $this->title = 'Create Role';
-    $this->params['breadcrumbs'][] = ['label' => 'Roles', 'url' => ['index']];
+    $this->title = 'Tambah Role';
+    $this->params['breadcrumbs'][] = ['label' => 'Role', 'url' => ['index']];
     $this->params['breadcrumbs'][] = $this->title;
 } else {
     $this->title = 'Update Role: ' . $model->label;
-    $this->params['breadcrumbs'][] = ['label' => 'Roles', 'url' => ['index']];
+    $this->params['breadcrumbs'][] = ['label' => 'Role', 'url' => ['index']];
     $this->params['breadcrumbs'][] = ['label' => $model->label];
     $this->params['breadcrumbs'][] = 'Update';
 }

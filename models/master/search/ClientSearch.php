@@ -61,7 +61,7 @@ class ClientSearch extends Client
         $query->andFilterWhere([
             'id_client' => $this->id_client,
             'expired_at' => $this->expired_at,
-            'created_at' => $this->created_at,
+            'DATE(created_at)' => $this->created_at,
             'updated_at' => $this->updated_at,
         ]);
 

@@ -60,15 +60,15 @@ class Shift extends BaseModel
     {
         return [
             'id_shift' => 'Id Shift',
-            'id_company' => 'Id Company',
-            'name' => 'Name',
-            'checkin_start' => 'Checkin Start',
-            'workhour_start' => 'Workhour Start',
-            'workhour_end' => 'Workhour End',
-            'color' => 'Color',
-            'note' => 'Note',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'id_company' => 'Perusahaan',
+            'name' => 'Nama',
+            'checkin_start' => 'Jam Absen Mulai',
+            'workhour_start' => 'Jam Kerja Mulai',
+            'workhour_end' => 'Jam Kerja Selesai',
+            'color' => 'Warna',
+            'note' => 'Catatan',
+            'created_at' => 'Tgl Buat',
+            'updated_at' => 'Tgl Update',
         ];
     }
 

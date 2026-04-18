@@ -71,7 +71,7 @@ class LeaveRequestSearch extends LeaveRequest
             'end_date' => $this->end_date,
             'total_day' => $this->total_day,
             'id_approver' => $this->id_approver,
-            'created_at' => $this->created_at,
+            'DATE(created_at)' => $this->created_at,
             'updated_at' => $this->updated_at,
         ]);
 

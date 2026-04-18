@@ -63,7 +63,7 @@ class LeaveTypeSearch extends LeaveType
             'id_leave_type' => $this->id_leave_type,
             'id_company' => GeneralHelper::session('id_company'),
             'max_day' => $this->max_day,
-            'created_at' => $this->created_at,
+            'DATE(created_at)' => $this->created_at,
             'updated_at' => $this->updated_at,
         ]);
 

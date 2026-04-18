@@ -19,7 +19,6 @@ $this->params['breadcrumbs'][] = $this->title;
     <?= Html::a(GeneralHelper::faAdd($this->title), ['process'], ['class' => 'btn btn-primary']) ?>
 </p>
 
-<?php Pjax::begin(); ?>
 <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
 <?= GridView::widget([
@@ -31,15 +30,25 @@ $this->params['breadcrumbs'][] = $this->title;
         'name',
         'expired_at:date',
         'email:email',
-        'created_at:datetime',
+        [
+            'attribute' => 'created_at',
+            'format' => 'datetime',
+            'filterType' => GridView::FILTER_DATE,
+            'filterWidgetOptions' => [
+                'options' => ['prompt' => 'Pilih'],
+                'pluginOptions' => [
+                    'autoclose' => true,
+                    'format' => 'yyyy-mm-dd'
+                ],
+            ],
+        ],
         [
             'class' => ButtonActionColumn::className(),
             'template' => '{process} {delete}',
             'urlCreator' => function ($action, Client $model, $key, $index, $column) {
-                return Url::toRoute([$action, 'id_client' => $model->id_client]);
+                return Url::toRoute([$action, 'id' => $model->uuid]);
             }
         ],
     ],
 ]); ?>
 
-<?php Pjax::end(); ?>

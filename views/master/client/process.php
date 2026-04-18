@@ -10,12 +10,12 @@ use yii\helpers\Html;
 
 $isNewRecord = $model->isNewRecord;
 if ($isNewRecord) {
-    $this->title = 'Create Client';
-    $this->params['breadcrumbs'][] = ['label' => 'Clients', 'url' => ['index']];
+    $this->title = 'Tambah Client';
+    $this->params['breadcrumbs'][] = ['label' => 'Client', 'url' => ['index']];
     $this->params['breadcrumbs'][] = $this->title;
 } else {
     $this->title = 'Update Client: ' . $model->name;
-    $this->params['breadcrumbs'][] = ['label' => 'Clients', 'url' => ['index']];
+    $this->params['breadcrumbs'][] = ['label' => 'Client', 'url' => ['index']];
     $this->params['breadcrumbs'][] = ['label' => $model->name];
     $this->params['breadcrumbs'][] = 'Update';
 }
@@ -24,17 +24,7 @@ if ($isNewRecord) {
 <div class="card modern-form-card">
     <div class="card-body p-4">
 
-        <?php $form = ActiveForm::begin([
-            'id' => 'client-form',
-            'layout' => 'horizontal',
-            'fieldConfig' => [
-                'horizontalCssClasses' => [
-                    'label' => 'col-sm-3 col-form-label',
-                    'offset' => 'offset-sm-3',
-                    'wrapper' => 'col-sm-9',
-                ],
-            ],
-        ]); ?>
+        <?php $form = ActiveForm::begin(); ?>
 
         <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
 

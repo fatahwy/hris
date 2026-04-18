@@ -68,13 +68,13 @@ class Company extends BaseModel
     {
         return [
             'id_company' => 'Id Company',
-            'id_client' => 'Id Client',
-            'name' => 'Name',
-            'address' => 'Address',
+            'id_client' => 'Client',
+            'name' => 'Nama',
+            'address' => 'Alamat',
             'status' => 'Status',
-            'max_user' => 'Max User',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'max_user' => 'Maximal User',
+            'created_at' => 'Tgl Buat',
+            'updated_at' => 'Tgl Update',
         ];
     }
 

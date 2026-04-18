@@ -63,12 +63,12 @@ class LeaveType extends BaseModel
     {
         return [
             'id_leave_type' => 'Id Leave Type',
-            'id_company' => 'Id Company',
-            'name' => 'Name',
-            'category' => 'Category',
-            'max_day' => 'Max Day',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'id_company' => 'Perusahaan',
+            'name' => 'Nama',
+            'category' => 'Kategori',
+            'max_day' => 'Max Hari',
+            'created_at' => 'Tgl Buat',
+            'updated_at' => 'Tgl Update',
         ];
     }
 

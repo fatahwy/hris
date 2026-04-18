@@ -34,15 +34,15 @@ class ClientController extends BaseController
     /**
      * Updates an existing Client model.
      * If update is successful, the browser will be redirected to the 'view' page.
-     * @param string $id_client Id Client
+     * @param string $id Uuid
      * @return string|\yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionProcess($id_client = null)
+    public function actionProcess($id = null)
     {
         $model = null;
-        if ($id_client) {
-            $model = $this->findModel($id_client);
+        if ($id) {
+            $model = $this->findModel($id);
         }
         if (!$model) {
             $model = new Client();
@@ -64,13 +64,13 @@ class ClientController extends BaseController
     /**
      * Deletes an existing Client model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param string $id_client Id Client
+     * @param string $id Uuid
      * @return \yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionDelete($id_client)
+    public function actionDelete($id)
     {
-        $this->findModel($id_client)->delete();
+        $this->findModel($id)->delete();
 
         return $this->redirect(['index']);
     }
@@ -78,13 +78,13 @@ class ClientController extends BaseController
     /**
      * Finds the Client model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param string $id_client Id Client
+     * @param string $id Uuid
      * @return Client the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
-    protected function findModel($id_client)
+    protected function findModel($id)
     {
-        if (($model = Client::findOne(['id_client' => $id_client])) !== null) {
+        if (($model = Client::findOne(['uuid' => $id])) !== null) {
             return $model;
         }
 

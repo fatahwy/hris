@@ -65,7 +65,7 @@ class CompanySearch extends Company
         $query->andFilterWhere([
             'status' => $this->status,
             'max_user' => $this->max_user,
-            'created_at' => $this->created_at,
+            'DATE(created_at)' => $this->created_at,
             'updated_at' => $this->updated_at,
         ]);
 

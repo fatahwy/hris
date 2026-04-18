@@ -60,7 +60,7 @@ $gridColumns = [
         'class' => ButtonActionColumn::className(),
         'template' => '{view} {process} {delete}',
         'urlCreator' => function ($action, Account $model, $key, $index, $column) {
-            return Url::toRoute([$action, 'id_user' => $model->id_user]);
+            return Url::toRoute([$action, 'id' => $model->uuid]);
         }
     ],
 ];
@@ -68,8 +68,6 @@ $gridColumns = [
 <p class="text-end">
     <?= Html::a(GeneralHelper::faAdd('User'), ['process'], ['class' => 'btn btn-primary']) ?>
 </p>
-
-<?php Pjax::begin(['id' => 'pjax-user-grid']); ?>
 
 <?= GridView::widget([
     'dataProvider' => $dataProvider,
@@ -106,4 +104,3 @@ $gridColumns = [
 ]);
 ?>
 
-<?php Pjax::end(); ?>

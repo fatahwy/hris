@@ -33,11 +33,11 @@ class LeaveTypeController extends BaseController
         ]);
     }
 
-    public function actionProcess($id_leave_type = null)
+    public function actionProcess($id = null)
     {
         $model = null;
-        if ($id_leave_type) {
-            $model = $this->findModel($id_leave_type);
+        if ($id) {
+            $model = $this->findModel($id);
         }
         if (!$model) {
             $model = new LeaveType();
@@ -58,9 +58,9 @@ class LeaveTypeController extends BaseController
         ]);
     }
 
-    public function actionDelete($id_leave_type)
+    public function actionDelete($id)
     {
-        $this->findModel($id_leave_type)->delete();
+        $this->findModel($id)->delete();
 
         return $this->redirect(['index']);
     }
@@ -68,13 +68,13 @@ class LeaveTypeController extends BaseController
     /**
      * Finds the LeaveType model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param string $id_leave_type Id LeaveType
+     * @param string $id Uuid
      * @return LeaveType the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
-    protected function findModel($id_leave_type)
+    protected function findModel($id)
     {
-        if (($model = LeaveType::findOne(['id_leave_type' => $id_leave_type])) !== null) {
+        if (($model = LeaveType::findOne(['uuid' => $id])) !== null) {
             return $model;
         }
 

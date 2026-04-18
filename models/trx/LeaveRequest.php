@@ -104,16 +104,16 @@ class LeaveRequest extends BaseModel
         return [
             'id_leave_request' => 'Id Leave Request',
             'id_user' => 'Id User',
-            'id_leave_type' => 'Id Leave Type',
-            'start_date' => 'Start Date',
-            'end_date' => 'End Date',
-            'total_day' => 'Total Day',
-            'reason' => 'Reason',
+            'id_leave_type' => 'Jenis Cuti',
+            'start_date' => 'Tanggal Mulai',
+            'end_date' => 'Tanggal Selesai',
+            'total_day' => 'Total Hari',
+            'reason' => 'Alasan',
             'attachment' => 'Attachment',
             'status' => 'Status',
-            'id_approver' => 'Id Approver',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'id_approver' => 'Disetujui Oleh',
+            'created_at' => 'Tgl Buat',
+            'updated_at' => 'Tgl Update',
         ];
     }
 

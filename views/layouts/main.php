@@ -205,6 +205,11 @@ $d = Yii::$app->cache->getOrSet('filteredMenusNested' . $user->id_user, function
     return $d;
 });
 
+$this->registerCssFile(
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
+    ['depends' => [\yii\web\JqueryAsset::class]]
+);
+
 // Register SweetAlert2 via CDN
 $this->registerCssFile('https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/sweetalert2@11', ['position' => \yii\web\View::POS_END, 'depends' => [\yii\web\JqueryAsset::class, \yii\web\YiiAsset::class]]);

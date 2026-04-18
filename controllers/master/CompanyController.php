@@ -32,11 +32,11 @@ class CompanyController extends BaseController
         ]);
     }
 
-    public function actionProcess($id_company = null)
+    public function actionProcess($id = null)
     {
         $model = null;
-        if ($id_company) {
-            $model = $this->findModel($id_company);
+        if ($id) {
+            $model = $this->findModel($id);
         }
         if (!$model) {
             $model = new Company();
@@ -57,9 +57,9 @@ class CompanyController extends BaseController
         ]);
     }
 
-    public function actionDelete($id_company)
+    public function actionDelete($id)
     {
-        $this->findModel($id_company)->delete();
+        $this->findModel($id)->delete();
 
         return $this->redirect(['index']);
     }
@@ -67,14 +67,14 @@ class CompanyController extends BaseController
     /**
      * Finds the Company model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param string $id_company Id Company
+     * @param string $id Uuid
      * @return Company the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
-    protected function findModel($id_company)
+    protected function findModel($id)
     {
         $model = Company::find()
-            ->where(['id_company' => $id_company])
+            ->where(['uuid' => $id])
             ->andWhere(['id_client' => $this->id_client])
             ->one();
 

@@ -33,11 +33,11 @@ class PositionController extends BaseController
         ]);
     }
 
-    public function actionProcess($id_department = null)
+    public function actionProcess($id = null)
     {
         $model = null;
-        if ($id_department) {
-            $model = $this->findModel($id_department);
+        if ($id) {
+            $model = $this->findModel($id);
         }
         if (!$model) {
             $model = new Position();
@@ -58,9 +58,9 @@ class PositionController extends BaseController
         ]);
     }
 
-    public function actionDelete($id_department)
+    public function actionDelete($id)
     {
-        $this->findModel($id_department)->delete();
+        $this->findModel($id)->delete();
 
         return $this->redirect(['index']);
     }
@@ -68,13 +68,13 @@ class PositionController extends BaseController
     /**
      * Finds the Position model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param string $id_department Id Position
+     * @param string $id Uuid
      * @return Position the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
-    protected function findModel($id_department)
+    protected function findModel($id)
     {
-        if (($model = Position::findOne(['id_department' => $id_department])) !== null) {
+        if (($model = Position::findOne(['uuid' => $id])) !== null) {
             return $model;
         }
 

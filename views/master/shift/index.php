@@ -12,14 +12,13 @@ use yii\widgets\Pjax;
 /** @var app\models\master\search\ShiftSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Shifts';
+$this->title = 'Shift';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <p class="text-end">
     <?= Html::a(GeneralHelper::faAdd($this->title), ['process'], ['class' => 'btn btn-primary']) ?>
 </p>
 
-<?php Pjax::begin(); ?>
 <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
 <?= GridView::widget([
@@ -34,23 +33,34 @@ $this->params['breadcrumbs'][] = $this->title;
         'workhour_start',
         'workhour_end',
         [
-            'label' => 'color',
+            'attribute' => 'color',
             'format' => 'raw',
             'value' => function ($m) {
                 return '<div style="background-color: ' . $m->color . '; width: 60px; height: 30px;"></div>';
-            }
+            },
+            'filter'=> false,
         ],
         'note:ntext',
-        'created_at:datetime',
+        [
+            'attribute' => 'created_at',
+            'format' => 'datetime',
+            'filterType' => GridView::FILTER_DATE,
+            'filterWidgetOptions' => [
+                'options' => ['prompt' => 'Pilih'],
+                'pluginOptions' => [
+                    'autoclose' => true,
+                    'format' => 'yyyy-mm-dd'
+                ],
+            ],
+        ],
         //'updated_at',
         [
             'class' => ButtonActionColumn::className(),
             'template' => '{process} {delete}',
             'urlCreator' => function ($action, Shift $model, $key, $index, $column) {
-                return Url::toRoute([$action, 'id_shift' => $model->id_shift]);
+                return Url::toRoute([$action, 'id' => $model->uuid]);
             }
         ],
     ],
 ]); ?>
 
-<?php Pjax::end(); ?>

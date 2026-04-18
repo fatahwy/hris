@@ -15,8 +15,8 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="user-view">
 
     <p class="text-end">
-        <?= Html::a('<i class="fas fa-edit"></i> Update', ['process', 'id_user' => $model->id_user], ['class' => 'btn btn-primary']) ?>
-        <?= Html::a('<i class="fas fa-trash"></i> Delete', ['delete', 'id_user' => $model->id_user], [
+        <?= Html::a('<i class="fas fa-edit"></i> Update', ['process', 'id' => $model->uuid], ['class' => 'btn btn-primary']) ?>
+        <?= Html::a('<i class="fas fa-trash"></i> Delete', ['delete', 'id' => $model->uuid], [
             'class' => 'btn btn-danger',
             'data' => [
                 'confirm' => 'Are you sure you want to delete this item?',

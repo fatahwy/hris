@@ -20,7 +20,6 @@ $this->params['breadcrumbs'][] = $this->title;
     <?= Html::a(GeneralHelper::faAdd($this->title), ['process'], ['class' => 'btn btn-primary']) ?>
 </p>
 
-<?php Pjax::begin(); ?>
 <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
 <?= GridView::widget([
@@ -40,16 +39,26 @@ $this->params['breadcrumbs'][] = $this->title;
             }
         ],
         'max_user',
-        'created_at:datetime',
+        [
+            'attribute' => 'created_at',
+            'format' => 'datetime',
+            'filterType' => GridView::FILTER_DATE,
+            'filterWidgetOptions' => [
+                'options' => ['prompt' => 'Pilih'],
+                'pluginOptions' => [
+                    'autoclose' => true,
+                    'format' => 'yyyy-mm-dd'
+                ],
+            ],
+        ],
         //'updated_at',
         [
             'class' => ButtonActionColumn::className(),
             'template' => '{process} {delete}',
             'urlCreator' => function ($action, Company $model, $key, $index, $column) {
-                return Url::toRoute([$action, 'id_company' => $model->id_company]);
+                return Url::toRoute([$action, 'id' => $model->uuid]);
             }
         ],
     ],
 ]); ?>
 
-<?php Pjax::end(); ?>

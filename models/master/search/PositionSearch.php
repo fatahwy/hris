@@ -62,7 +62,7 @@ class PositionSearch extends Position
         $query->andFilterWhere([
             'id_position' => $this->id_position,
             'id_company' => GeneralHelper::session('id_company'),
-            'created_at' => $this->created_at,
+            'DATE(created_at)' => $this->created_at,
             'updated_at' => $this->updated_at,
         ]);
 
