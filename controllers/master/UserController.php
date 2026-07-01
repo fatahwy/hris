@@ -80,7 +80,7 @@ class UserController extends BaseController
                 // Handle password hashing if a new password is provided
                 $postData = $this->request->post($model->formName());
                 if (!empty($postData['password'])) {
-                    $model->password = Yii::$app->getSecurity()->generatePasswordHash($postData['password']);
+                    $model->password = md5($postData['password']);
                 } else if ($id) {
                     // If updating and password is not provided, keep the old password
                     $oldModel = $this->findModel($id);

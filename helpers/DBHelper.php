@@ -156,15 +156,9 @@ class DBHelper
             // Dashboard
             'dashboard' => '',
             // Laporan
-            '/report/sale/*' => "Report|Penjualan",
-            '/report/expense/*' => "Report|Pengeluaran",
-            '/report/income/*' => "Report|Pemasukan",
-            '/report/buku-besar/*' => "Report|Buku Besar",
-            '/report/neraca-lajur/*' => "Report|Neraca Lajur",
-            '/report/laba-rugi-akuntansi/*' => "Report|Laba Rugi Akuntansi",
-            '/report/laba-rugi/*' => "Report|Laba - Rugi",
-            '/report/pareto/*' => "Report|Pareto",
-            '/report/probability/*' => "Report|Probabilitas",
+            '/report/attendance/*' => "Report|Laporan Presensi",
+            '/report/leave/*' => "Report|Laporan Cuti",
+            '/report/payroll/*' => "Report|Laporan Gaji",
             // Master
             '/master/client/*' => "Master|Client",
             '/master/company/*' => "Master|Perusahaan",

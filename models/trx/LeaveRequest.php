@@ -68,6 +68,9 @@ class LeaveRequest extends BaseModel
 
     public function beforeSave($insert)
     {
+        if ($insert) {
+            $this->status = self::STATUS_PENDING;
+        }
         $this->total_day = GeneralHelper::countDay($this->start_date, $this->end_date);
 
         return parent::beforeSave($insert);
@@ -103,7 +106,7 @@ class LeaveRequest extends BaseModel
     {
         return [
             'id_leave_request' => 'Id Leave Request',
-            'id_user' => 'Id User',
+            'id_user' => 'User',
             'id_leave_type' => 'Jenis Cuti',
             'start_date' => 'Tanggal Mulai',
             'end_date' => 'Tanggal Selesai',

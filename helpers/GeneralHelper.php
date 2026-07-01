@@ -171,8 +171,17 @@ class GeneralHelper extends \mdm\admin\components\Helper
 
     public static function countDay($start_date, $end_date)
     {
-        $diff = date_diff(date_create($start_date), date_create($end_date), false);
-        return $diff->days;
+        $start = strtotime($start_date);
+        $end = strtotime($end_date);
+
+        // Hitung beda hari dalam detik
+        $diff_secs = $end - $start;
+
+        // Konversi ke hari (bagi 86400 detik dalam sehari)
+        // Tambah 1 agar tanggal mulai ikut dihitung
+        $days = ($diff_secs / 86400) + 1;
+
+        return $days;
     }
 
     public static function diffHour($date, $hour = 48, $hourafter = 48)
