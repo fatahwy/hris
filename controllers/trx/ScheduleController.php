@@ -78,16 +78,16 @@ class ScheduleController extends BaseController
 
         // Check if user already has a schedule on this date
         $exists = Schedule::find()
-            ->where(['id_user' => $id_user, 'date' => $date])
+            ->where(['id_user' => $id_user, 'date' => $date, 'id_shift' => $id_shift])
             ->exists();
 
         if ($exists) {
-            return ['success' => false, 'message' => 'User already has a shift on this date'];
+            return ['success' => false, 'message' => 'Pegawai sudah memiliki jadwal pada tanggal ini'];
         }
 
         $shift = Shift::findOne($id_shift);
         if (!$shift) {
-            return ['success' => false, 'message' => 'Shift not found'];
+            return ['success' => false, 'message' => 'Jadwal kerja tidak ditemukan'];
         }
 
         $model = new Schedule();
@@ -114,7 +114,7 @@ class ScheduleController extends BaseController
         $model->status = 'Scheduled'; // Default status
 
         if ($model->save()) {
-            return ['success' => true, 'message' => 'Schedule added successfully'];
+            return ['success' => true, 'message' => 'Jadwal berhasil ditambahkan'];
         } else {
             return ['success' => false, 'message' => implode(', ', $model->getErrorSummary(true))];
         }
@@ -126,10 +126,15 @@ class ScheduleController extends BaseController
         $id = $_POST['id'] ?? null;
         if ($id) {
             $model = Schedule::findOne($id);
-            if ($model && $model->delete()) {
-                return ['success' => true, 'message' => 'Schedule deleted successfully'];
+            if ($model) {
+                if ($model->checkin_datetime != null || $model->checkout_datetime != null) {
+                    return ['success' => false, 'message' => 'Pegawai sudah melakukan absensi'];
+                } else {
+                    $model->delete();
+                    return ['success' => true, 'message' => 'Jadwal berhasil dihapus'];
+                }
             }
         }
-        return ['success' => false, 'message' => 'Failed to delete schedule'];
+        return ['success' => false, 'message' => 'Gagal menghapus jadwal'];
     }
 }

@@ -3,6 +3,7 @@
 namespace app\models\trx;
 
 use app\helpers\DBHelper;
+use app\helpers\GeneralHelper;
 use app\models\master\Account;
 use app\models\master\Company;
 use app\models\master\Shift;
@@ -132,9 +133,9 @@ class Schedule extends BaseModel
      */
     public static function getActiveScheduleToClockOut()
     {
-        $userId = Yii::$app->user->identity->id_user ?? 0;
+        $user = GeneralHelper::identity();
         return self::find()
-            ->where(['id_user' => $userId])
+            ->where(['id_user' => $user->id_user])
             ->andWhere(['not', ['checkin_datetime' => null]])
             ->andWhere(['checkout_datetime' => null])
             ->andWhere(['<', 'workhour_end', DBHelper::now()])
@@ -147,9 +148,9 @@ class Schedule extends BaseModel
      */
     public static function getActiveSchedule()
     {
-        $userId = Yii::$app->user->identity->id_user ?? 0;
+        $user = GeneralHelper::identity();
         return self::find()
-            ->where(['id_user' => $userId])
+            ->where(['id_user' => $user->id_user])
             ->andWhere(['not', ['checkin_datetime' => null]])
             ->andWhere(['checkout_datetime' => null])
             ->one();
@@ -163,8 +164,6 @@ class Schedule extends BaseModel
      */
     public static function getAvailableSchedule()
     {
-        $userId = Yii::$app->user->identity->id_user ?? 0;
-
         // If there is an active schedule, don't allow checking into another one
         if (self::getActiveScheduleToClockOut()) {
             return null;
@@ -174,11 +173,12 @@ class Schedule extends BaseModel
         // Since we need to compare combined dateTime, we might need to be careful with formats
         // but the rules say "antara checkin_start dan workhour_end yang masuk tanggal jam saat ini"
 
+        $user = GeneralHelper::identity();
         $schedule = self::find()
-            ->where(['id_user' => $userId])
+            ->where(['id_user' => $user->id_user])
             ->andWhere(['checkin_datetime' => null])
-            ->andWhere(['>=', 'checkin_start', DBHelper::now()])
-            ->andWhere(['<=', 'workhour_end', DBHelper::now()])
+            ->andWhere(['<', 'checkin_start', DBHelper::now()])
+            ->andWhere(['>', 'workhour_end', DBHelper::now()])
             ->orderBy(['workhour_start' => SORT_ASC])
             ->one();
 
