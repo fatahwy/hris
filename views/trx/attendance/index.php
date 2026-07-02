@@ -64,33 +64,12 @@ $nowStr = date('Y-m-d H:i:s');
         'checkout_datetime:datetime',
         [
             'class' => 'kartik\grid\ActionColumn',
-            'template' => '{view} {clock}',
+            'template' => '{view}',
             'buttons' => [
                 'view' => function ($url, $model, $key) {
                     return Html::a('<i class="bi bi-eye"></i>', ['view', 'id' => $model->id_schedule], [
                         'class' => 'btn btn-sm btn-outline-primary',
                         'title' => 'View Detail',
-                        'data-pjax' => '0'
-                    ]);
-                },
-                'clock' => function ($url, $model, $key) use ($nowStr) {
-                    $workhourEnd = $model->date . ' ' . $model->workhour_end;
-                    $statusName = 'Checkin';
-                    $type = 'in';
-
-                    if ($model->checkin_datetime !== null && $model->checkout_datetime === null) {
-                        $type = 'out';
-                        $statusName = 'Checkout';
-                    } elseif (
-                        ($model->checkin_datetime === null && $nowStr > $workhourEnd)
-                        || ($model->checkin_datetime !== null && $model->checkout_datetime !== null)
-                    ) {
-                        return '';
-                    }
-
-                    return Html::a('<i class="bi bi-clock"></i>', ['clock', 'id' => $model->id_schedule, 'type' => $type], [
-                        'class' => 'btn btn-sm btn-outline-primary',
-                        'title' => $statusName,
                         'data-pjax' => '0'
                     ]);
                 },

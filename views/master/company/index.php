@@ -6,7 +6,6 @@ use app\models\master\Company;
 use kartik\grid\GridView;
 use yii\helpers\Html;
 use yii\helpers\Url;
-use yii\widgets\Pjax;
 
 /** @var yii\web\View $this */
 /** @var app\models\master\search\CompanySearch $searchModel */
@@ -28,7 +27,6 @@ $this->params['breadcrumbs'][] = $this->title;
     'columns' => [
         ['class' => 'yii\grid\SerialColumn'],
 
-        'id_company',
         'name',
         'address',
         [
@@ -61,4 +59,3 @@ $this->params['breadcrumbs'][] = $this->title;
         ],
     ],
 ]); ?>
-

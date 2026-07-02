@@ -27,7 +27,6 @@ $this->params['breadcrumbs'][] = $this->title;
     'columns' => [
         ['class' => 'yii\grid\SerialColumn'],
 
-        'id_leave_type',
         'name',
         [
             'attribute' => 'category',
@@ -60,4 +59,3 @@ $this->params['breadcrumbs'][] = $this->title;
         ],
     ],
 ]); ?>
-

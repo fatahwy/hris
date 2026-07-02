@@ -44,8 +44,11 @@ class CompanySearch extends Company
     public function search($params, $formName = null)
     {
         $query = Company::find()
-            ->andWhere(['id_client' => GeneralHelper::session('id_client')])
-            ->andWhere(['id_company' => GeneralHelper::session('id_company')]);
+            ->andWhere(['id_client' => GeneralHelper::session('id_client')]);
+
+        if (RoleHelper::allUser()) {
+            $query->andWhere(['id_company' => GeneralHelper::session('id_company')]);
+        }
 
         // add conditions that should always apply here
 

@@ -31,7 +31,6 @@ $this->params['breadcrumbs'][] = $this->title;
     'columns' => [
         ['class' => 'yii\grid\SerialColumn'],
 
-        'id_department',
         'name',
         [
             'attribute' => 'created_at',
@@ -54,4 +53,3 @@ $this->params['breadcrumbs'][] = $this->title;
         ],
     ],
 ]); ?>
-

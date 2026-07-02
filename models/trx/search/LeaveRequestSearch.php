@@ -2,6 +2,8 @@
 
 namespace app\models\trx\search;
 
+use app\helpers\GeneralHelper;
+use app\helpers\RoleHelper;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\trx\LeaveRequest;
@@ -41,12 +43,15 @@ class LeaveRequestSearch extends LeaveRequest
      */
     public function search($params, $formName = null)
     {
+        $user = GeneralHelper::identity();
         $query = LeaveRequest::find()
+            ->innerJoinWith(['user'])
             ->where([
                 'OR',
-                ['status' => LeaveRequest::STATUS_PENDING],
-                ['>', 'approve_at', date('Y-m-d H:i:s', strtotime('-7 days'))],
-            ]);
+                ['leave_request.status' => LeaveRequest::STATUS_PENDING],
+                ['>', 'leave_request.approve_at', date('Y-m-d H:i:s', strtotime('-7 days'))],
+            ])
+            ->andWhere(['user.id_company' => GeneralHelper::session('id_company')]);
 
         // add conditions that should always apply here
 
@@ -65,7 +70,7 @@ class LeaveRequestSearch extends LeaveRequest
         // grid filtering conditions
         $query->andFilterWhere([
             'id_leave_request' => $this->id_leave_request,
-            'id_user' => $this->id_user,
+            'id_user' => RoleHelper::approvalLeave() ? $this->id_user : $user->id_user,
             'id_leave_type' => $this->id_leave_type,
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,

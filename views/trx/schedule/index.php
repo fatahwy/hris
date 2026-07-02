@@ -30,12 +30,12 @@ foreach ($shifts as $shift) {
         <div class="card-body">
             <div class="row">
                 <div class="col-md-4">
-                    <label class="form-label fw-bold">User</label>
+                    <label class="form-label fw-bold">Pegawai</label>
                     <?= Select2::widget([
                         'name' => 'user_id',
                         'id' => 'select-user',
                         'data' => $userList,
-                        'options' => ['placeholder' => 'Select User...'],
+                        'options' => ['placeholder' => 'Pilih'],
                         'pluginOptions' => [
                             'allowClear' => true
                         ],
@@ -47,7 +47,7 @@ foreach ($shifts as $shift) {
                         'name' => 'shift_id',
                         'id' => 'select-shift',
                         'data' => $shiftList,
-                        'options' => ['placeholder' => 'Select Shift...'],
+                        'options' => ['placeholder' => 'Pilih'],
                         'pluginOptions' => [
                             'allowClear' => true
                         ],

@@ -313,6 +313,18 @@ class SiteController extends BaseController
             ->send();
     }
 
+    public function actionProfile()
+    {
+        $model = $this->user;
+        if (!$model) {
+            throw new \yii\web\NotFoundHttpException('Halaman yang Anda cari tidak ditemukan.');
+        }
+
+        return $this->render('profile', [
+            'model' => $model,
+        ]);
+    }
+
     public function actionInit($id = null, $id_branch = null)
     {
         ini_set('max_execution_time', 60);

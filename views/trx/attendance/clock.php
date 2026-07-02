@@ -6,7 +6,7 @@ use yii\web\View;
 
 $typeName = $type === 'in' ? 'Clock In' : 'Clock Out';
 $this->title = $typeName . ' - ' . date('d M Y', strtotime($model->date));
-$this->params['breadcrumbs'][] = ['label' => 'Attendance', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => 'Presensi', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 
 $saveUrl = Url::to(['save-clock', 'id' => $model->id_schedule, 'type' => $type]);

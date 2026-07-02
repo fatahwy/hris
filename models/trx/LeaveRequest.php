@@ -84,19 +84,115 @@ class LeaveRequest extends BaseModel
         if (!$this->hasErrors()) {
             $leaveType = $this->leaveType;
             if ($leaveType && $leaveType->max_day !== null) {
-                // Calculate used days (approved or pending)
-                $usedDays = self::find()
-                    ->where(['id_user' => $this->id_user, 'id_leave_type' => $this->id_leave_type])
-                    ->andWhere(['!=', 'status', self::STATUS_REJECT])
-                    ->andFilterWhere(['!=', 'id_leave_request', $this->id_leave_request])
-                    ->sum('total_day') ?: 0;
-
-                if (($usedDays + $this->$attribute) > $leaveType->max_day) {
-                    $remaining = max(0, $leaveType->max_day - $usedDays);
+                $remaining = self::getRemainingDays($this->id_user, $this->id_leave_type, $this->start_date ?: date('Y-m-d'), $this->id_leave_request);
+                if ($this->$attribute > $remaining) {
                     $this->addError($attribute, 'Total leave days exceed the maximum allowed (' . $leaveType->max_day . ' days). You only have ' . $remaining . ' days left.');
                 }
             }
         }
+    }
+
+    /**
+     * Get the remaining leave days for a user and leave type at a given reference date.
+     *
+     * @param int $id_user
+     * @param int $id_leave_type
+     * @param string|null $reference_date
+     * @param int|null $exclude_id
+     * @return int|null
+     */
+    public static function getRemainingDays($id_user, $id_leave_type, $reference_date = null, $exclude_id = null)
+    {
+        if ($reference_date === null) {
+            $reference_date = date('Y-m-d');
+        }
+
+        $leaveType = LeaveType::findOne($id_leave_type);
+        if (!$leaveType || $leaveType->max_day === null) {
+            return null;
+        }
+
+        $user = Account::findOne($id_user);
+        if (!$user || !$user->join_date) {
+            $query = self::find()
+                ->where(['id_user' => $id_user, 'id_leave_type' => $id_leave_type])
+                ->andWhere(['!=', 'status', self::STATUS_REJECT]);
+            if ($exclude_id !== null) {
+                $query->andWhere(['!=', 'id_leave_request', $exclude_id]);
+            }
+            $usedDays = $query->sum('total_day') ?: 0;
+            return max(0, $leaveType->max_day - $usedDays);
+        }
+
+        $period = self::getLeavePeriod($user->join_date, $reference_date);
+        if (!$period) {
+            return $leaveType->max_day;
+        }
+
+        $query = self::find()
+            ->where(['id_user' => $id_user, 'id_leave_type' => $id_leave_type])
+            ->andWhere(['!=', 'status', self::STATUS_REJECT])
+            ->andWhere(['between', 'start_date', $period['start'], $period['end']]);
+        if ($exclude_id !== null) {
+            $query->andWhere(['!=', 'id_leave_request', $exclude_id]);
+        }
+        $usedDays = $query->sum('total_day') ?: 0;
+
+        return max(0, $leaveType->max_day - $usedDays);
+    }
+
+    /**
+     * Get the leave period start and end date based on join date and reference date.
+     *
+     * @param string $joinDate
+     * @param string $referenceDate
+     * @return array|null
+     */
+    public static function getLeavePeriod($joinDate, $referenceDate)
+    {
+        if (!$joinDate) {
+            return null;
+        }
+
+        try {
+            $joinDateTime = new \DateTime($joinDate);
+            $refDateTime = new \DateTime($referenceDate);
+        } catch (\Exception $e) {
+            return null;
+        }
+
+        $refYear = (int)$refDateTime->format('Y');
+        $joinMonthDay = $joinDateTime->format('m-d');
+
+        if ($joinMonthDay === '02-29') {
+            $isLeap = ((($refYear % 4) == 0) && ((($refYear % 100) != 0) || (($refYear % 400) == 0)));
+            if (!$isLeap) {
+                $joinMonthDay = '02-28';
+            }
+        }
+
+        try {
+            $periodStart = new \DateTime(sprintf('%d-%s', $refYear, $joinMonthDay));
+        } catch (\Exception $e) {
+            return null;
+        }
+
+        if ($refDateTime < $periodStart) {
+            $periodStart->modify('-1 year');
+            $newYear = (int)$periodStart->format('Y');
+            if ($joinDateTime->format('m-d') === '02-29') {
+                $isLeap = ((($newYear % 4) == 0) && ((($newYear % 100) != 0) || (($newYear % 400) == 0)));
+                $periodStart = new \DateTime(sprintf('%d-%s', $newYear, $isLeap ? '02-29' : '02-28'));
+            }
+        }
+
+        $periodEnd = clone $periodStart;
+        $periodEnd->modify('+1 year -1 day');
+
+        return [
+            'start' => $periodStart->format('Y-m-d'),
+            'end' => $periodEnd->format('Y-m-d')
+        ];
     }
 
     /**
@@ -105,8 +201,8 @@ class LeaveRequest extends BaseModel
     public function attributeLabels()
     {
         return [
-            'id_leave_request' => 'Id Leave Request',
-            'id_user' => 'User',
+            'id_leave_request' => 'Id',
+            'id_user' => 'Pegawai',
             'id_leave_type' => 'Jenis Cuti',
             'start_date' => 'Tanggal Mulai',
             'end_date' => 'Tanggal Selesai',

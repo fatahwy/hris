@@ -26,7 +26,7 @@ use kartik\daterange\DateRangePicker;
                         'opens' => 'left'
                     ],
                     'options' => [
-                        'placeholder' => 'Select date range...',
+                        'placeholder' => 'Pilih Tanggal',
                         'class' => 'form-control border-0 bg-transparent fw-medium',
                         'style' => 'cursor: pointer;',
                         'onchange' => 'this.form.submit()'
@@ -45,7 +45,7 @@ use kartik\daterange\DateRangePicker;
         <div class="col-md-6 col-lg-3">
             <div class="card shadow-sm border-light h-100 bg-white" style="border-radius: 16px;">
                 <div class="card-body p-4">
-                    <div class="text-secondary fw-semibold mb-3 py-1" style="font-size: 0.95rem;">Total Employees</div>
+                    <div class="text-secondary fw-semibold mb-3 py-1" style="font-size: 0.95rem;">Total Pegawai</div>
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <h2 class="fw-bold text-dark mb-0"><?= number_format($totalEmployees) ?></h2>
                         <div class="bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center"
@@ -53,7 +53,7 @@ use kartik\daterange\DateRangePicker;
                             <i class="bi bi-people fs-4"></i>
                         </div>
                     </div>
-                    <div class="text-secondary mb-1 mt-3" style="font-size: 0.85rem;">Active registered employees</div>
+                    <div class="text-secondary mb-1 mt-3" style="font-size: 0.85rem;">Total Pegawai Terdaftar</div>
                 </div>
             </div>
         </div>
@@ -61,7 +61,7 @@ use kartik\daterange\DateRangePicker;
         <div class="col-md-6 col-lg-3">
             <div class="card shadow-sm border-light h-100 bg-white" style="border-radius: 16px;">
                 <div class="card-body p-4">
-                    <div class="text-secondary fw-semibold mb-3 py-1" style="font-size: 0.95rem;">Presence in Period
+                    <div class="text-secondary fw-semibold mb-3 py-1" style="font-size: 0.95rem;">Kehadiran
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <h2 class="fw-bold text-dark mb-0"><?= number_format($presentInPeriod) ?></h2>
@@ -70,7 +70,7 @@ use kartik\daterange\DateRangePicker;
                             <i class="bi bi-clipboard-check fs-4"></i>
                         </div>
                     </div>
-                    <div class="text-secondary mb-1 mt-3" style="font-size: 0.85rem;">Total check-ins recorded</div>
+                    <div class="text-secondary mb-1 mt-3" style="font-size: 0.85rem;">Total Absensi</div>
                 </div>
             </div>
         </div>
@@ -87,7 +87,7 @@ use kartik\daterange\DateRangePicker;
                             <i class="bi bi-clock fs-4"></i>
                         </div>
                     </div>
-                    <div class="text-secondary mb-1 mt-3" style="font-size: 0.85rem;">Leave &amp; permission requests
+                    <div class="text-secondary mb-1 mt-3" style="font-size: 0.85rem;">Pengajuan Cuti &amp; izin
                     </div>
                 </div>
             </div>
@@ -106,7 +106,7 @@ use kartik\daterange\DateRangePicker;
                             <i class="bi bi-currency-dollar fs-4"></i>
                         </div>
                     </div>
-                    <div class="text-secondary mb-1 mt-3" style="font-size: 0.85rem;">Current month summary</div>
+                    <div class="text-secondary mb-1 mt-3" style="font-size: 0.85rem;">Total Penggajian</div>
                 </div>
             </div>
         </div>
@@ -121,12 +121,11 @@ use kartik\daterange\DateRangePicker;
         <table class="table table-hover align-middle border-bottom-0 mb-0">
             <thead>
                 <tr class="text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.8px;">
-                    <th class="border-bottom fw-semibold py-3 px-4 bg-transparent text-secondary border-light">Name</th>
-                    <th class="border-bottom fw-semibold py-3 bg-transparent text-secondary border-light">Shift Name
-                    </th>
-                    <th class="border-bottom fw-semibold py-3 bg-transparent text-secondary border-light">Date</th>
+                    <th class="border-bottom fw-semibold py-3 px-4 bg-transparent text-secondary border-light">Nama</th>
+                    <th class="border-bottom fw-semibold py-3 bg-transparent text-secondary border-light">Shift</th>
+                    <th class="border-bottom fw-semibold py-3 bg-transparent text-secondary border-light">Tanggal</th>
                     <th class="border-bottom fw-semibold py-3 bg-transparent text-secondary border-light">Status</th>
-                    <th class="border-bottom fw-semibold py-3 bg-transparent text-end px-4 border-light">Time</th>
+                    <th class="border-bottom fw-semibold py-3 bg-transparent text-end px-4 border-light">Waktu</th>
                 </tr>
             </thead>
             <tbody style="border-top: none;">

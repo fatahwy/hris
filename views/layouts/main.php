@@ -4,7 +4,6 @@
 /** @var string $content */
 
 use app\assets\AppAsset;
-
 use app\helpers\GeneralHelper;
 use app\helpers\RoleHelper;
 use app\models\master\Client;
@@ -19,6 +18,28 @@ use yii\bootstrap5\Html;
 use yii\bootstrap5\BootstrapPluginAsset;
 use yii\db\Query;
 use yii\helpers\Url;
+use app\helpers\DBHelper;
+use app\models\trx\Schedule;
+
+$checkoutAlertSchedule = null;
+if (!Yii::$app->user->isGuest && !Yii::$app->request->isAjax) {
+    $currentRoute = Yii::$app->controller ? Yii::$app->controller->route : '';
+    if ($currentRoute !== 'trx/attendance/clock' && $currentRoute !== 'site/logout') {
+        $userId = Yii::$app->user->identity->id_user;
+        $nowStr = DBHelper::now();
+
+        // 1. Check if user needs to be redirected to check-in
+        $pendingCheckin = Schedule::getAvailableSchedule();
+
+        if ($pendingCheckin) {
+            Yii::$app->response->redirect(['/trx/attendance/clock', 'id' => $pendingCheckin->id_schedule, 'type' => 'in'])->send();
+            exit;
+        }
+
+        // 2. Check if user needs a checkout warning
+        $checkoutAlertSchedule = Schedule::getActiveScheduleToClockOut();
+    }
+}
 
 AppAsset::register($this);
 BootstrapPluginAsset::register($this);
@@ -528,6 +549,20 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             align-items: center;
             gap: 12px;
             margin-left: 10px;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .user-block:hover {
+            opacity: 0.85;
+        }
+
+        .user-profile-link {
+            transition: opacity 0.2s;
+        }
+
+        .user-profile-link:hover {
+            opacity: 0.85;
         }
 
         .user-avatar {
@@ -631,11 +666,11 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                             $showClass = $isChildActive ? 'show' : '';
 
                             $html .= "<a href=\"#{$collapseId}\" data-bs-toggle=\"collapse\" aria-expanded=\"{$isExpanded}\" class=\"nav-item {$activeClass} justify-content-between px-3\">
-                        <div class=\"d-flex align-items-center gap-3\">
-                            <i class=\"bi {$item['icon']}\"></i> {$item['label']}
-                        </div>
-                        <i class=\"bi bi-caret-down-fill text-white-50 transition-caret\" style=\"font-size: 0.75rem;\"></i>
-                      </a>";
+                                        <div class=\"d-flex align-items-center gap-3\">
+                                            <i class=\"bi {$item['icon']}\"></i> {$item['label']}
+                                        </div>
+                                        <i class=\"bi bi-caret-down-fill text-white-50 transition-caret\" style=\"font-size: 0.75rem;\"></i>
+                                    </a>";
                             $html .= "<div class=\"collapse {$showClass} mb-2\" id=\"{$collapseId}\">";
                             foreach ($item['items'] as $childKey => $child) {
                                 $cUrlPath = rtrim($child['url'][0] ?? '/', '/');
@@ -657,11 +692,11 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                                     $subShowClass = $isSubChildActive ? 'show' : '';
 
                                     $html .= "<a href=\"#{$subCollapseId}\" data-bs-toggle=\"collapse\" aria-expanded=\"{$isSubExpanded}\" class=\"nav-sub-item {$cActiveClass} justify-content-between\">
-                            <div class=\"d-flex align-items-center gap-2\">
-                                <i class=\"bi {$child['icon']}\"></i> {$child['label']}
-                            </div>
-                            <i class=\"bi bi-caret-down-fill text-white-50 transition-caret\" style=\"font-size: 0.75rem;\"></i>
-                          </a>";
+                                                <div class=\"d-flex align-items-center gap-2\">
+                                                    <i class=\"bi {$child['icon']}\"></i> {$child['label']}
+                                                </div>
+                                                <i class=\"bi bi-caret-down-fill text-white-50 transition-caret\" style=\"font-size: 0.75rem;\"></i>
+                                            </a>";
                                     $html .= "<div class=\"collapse {$subShowClass}\" id=\"{$subCollapseId}\">";
                                     foreach ($child['items'] as $subKey => $subChild) {
                                         $subUrlRaw = rtrim($subChild['url'][0] ?? '/', '/');
@@ -675,28 +710,26 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
                                         $url = Url::to($subChild['url'][0] ?? '/');
                                         $html .= "
-                                <a href=\"{$url}\" class=\"nav-sub-item nav-sub-sub-item {$sActiveClass}\">
-                                    <i class=\"bi {$subChild['icon']}\"></i> {$subChild['label']}
-                                </a>
-                                ";
+                                                <a href=\"{$url}\" class=\"nav-sub-item nav-sub-sub-item {$sActiveClass}\">
+                                                    <i class=\"bi {$subChild['icon']}\"></i> {$subChild['label']}
+                                                </a>";
                                     }
                                     $html .= "</div>";
                                 } else {
                                     $cActiveClass = $isCActive ? 'active text-white' : '';
                                     $url = Url::to($child['url'][0] ?? '/');
                                     $html .= "
-                                <a href=\"{$url}\" class=\"nav-sub-item {$cActiveClass}\">
-                                    <i class=\"bi {$child['icon']}\"></i> {$child['label']}
-                                </a>
-                                ";
+                                                <a href=\"{$url}\" class=\"nav-sub-item {$cActiveClass}\">
+                                                    <i class=\"bi {$child['icon']}\"></i> {$child['label']}
+                                                </a>";
                                 }
                             }
                             $html .= "</div>";
                         } else {
                             $url = Url::to($item['url']['0'] ?? '/');
                             $html .= "<a href=\"{$url}\" class=\"nav-item px-3 {$activeClass}\">
-                        <i class=\"bi {$item['icon']}\"></i> {$item['label']}
-                      </a>";
+                                        <i class=\"bi {$item['icon']}\"></i> {$item['label']}
+                                    </a>";
                         }
                     }
                     return $html;
@@ -709,18 +742,15 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
         <div class="sidebar-footer d-md-none border-top border-white-10 p-3">
             <div class="d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center gap-2 text-white">
-                    <div class="user-avatar bg-white text-primary"
-                        style="width: 32px; height: 32px; font-size: 0.8rem;">
-                        <?php if (!empty($user->name))
-                            echo strtoupper(substr($user->name, 0, 1)); ?>
+                <a href="<?= Url::to(['/site/profile']) ?>" class="d-flex align-items-center gap-2 text-white text-decoration-none user-profile-link">
+                    <div class="user-avatar bg-white text-primary" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                        <?= strtoupper(substr($user->name ?? '', 0, 1)) ?>
                     </div>
                     <div class="d-flex flex-column" style="max-width: 120px;">
-                        <span class="small fw-medium text-truncate"><?php if (!empty($user->name))
-                            echo $user->name; ?></span>
+                        <span class="small fw-medium text-truncate"><?= $user->name ?? '' ?></span>
                         <span class="small text-white-50" style="font-size: 0.7rem;">Logged in</span>
                     </div>
-                </div>
+                </a>
                 <?= Html::a('<i class="bi bi-box-arrow-right fs-5"></i>', ['/site/logout'], [
                     'data-method' => 'post',
                     'class' => 'text-white text-decoration-none p-2'
@@ -777,22 +807,14 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                 <!-- <i class="bi bi-question-circle"></i> -->
                 <!-- <i class="bi bi-gear"></i> -->
 
-                <div class="user-block">
+                <a href="<?= Url::to(['/site/profile']) ?>" class="user-block">
                     <span class="text-dark fw-medium small">
-                        <?php
-                        if (!empty($user->name)) {
-                            echo $user->name;
-                        }
-                        ?>
+                        <?= $user->name ?? '' ?>
                     </span>
                     <div class="user-avatar shadow-sm">
-                        <?php
-                        if (!empty($user->name)) {
-                            echo strtoupper(substr($user->name, 0, 1));
-                        }
-                        ?>
+                        <?= strtoupper(substr($user->name ?? '', 0, 1)) ?>
                     </div>
-                </div>
+                </a>
 
                 <div class="ms-3 d-flex gap-3 align-items-center">
                     <?= Html::a('<i class="bi bi-box-arrow-right"></i>', ['/site/logout'], ['data-method' => 'post', 'data-toggle' => 'tooltip', 'title' => 'Logout', 'data-confirm' => 'Apakah anda yakin akan logout?', 'class' => 'nav-link']) ?>
@@ -820,6 +842,24 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                     </div>
                 </div><!-- /.col -->
             </div><!-- /.row -->
+            <?php if ($checkoutAlertSchedule): ?>
+                <div class="alert alert-warning d-flex flex-column flex-md-row align-items-start align-items-md-center alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4"
+                    role="alert">
+                    <div class="d-flex align-items-start align-items-md-center flex-grow-1 mb-3 mb-md-0">
+                        <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-warning"></i>
+                        <div>
+                            <strong>Peringatan Checkout!</strong> Jam kerja shift Anda
+                            (<?= Html::encode($checkoutAlertSchedule->shift_name) ?>) telah berakhir pada pukul
+                            <?= date('H:i', strtotime($checkoutAlertSchedule->workhour_end)) ?>. Harap segera lakukan checkout
+                            kehadiran.
+                        </div>
+                    </div>
+                    <div class="ms-5 ms-md-0 me-md-4">
+                        <?= Html::a('<i class="bi bi-box-arrow-left me-1"></i> Checkout Sekarang', ['/trx/attendance/clock', 'id' => $checkoutAlertSchedule->id_schedule, 'type' => 'out'], ['class' => 'btn btn-warning btn-sm text-dark fw-bold rounded-2 px-3']) ?>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
             <?= Alert::widget() ?>
             <?= $content ?>
         </main>

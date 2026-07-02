@@ -9,7 +9,7 @@ use app\helpers\GeneralHelper;
 /** @var app\models\trx\LeaveRequest $model */
 
 $this->title = 'Leave Request: #' . $model->id_leave_request;
-$this->params['breadcrumbs'][] = ['label' => 'Leave Requests', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => 'Izin & Cuti', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 ?>

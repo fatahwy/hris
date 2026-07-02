@@ -17,11 +17,10 @@ if ($isApproval) {
 } else {
     $this->title = $model->isNewRecord ? 'Create Leave Request' : 'Update Leave Request';
 }
-$this->params['breadcrumbs'][] = ['label' => 'Leave Requests', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => 'Izin & Cuti', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 
-$leaveTypes = ArrayHelper::map(LeaveType::find()->all(), 'id_leave_type', 'name');
-$users = ArrayHelper::map(Account::find()->all(), 'id_user', 'name');
+$leaveTypes = LeaveType::getList();
 ?>
 
 <div class="card modern-form-card">

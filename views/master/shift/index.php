@@ -27,7 +27,6 @@ $this->params['breadcrumbs'][] = $this->title;
     'columns' => [
         ['class' => 'yii\grid\SerialColumn'],
 
-        'id_shift',
         'name',
         'checkin_start',
         'workhour_start',
@@ -38,7 +37,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'value' => function ($m) {
                 return '<div style="background-color: ' . $m->color . '; width: 60px; height: 30px;"></div>';
             },
-            'filter'=> false,
+            'filter' => false,
         ],
         'note:ntext',
         [
@@ -63,4 +62,3 @@ $this->params['breadcrumbs'][] = $this->title;
         ],
     ],
 ]); ?>
-
