@@ -2,7 +2,6 @@
 
 namespace app\models\master;
 
-use app\helpers\GeneralHelper;
 use app\models\trx\LeaveRequest;
 use app\models\BaseModel;
 use Yii;
@@ -151,12 +150,11 @@ class LeaveType extends BaseModel
 
     public static function getList()
     {
-        $models = LeaveType::find()
-            ->where(['id_company' => GeneralHelper::session('id_company')])
+        $models = self::getQueryByCompany()
             ->orderBy(['name' => SORT_ASC])
             ->all();
-        $leaveTypes = ArrayHelper::map($models, 'id_leave_type', 'name');
-        return $leaveTypes;
+
+        return ArrayHelper::map($models, 'id_leave_type', 'name');
     }
 
 }

@@ -10,6 +10,7 @@ use app\models\trx\Payroll;
 use app\models\trx\Log;
 use app\models\trx\Schedule;
 use app\models\BaseModel;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "user".
@@ -27,6 +28,7 @@ use app\models\BaseModel;
  * @property int|null $id_department
  * @property int|null $id_position
  * @property int|null $basic_salary
+ * @property int|null $hourly_rate
  * @property int $is_online
  * @property string|null $token
  * @property string|null $created_at
@@ -45,7 +47,6 @@ use app\models\BaseModel;
  */
 class Account extends BaseModel
 {
-
 
     /**
      * {@inheritdoc}
@@ -66,10 +67,11 @@ class Account extends BaseModel
             [['is_online'], 'default', 'value' => 0],
             [['id_client', 'id_company', 'name', 'email'], 'required'],
             [['password'], 'required', 'on' => 'create'],
-            [['id_client', 'id_company', 'status', 'id_department', 'id_position', 'basic_salary', 'is_online'], 'integer'],
+            [['id_client', 'id_company', 'status', 'id_department', 'id_position', 'basic_salary', 'is_online', 'hourly_rate'], 'integer'],
             [['email'], 'unique'],
             [['password', 'token'], 'string'],
-            [['created_at', 'updated_at'], 'safe'],
+            [['allowance'], 'default', 'value' => []],
+            [['allowance', 'created_at', 'updated_at'], 'safe'],
             [['name', 'email', 'join_date', 'employee_code', 'phone'], 'string', 'max' => 255],
             [['id_client'], 'exist', 'skipOnError' => true, 'targetClass' => Company::class, 'targetAttribute' => ['id_client' => 'id_client']],
             [['id_company'], 'exist', 'skipOnError' => true, 'targetClass' => Company::class, 'targetAttribute' => ['id_company' => 'id_company']],
@@ -213,4 +215,11 @@ class Account extends BaseModel
         return GeneralHelper::identity()->id_user == $model->id_user;
     }
 
+    public static function getList()
+    {
+        $models = self::getQueryByCompany()
+            ->all();
+
+        return ArrayHelper::map($models, 'id_user', 'name');
+    }
 }

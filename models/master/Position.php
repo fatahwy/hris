@@ -4,6 +4,7 @@ namespace app\models\master;
 
 use Yii;
 use app\models\BaseModel;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "position".
@@ -78,4 +79,11 @@ class Position extends BaseModel
         return $this->hasMany(Account::class, ['id_position' => 'id_position']);
     }
 
+    public static function getList()
+    {
+        $models = self::getQueryByCompany()
+            ->all();
+
+        return ArrayHelper::map($models, 'id_position', 'name');
+    }
 }

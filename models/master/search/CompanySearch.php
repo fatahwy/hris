@@ -45,11 +45,6 @@ class CompanySearch extends Company
     {
         $query = Company::find()
             ->andWhere(['id_client' => GeneralHelper::session('id_client')]);
-
-        if (RoleHelper::allUser()) {
-            $query->andWhere(['id_company' => GeneralHelper::session('id_company')]);
-        }
-
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([
@@ -69,7 +64,7 @@ class CompanySearch extends Company
             'status' => $this->status,
             'max_user' => $this->max_user,
             'DATE(created_at)' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'DATE(updated_at)' => $this->updated_at,
         ]);
 
         $query->andFilterWhere(['like', 'name', $this->name])

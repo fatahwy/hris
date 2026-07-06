@@ -2,7 +2,6 @@
 
 namespace app\models\master\search;
 
-use app\helpers\GeneralHelper;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\master\LeaveType;
@@ -42,7 +41,7 @@ class LeaveTypeSearch extends LeaveType
      */
     public function search($params, $formName = null)
     {
-        $query = LeaveType::find();
+        $query = self::getQueryByCompany();
 
         // add conditions that should always apply here
 
@@ -61,10 +60,9 @@ class LeaveTypeSearch extends LeaveType
         // grid filtering conditions
         $query->andFilterWhere([
             'id_leave_type' => $this->id_leave_type,
-            'id_company' => GeneralHelper::session('id_company'),
             'max_day' => $this->max_day,
             'DATE(created_at)' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'DATE(updated_at)' => $this->updated_at,
         ]);
 
         $query->andFilterWhere(['like', 'name', $this->name])

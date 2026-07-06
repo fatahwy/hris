@@ -5,6 +5,7 @@ use app\models\master\Department;
 use app\models\master\Position;
 use kartik\form\ActiveForm;
 use kartik\select2\Select2;
+use kartik\number\NumberControl;
 use yii\bootstrap5\Html;
 use yii\helpers\ArrayHelper;
 
@@ -53,7 +54,20 @@ $positions = ArrayHelper::map(Position::find()->where(['id_company' => $controll
 
         <?= $form->field($model, 'id_position')->dropDownList($positions, ['prompt' => '- Pilih Jabatan -']) ?>
 
-        <?= $form->field($model, 'basic_salary')->textInput(['type' => 'number', 'placeholder' => 'Gaji Pokok (Angka saja)']) ?>
+        <?= $form->field($model, 'basic_salary')->widget(NumberControl::classname(), [
+            'maskedInputOptions' => [
+                'prefix' => '',
+                'suffix' => '',
+                'allowNegative' => false,
+                'groupSeparator' => '.',
+                'radixPoint' => ',',
+                'digits' => 0,
+                'rightAlign' => false,
+            ],
+            'displayOptions' => [
+                'placeholder' => 'Gaji Pokok',
+            ],
+        ]) ?>
 
         <?= $form->field($model, 'join_date')->textInput(['type' => 'date']) ?>
 

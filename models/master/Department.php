@@ -4,6 +4,7 @@ namespace app\models\master;
 
 use Yii;
 use app\models\BaseModel;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "department".
@@ -77,6 +78,14 @@ class Department extends BaseModel
     public function getUsers()
     {
         return $this->hasMany(Account::class, ['id_department' => 'id_department']);
+    }
+
+    public static function getList()
+    {
+        $models = self::getQueryByCompany()
+            ->all();
+
+        return ArrayHelper::map($models, 'id_department', 'name');
     }
 
 }

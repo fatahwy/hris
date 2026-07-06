@@ -70,14 +70,14 @@ class LeaveRequestSearch extends LeaveRequest
         // grid filtering conditions
         $query->andFilterWhere([
             'id_leave_request' => $this->id_leave_request,
-            'id_user' => RoleHelper::approvalLeave() ? $this->id_user : $user->id_user,
+            'user.id_user' => RoleHelper::approvalLeave() ? $this->id_user : $user->id_user,
             'id_leave_type' => $this->id_leave_type,
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
             'total_day' => $this->total_day,
             'id_approver' => $this->id_approver,
-            'DATE(created_at)' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'DATE(user.created_at)' => $this->created_at,
+            'DATE(user.updated_at)' => $this->updated_at,
         ]);
 
         $query->andFilterWhere(['like', 'reason', $this->reason])

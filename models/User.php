@@ -128,4 +128,9 @@ class User extends Account implements IdentityInterface
     {
         return $this->password === md5($password);
     }
+
+    public function getRole()
+    {
+        return $this->hasOne(AuthAssignment::className(), ['user_id' => 'id_user']);
+    }
 }

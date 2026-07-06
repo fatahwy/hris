@@ -4,7 +4,6 @@ namespace app\controllers\master;
 
 use app\controllers\BaseController;
 use app\helpers\GeneralHelper;
-use app\helpers\RoleHelper;
 use app\models\AuthItem;
 use app\models\master\search\RoleSearch;
 use yii\bootstrap5\Html;

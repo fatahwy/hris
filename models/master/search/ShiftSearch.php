@@ -2,7 +2,6 @@
 
 namespace app\models\master\search;
 
-use app\helpers\GeneralHelper;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\master\Shift;
@@ -42,7 +41,7 @@ class ShiftSearch extends Shift
      */
     public function search($params, $formName = null)
     {
-        $query = Shift::find();
+        $query = self::getQueryByCompany();
 
         // add conditions that should always apply here
 
@@ -61,12 +60,11 @@ class ShiftSearch extends Shift
         // grid filtering conditions
         $query->andFilterWhere([
             'id_shift' => $this->id_shift,
-            'id_company' => GeneralHelper::session('id_company'),
             'checkin_start' => $this->checkin_start,
             'workhour_start' => $this->workhour_start,
             'workhour_end' => $this->workhour_end,
             'DATE(created_at)' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'DATE(updated_at)' => $this->updated_at,
         ]);
 
         $query->andFilterWhere(['like', 'name', $this->name])

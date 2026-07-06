@@ -164,7 +164,7 @@ $config = [
             'debug/*',
             'site/*',
             'gii/*',
-            'admin/*'
+            // 'admin/*'
         ]
     ],
     'params' => $params,

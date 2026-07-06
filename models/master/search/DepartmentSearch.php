@@ -2,7 +2,6 @@
 
 namespace app\models\master\search;
 
-use app\helpers\GeneralHelper;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\master\Department;
@@ -42,7 +41,7 @@ class DepartmentSearch extends Department
      */
     public function search($params, $formName = null)
     {
-        $query = Department::find();
+        $query = self::getQueryByCompany();
 
         // add conditions that should always apply here
 
@@ -60,13 +59,12 @@ class DepartmentSearch extends Department
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'id_company' => GeneralHelper::session('id_company'),
             'id_department' => $this->id_department,
             'DATE(created_at)' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'DATE(updated_at)' => $this->updated_at,
         ]);
 
-        $query->andFilterWhere(['like', 'department.name', $this->name]);
+        $query->andFilterWhere(['like', 'name', $this->name]);
 
         return $dataProvider;
     }

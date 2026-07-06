@@ -2,7 +2,6 @@
 
 namespace app\models\master\search;
 
-use app\helpers\GeneralHelper;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\master\Position;
@@ -42,7 +41,7 @@ class PositionSearch extends Position
      */
     public function search($params, $formName = null)
     {
-        $query = Position::find();
+        $query = self::getQueryByCompany();
 
         // add conditions that should always apply here
 
@@ -61,9 +60,8 @@ class PositionSearch extends Position
         // grid filtering conditions
         $query->andFilterWhere([
             'id_position' => $this->id_position,
-            'id_company' => GeneralHelper::session('id_company'),
             'DATE(created_at)' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'DATE(updated_at)' => $this->updated_at,
         ]);
 
         $query->andFilterWhere(['like', 'name', $this->name]);

@@ -5,6 +5,7 @@ namespace app\models\master;
 use app\models\trx\Schedule;
 use Yii;
 use app\models\BaseModel;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "shift".
@@ -92,4 +93,11 @@ class Shift extends BaseModel
         return $this->hasMany(Schedule::class, ['id_shift' => 'id_shift']);
     }
 
+    public static function getList()
+    {
+        $models = self::getQueryByCompany()
+            ->all();
+
+        return ArrayHelper::map($models, 'id_shift', 'name');
+    }
 }

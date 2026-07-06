@@ -42,8 +42,12 @@ class AccessRuleController extends BaseController
         $model->parent = $model->parent ?: $role;
 
         if (empty($listRole[$model->parent])) {
-            GeneralHelper::flashFailed('Role tidak ditemukan');
-            return $this->redirect(['index']);
+            $selectedRole = array_key_first($listRole);
+            if (!$selectedRole) {
+                GeneralHelper::flashFailed('Role belum diset');
+                return $this->redirect(['/']);
+            }
+            return $this->redirect(['index', 'role' => $selectedRole]);
         }
 
         $modelAuthItems = AuthItem::find()

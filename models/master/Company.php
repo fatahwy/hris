@@ -2,6 +2,7 @@
 
 namespace app\models\master;
 
+use app\helpers\GeneralHelper;
 use app\helpers\RoleHelper;
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -55,7 +56,8 @@ class Company extends BaseModel
             [['max_user'], 'default', 'value' => 10],
             [['id_client', 'name'], 'required'],
             [['id_client', 'status', 'max_user'], 'integer'],
-            [['created_at', 'updated_at'], 'safe'],
+            [['allowance'], 'default', 'value' => []],
+            [['allowance', 'created_at', 'updated_at'], 'safe'],
             [['name', 'address'], 'string', 'max' => 255],
             [['id_client'], 'exist', 'skipOnError' => true, 'targetClass' => Client::class, 'targetAttribute' => ['id_client' => 'id_client']],
         ];
@@ -73,6 +75,7 @@ class Company extends BaseModel
             'address' => 'Alamat',
             'status' => 'Status',
             'max_user' => 'Maximal User',
+            'allowance' => 'Tunjangan',
             'created_at' => 'Tgl Buat',
             'updated_at' => 'Tgl Update',
         ];

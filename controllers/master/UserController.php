@@ -74,6 +74,7 @@ class UserController extends BaseController
 
         if ($model->load($this->request->post()) && $tempModelAuthAssignment->load($this->request->post())) {
             $model->id_client = $this->id_client;
+            $model->id_company = $this->id_company;
 
             $transaction = Yii::$app->db->beginTransaction();
             try {

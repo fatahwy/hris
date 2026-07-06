@@ -627,7 +627,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             $route = '/' . Yii::$app->controller->route;
 
             if (!function_exists('renderMenu')) {
-                function renderMenu($items, $route, $parentId = 'main')
+                function renderMenu($items, $route, $parentId = 'main', $user)
                 {
                     $html = '';
                     foreach ($items as $key => $item) {
@@ -636,6 +636,12 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                             $urlPath = '/';
                         else if (!str_starts_with($urlPath, '/'))
                             $urlPath = '/' . $urlPath;
+
+                        if (!in_array($urlPath, ['/site/index', '/'])) {
+                            if (!GeneralHelper::checkRoute($urlPath, Yii::$app->getRequest()->get(), $user)) {
+                                continue;
+                            }
+                        }
 
                         $isActive = ($route == $urlPath) || ($route == '/' && $urlPath == '/site/index');
 
@@ -678,6 +684,12 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                                     $cUrlPath = '/';
                                 else if (!str_starts_with($cUrlPath, '/'))
                                     $cUrlPath = '/' . $cUrlPath;
+
+                                // Check route access for child
+                                if (!GeneralHelper::checkRoute($cUrlPath, Yii::$app->getRequest()->get(), $user)) {
+                                    continue;
+                                }
+
                                 $isCActive = ($route == $cUrlPath) || ($route == '/' && $cUrlPath == '/site/index');
 
                                 $hasSubChildren = !empty($child['items']);
@@ -704,6 +716,11 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                                             $subUrlRaw = '/';
                                         else if (!str_starts_with($subUrlRaw, '/'))
                                             $subUrlRaw = '/' . $subUrlRaw;
+
+                                        // Check route access for sub-child
+                                        if (!GeneralHelper::checkRoute($subUrlRaw, Yii::$app->getRequest()->get(), $user)) {
+                                            continue;
+                                        }
 
                                         $isSubActive = ($route == $subUrlRaw) || ($route == '/' && $subUrlRaw == '/site/index');
                                         $sActiveClass = $isSubActive ? 'active text-white' : '';
@@ -736,7 +753,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                 }
             }
 
-            echo renderMenu($d, $route);
+            echo renderMenu($d, $route, 'main', Yii::$app->user);
             ?>
         </div>
 
@@ -850,8 +867,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                         <div>
                             <strong>Peringatan Checkout!</strong> Jam kerja shift Anda
                             (<?= Html::encode($checkoutAlertSchedule->shift_name) ?>) telah berakhir pada pukul
-                            <?= date('H:i', strtotime($checkoutAlertSchedule->workhour_end)) ?>. Harap segera lakukan checkout
-                            kehadiran.
+                            <?= date('H:i', strtotime($checkoutAlertSchedule->workhour_end)) ?>. Harap segera lakukan checkout kehadiran.
                         </div>
                     </div>
                     <div class="ms-5 ms-md-0 me-md-4">

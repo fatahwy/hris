@@ -2,6 +2,7 @@
 
 namespace app\models\master\search;
 
+use app\helpers\RoleHelper;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\master\Account;
@@ -40,7 +41,12 @@ class AccountSearch extends Account
      */
     public function search($params)
     {
-        $query = Account::find();
+        $query = self::getQueryByCompany();
+
+        if (!RoleHelper::isSuper()) {
+            $query->innerJoinWith(['role'])
+                ->andWhere(['!=', 'LOWER(item_name)', 'super']);
+        }
 
         // add conditions that should always apply here
         // If we want to filter by client based on session, we can do it in the controller and pass it or handle it here if required.
@@ -62,8 +68,6 @@ class AccountSearch extends Account
         // grid filtering conditions
         $query->andFilterWhere([
             'id_user' => $this->id_user,
-            'id_client' => $this->id_client,
-            'id_company' => $this->id_company,
             'status' => $this->status,
             'id_department' => $this->id_department,
             'id_position' => $this->id_position,
@@ -76,8 +80,8 @@ class AccountSearch extends Account
             ->andFilterWhere(['like', 'employee_code', $this->employee_code])
             ->andFilterWhere(['like', 'phone', $this->phone])
             ->andFilterWhere(['like', 'join_date', $this->join_date])
-            ->andFilterWhere(['like', 'created_at', $this->created_at])
-            ->andFilterWhere(['like', 'updated_at', $this->updated_at]);
+            ->andFilterWhere(['like', 'date(user.created_at)', $this->created_at])
+            ->andFilterWhere(['like', 'date(user.updated_at)', $this->updated_at]);
 
         return $dataProvider;
     }

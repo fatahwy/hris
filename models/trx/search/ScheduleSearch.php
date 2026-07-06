@@ -1,6 +1,6 @@
 <?php
 
-namespace app\models\trx;
+namespace app\models\trx\search;
 
 use app\helpers\GeneralHelper;
 use yii\base\Model;
@@ -30,7 +30,11 @@ class ScheduleSearch extends Schedule
     {
         $user = GeneralHelper::identity();
         // Only show logged in user's schedule
-        $query = Schedule::find()->where(['id_user' => $user->id_user]);
+        $query = Schedule::getQueryByCompany();
+
+        // if (!RoleHelper::allUser()) {
+            $query->andWhere(['id_user' => $user->id_user]);
+        // }
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
@@ -47,7 +51,6 @@ class ScheduleSearch extends Schedule
 
         $query->andFilterWhere([
             'id_schedule' => $this->id_schedule,
-            'id_company' => $this->id_company,
             'id_shift' => $this->id_shift,
             'date' => $this->date,
             'checkin_datetime' => $this->checkin_datetime,

@@ -2,6 +2,8 @@
 
 namespace app\models;
 
+use app\helpers\GeneralHelper;
+use app\helpers\RoleHelper;
 use Yii;
 use yii\behaviors\AttributeBehavior;
 use yii\caching\TagDependency;
@@ -57,5 +59,13 @@ class BaseModel extends ActiveRecord
     {
         $dep = new TagDependency(['tags' => $tag]);
         $dep->invalidate(Yii::$app->cache, $tag);
+    }
+
+    public static function getQueryByCompany()
+    {
+        $query = self::find()
+            ->andWhere(['id_company' => GeneralHelper::session('id_company')]);
+
+        return $query;
     }
 }

@@ -77,6 +77,7 @@ class DBHelper
 
         $submenu = [
             // Laporan
+            ['Presensi', $report, '/report/attendance/index', 1, $defIcon],
             ['Izin & Cuti', $report, '/report/leave/index', 1, $defIcon],
             ['Payroll', $report, '/report/payroll/index', 1, $defIcon],
             // Master
@@ -84,11 +85,11 @@ class DBHelper
             ['Perusahaan', $master, '/master/company/index', 1, $defIcon],
             ['Departemen', $master, '/master/department/index', 1, $defIcon],
             ['Jabatan', $master, '/master/position/index', 1, $defIcon],
-            ['User', $master, '/master/user/index', 1, $defIcon],
             ['Izin & Cuti', $master, '/master/leave-type/index', 1, $defIcon],
             ['Shift', $master, '/master/shift/index', 1, $defIcon],
             ['Role', $master, '/master/role/index', 1, $defIcon],
-            // Data           
+            ['Tunjangan', $master, '/master/allowance/index', 1, $defIcon],
+            ['User', $master, '/master/user/index', 1, $defIcon],
             // Trx
             ['Presensi', $trx, '/trx/attendance/index', 1, $defIcon],
             ['Jadwal kerja', $trx, '/trx/schedule/index', 1, $defIcon],
@@ -156,9 +157,9 @@ class DBHelper
             // Dashboard
             'dashboard' => '',
             // Laporan
-            '/report/attendance/*' => "Report|Laporan Presensi",
-            '/report/leave/*' => "Report|Laporan Cuti",
-            '/report/payroll/*' => "Report|Laporan Gaji",
+            '/report/attendance/*' => "Laporan|Presensi",
+            '/report/leave/*' => "Laporan|Izin & Cuti",
+            '/report/payroll/*' => "Laporan|Payroll",
             // Master
             '/master/client/*' => "Master|Client",
             '/master/company/*' => "Master|Perusahaan",
@@ -166,6 +167,8 @@ class DBHelper
             '/master/position/*' => "Master|Jabatan",
             '/master/leave-type/*' => "Master|Tipe Cuti",
             '/master/shift/*' => "Master|Shift",
+            '/master/role/*' => "Master|Role",
+            '/master/allowance/*' => "Master|Tunjangan",
             '/master/user/*' => "Master|User",
             // Data
             // Transaksi

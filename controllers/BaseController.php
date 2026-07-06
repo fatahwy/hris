@@ -71,8 +71,14 @@ class BaseController extends Controller
         $user = Yii::$app->user->identity;
         $this->user = $user;
         if (!Yii::$app->user->isGuest) {
-            $this->id_client = GeneralHelper::session('id_client') ?? $user->id_client;
-            $this->id_company = GeneralHelper::session('id_company') ?? $user->id_company;
+            $id_client = GeneralHelper::session('id_client') ?? $user->id_client;
+            $id_company = GeneralHelper::session('id_company') ?? $user->id_company;
+
+            GeneralHelper::session('id_client', $id_client);
+            GeneralHelper::session('id_company', $id_company);
+
+            $this->id_client = $id_client;
+            $this->id_company = $id_company;
         }
 
         if (parent::beforeAction($action)) {

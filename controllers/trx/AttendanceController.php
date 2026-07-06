@@ -3,10 +3,10 @@
 namespace app\controllers\trx;
 
 use app\helpers\DBHelper;
+use app\models\trx\search\ScheduleSearch;
 use Yii;
 use app\controllers\BaseController;
 use app\models\trx\Schedule;
-use app\models\trx\ScheduleSearch;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
