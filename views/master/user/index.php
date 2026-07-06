@@ -6,6 +6,7 @@ use app\models\master\Account;
 use app\models\master\Company;
 use app\models\master\Department;
 use app\models\master\Position;
+use app\models\trx\LeaveRequest;
 use kartik\grid\GridView;
 use yii\helpers\Html;
 use yii\helpers\Url;
@@ -23,6 +24,12 @@ $this->params['breadcrumbs'][] = $this->title;
 $controllerIdCompany = $this->context->id_company ?? $this->context->user->id_company;
 $departments = ArrayHelper::map(Department::find()->where(['id_company' => $controllerIdCompany])->all(), 'id_department', 'name');
 $positions = ArrayHelper::map(Position::find()->where(['id_company' => $controllerIdCompany])->all(), 'id_position', 'name');
+
+$leaveTypes = \app\models\master\LeaveType::find()
+    ->where(['id_company' => GeneralHelper::session('id_company')])
+    ->andWhere(['is not', 'max_day', null])
+    ->all();
+
 
 $gridColumns = [
     ['class' => 'yii\grid\SerialColumn'],
@@ -55,6 +62,24 @@ $gridColumns = [
         'filter' => [1 => 'Active', 0 => 'Inactive'],
         'contentOptions' => ['class' => 'text-center'],
         'headerOptions' => ['class' => 'text-center'],
+    ],
+    [
+        'label' => 'Cuti',
+        'format' => 'raw',
+        'value' => function ($m) use ($leaveTypes) {
+            $remainingLeaves = [];
+            foreach ($leaveTypes as $lt) {
+                $rem = LeaveRequest::getRemainingDays($m, $lt->id_leave_type);
+                if ($rem !== null) {
+                    $remainingLeaves[] = Html::tag('span', Html::encode($lt->name) . ': ' . Html::tag('strong', $rem . ' Hari'), ['class' => 'badge bg-info text-dark me-2']);
+                }
+            }
+            if (!empty($remainingLeaves)) {
+                return '<div class="d-flex align-items-center"><span class="me-2 text-secondary"></span> ' . implode(' ', $remainingLeaves) . '</div>';
+            } else {
+                return null;
+            }
+        }
     ],
     [
         'class' => ButtonActionColumn::className(),
@@ -103,4 +128,3 @@ $gridColumns = [
     // 'layout' => "{items}\n<div class='card-footer bg-white d-flex justify-content-between align-items-center border-top-0'>{summary}\n{pager}</div>",
 ]);
 ?>
-

@@ -40,7 +40,7 @@ class SiteController extends BaseController
     public function actionIndex()
     {
         $id_company = $this->id_company;
-        
+
         $dateRange = Yii::$app->request->get('date_range');
         if ($dateRange) {
             $dates = explode(' - ', $dateRange);
@@ -320,8 +320,19 @@ class SiteController extends BaseController
             throw new \yii\web\NotFoundHttpException('Halaman yang Anda cari tidak ditemukan.');
         }
 
-        return $this->render('profile', [
+        $company = $model->company;
+        $companyAllowances = $company ? ($company->allowance ?? []) : [];
+
+        if ($model->allowance) {
+            $userAllowance = \yii\helpers\ArrayHelper::index($model->allowance, 'uuid');
+            foreach ($companyAllowances as $v) {
+                $model->allowance_items[$v['uuid']] = $userAllowance[$v['uuid']]['value'] ?? null;
+            }
+        }
+
+        return $this->render('@app/views/master/user/process', [
             'model' => $model,
+            'companyAllowances' => $companyAllowances,
         ]);
     }
 

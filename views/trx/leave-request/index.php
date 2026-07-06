@@ -26,15 +26,15 @@ if ($currentUser) {
         ->all();
     $remainingLeaves = [];
     foreach ($leaveTypes as $lt) {
-        $rem = LeaveRequest::getRemainingDays($currentUser->id_user, $lt->id_leave_type);
+        $rem = LeaveRequest::getRemainingDays($currentUser, $lt->id_leave_type);
         if ($rem !== null) {
             $remainingLeaves[] = Html::tag('span', Html::encode($lt->name) . ': ' . Html::tag('strong', $rem . ' Hari'), ['class' => 'badge bg-info text-dark me-2']);
         }
     }
     if (!empty($remainingLeaves)) {
         $remainingLeavesHtml = '<div class="d-flex align-items-center"><span class="me-2 text-secondary"><i class="bi bi-info-circle-fill text-info me-1"></i> <strong>Sisa Cuti Anda:</strong></span> ' . implode(' ', $remainingLeaves) . '</div>';
-        // } else {
-        // $remainingLeavesHtml = '<div class="text-secondary"><i class="bi bi-info-circle text-muted me-1"></i> Tidak ada kuota cuti tahunan yang didefinisikan.</div>';
+    } else {
+        $remainingLeavesHtml = '<div class="text-secondary"><i class="bi bi-info-circle text-muted me-1"></i> Tidak ada kuota cuti tahunan yang didefinisikan.</div>';
     }
 }
 ?>
