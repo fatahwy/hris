@@ -6,8 +6,10 @@ use app\controllers\BaseController;
 use app\helpers\DBHelper;
 use app\helpers\RoleHelper;
 use app\models\master\Account;
+use app\models\master\Company;
 use app\models\trx\Payroll;
 use Yii;
+use yii\helpers\ArrayHelper;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ForbiddenHttpException;
@@ -27,12 +29,17 @@ class PayrollController extends BaseController
 
         $models = $query->all();
 
+        // Get company allowance structure for display
+        $company = Company::findOne($this->id_company);
+        $companyAllowances = $company ? ($company->allowance ?? []) : [];
+
         return $this->render('index', [
             'models' => $models,
             'month' => $month,
             'year' => $year,
             'periodStart' => $periodStart,
             'periodEnd' => $periodEnd,
+            'companyAllowances' => $companyAllowances,
         ]);
     }
 
@@ -42,6 +49,8 @@ class PayrollController extends BaseController
         $periodEnd = date('Y-m-t', strtotime($periodStart));
 
         $users = Account::find()->where(['id_company' => $this->id_company, 'status' => 1])->all();
+        $company = Company::findOne($this->id_company);
+        $companyAllowances = $company ? ($company->allowance ?? []) : [];
 
         foreach ($users as $user) {
             $exists = Payroll::find()->where([
@@ -57,11 +66,30 @@ class PayrollController extends BaseController
                 $payroll->period_start = $periodStart;
                 $payroll->period_end = $periodEnd;
                 $payroll->basic_salary = $user->basic_salary ?? 0;
-                $payroll->allowance = 0;
+
+                // Calculate total allowance from user's allowance data
+                $allowanceData = [];
+                $totalAllowance = 0;
+                if (!empty($user->allowance) && is_array($user->allowance)) {
+                    $userAllowance = ArrayHelper::index($user->allowance, 'uuid');
+                    foreach ($companyAllowances as $companyAllowance) {
+                        $uuid = $companyAllowance['uuid'];
+                        $value = $userAllowance[$uuid]['value'] ?? 0;
+                        $allowanceData[] = [
+                            'uuid' => $uuid,
+                            'name' => $companyAllowance['name'],
+                            'is_fixed' => $companyAllowance['is_fixed'],
+                            'value' => $value,
+                        ];
+                        $totalAllowance += $value;
+                    }
+                }
+                $payroll->allowance = $allowanceData;
+
                 $payroll->overtime = 0;
                 $payroll->dedection = 0;
                 $payroll->tax = 0;
-                $payroll->net_salary = $payroll->basic_salary;
+                $payroll->net_salary = $payroll->basic_salary + $totalAllowance;
                 $payroll->status = Payroll::STATUS_PENDING;
                 $payroll->id_user_generate = $this->user->id_user;
 
@@ -87,13 +115,69 @@ class PayrollController extends BaseController
             return ['success' => false, 'message' => 'Cannot update verified payroll.'];
         }
 
-        if (in_array($field, ['basic_salary', 'allowance', 'overtime', 'dedection', 'tax'])) {
+        // Handle allowance item updates
+        if (strpos($field, 'allowance_item_') === 0) {
+            $uuid = str_replace('allowance_item_', '', $field);
+            $allowanceData = $model->allowance ?? [];
+            if (is_string($allowanceData)) {
+                $allowanceData = json_decode($allowanceData, true) ?? [];
+            }
+            $allowanceIndexed = ArrayHelper::index($allowanceData, 'uuid');
+
+            if (isset($allowanceIndexed[$uuid])) {
+                $allowanceIndexed[$uuid]['value'] = intval($value);
+                $model->allowance = array_values($allowanceIndexed);
+
+                // Recalculate total allowance and net salary
+                $totalAllowance = 0;
+                $allowanceForCalc = $model->allowance;
+                if (is_string($allowanceForCalc)) {
+                    $allowanceForCalc = json_decode($allowanceForCalc, true) ?? [];
+                }
+                if (is_array($allowanceForCalc)) {
+                    foreach ($allowanceForCalc as $item) {
+                        $totalAllowance += $item['value'] ?? 0;
+                    }
+                }
+                $gross_salary = $model->basic_salary + $totalAllowance + $model->overtime;
+                $model->net_salary = $gross_salary - $model->dedection - $model->tax;
+
+                if ($model->save()) {
+                    return [
+                        'success' => true,
+                        'gross_salary' => $gross_salary,
+                        'gross_salary_formatted' => number_format($gross_salary, 0, ',', '.'),
+                        'net_salary' => $model->net_salary,
+                        'net_salary_formatted' => number_format($model->net_salary, 0, ',', '.'),
+                        'total_allowance' => $totalAllowance,
+                        'total_allowance_formatted' => number_format($totalAllowance, 0, ',', '.')
+                    ];
+                }
+            }
+        }
+
+        if (in_array($field, ['basic_salary', 'overtime', 'dedection', 'tax'])) {
             $model->$field = intval($value);
-            $model->net_salary = $model->basic_salary + $model->allowance + $model->overtime - $model->dedection - $model->tax;
+
+            // Recalculate net salary with total allowance
+            $totalAllowance = 0;
+            $allowanceForCalc = $model->allowance;
+            if (is_string($allowanceForCalc)) {
+                $allowanceForCalc = json_decode($allowanceForCalc, true) ?? [];
+            }
+            if (is_array($allowanceForCalc)) {
+                foreach ($allowanceForCalc as $item) {
+                    $totalAllowance += $item['value'] ?? 0;
+                }
+            }
+            $gross_salary = $model->basic_salary + $totalAllowance + $model->overtime;
+            $model->net_salary = $gross_salary - $model->dedection - $model->tax;
 
             if ($model->save()) {
                 return [
                     'success' => true,
+                    'gross_salary' => $gross_salary,
+                    'gross_salary_formatted' => number_format($gross_salary, 0, ',', '.'),
                     'net_salary' => $model->net_salary,
                     'net_salary_formatted' => number_format($model->net_salary, 0, ',', '.')
                 ];

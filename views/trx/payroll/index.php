@@ -4,6 +4,7 @@ use app\helpers\RoleHelper;
 use app\models\trx\Payroll;
 use yii\helpers\Html;
 use yii\helpers\Url;
+use yii\helpers\ArrayHelper;
 
 $this->title = 'Manajemen Payroll';
 $this->params['breadcrumbs'][] = $this->title;
@@ -64,11 +65,18 @@ $indonesianMonths = [
                             <th class="text-center" style="width: 50px;">#</th>
                             <th>Karyawan</th>
                             <th class="text-end">Gaji Pokok</th>
-                            <th class="text-end">Tunjangan</th>
+                            <?php if (!empty($companyAllowances)): ?>
+                                <?php foreach ($companyAllowances as $allowance): ?>
+                                    <th class="text-end"><?= Html::encode($allowance['name']) ?></th>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <th class="text-end">Tunjangan</th>
+                            <?php endif; ?>
                             <th class="text-end">Lembur</th>
-                            <th class="text-end">Potongan</th>
-                            <th class="text-end">Pajak</th>
-                            <th class="text-end">Gaji Bersih</th>
+                            <th class="text-end">Gross Salary</th>
+                            <!-- <th class="text-end">Potongan</th> -->
+                            <th class="text-end">PPh</th>
+                            <th class="text-end">Net Salary</th>
                             <th class="text-center">Status</th>
                             <th class="text-center" style="width: 120px;">Aksi</th>
                         </tr>
@@ -76,10 +84,19 @@ $indonesianMonths = [
                     <tbody>
                         <?php if (empty($models)): ?>
                             <tr>
-                                <td colspan="10" class="text-center py-4 text-muted">Data tidak ditemukan untuk periode ini. Klik "Generate Payroll" untuk memulai.</td>
+                                <td colspan="<?= 9 + count($companyAllowances) ?>" class="text-center py-4 text-muted">Data tidak ditemukan untuk periode ini. Klik "Generate Payroll" untuk memulai.</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($models as $index => $model): ?>
+                                <?php
+                                $allowanceData = $model->allowance ?? [];
+                                if (is_string($allowanceData)) {
+                                    $allowanceData = json_decode($allowanceData, true) ?? [];
+                                }
+                                $allowanceIndexed = ArrayHelper::index($allowanceData, 'uuid');
+                                $totalAllowance = 0;
+                                $gross_salary = $model->net_salary + $model->dedection + $model->tax;
+                                ?>
                                 <tr data-id="<?= $model->id_payroll ?>">
                                     <td class="text-center"><?= $index + 1 ?></td>
                                     <td>
@@ -87,39 +104,62 @@ $indonesianMonths = [
                                         <small class="text-muted"><?= Html::encode($model->user->employee_code ?? '') ?></small>
                                     </td>
                                     <td class="text-end p-0">
-                                        <input type="text" 
-                                               class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money" 
-                                               data-field="basic_salary" 
+                                        <input type="text"
+                                               class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money"
+                                               data-field="basic_salary"
                                                value="<?= number_format($model->basic_salary, 0, ',', '.') ?>"
                                                <?= $model->status !== Payroll::STATUS_PENDING ? 'disabled' : '' ?>>
                                     </td>
+                                    <?php if (!empty($companyAllowances)): ?>
+                                        <?php foreach ($companyAllowances as $allowance): ?>
+                                            <?php
+                                            $uuid = $allowance['uuid'];
+                                            $value = $allowanceIndexed[$uuid]['value'] ?? 0;
+                                            $totalAllowance += $value;
+                                            ?>
+                                            <td class="text-end p-0">
+                                                <input type="text"
+                                                       class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money"
+                                                       data-field="allowance_item_<?= $uuid ?>"
+                                                       value="<?= number_format($value, 0, ',', '.') ?>"
+                                                       <?= $model->status !== Payroll::STATUS_PENDING ? 'disabled' : '' ?>>
+                                            </td>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <td class="text-end p-0">
+                                            <input type="text"
+                                                   class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money"
+                                                   data-field="allowance"
+                                                   value="0"
+                                                   disabled>
+                                        </td>
+                                    <?php endif; ?>
                                     <td class="text-end p-0">
-                                        <input type="text" 
-                                               class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money" 
-                                               data-field="allowance" 
-                                               value="<?= number_format($model->allowance, 0, ',', '.') ?>"
-                                               <?= $model->status !== Payroll::STATUS_PENDING ? 'disabled' : '' ?>>
-                                    </td>
-                                    <td class="text-end p-0">
-                                        <input type="text" 
-                                               class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money" 
-                                               data-field="overtime" 
+                                        <input type="text"
+                                               class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money"
+                                               data-field="overtime"
                                                value="<?= number_format($model->overtime, 0, ',', '.') ?>"
                                                <?= $model->status !== Payroll::STATUS_PENDING ? 'disabled' : '' ?>>
                                     </td>
-                                    <td class="text-end p-0">
-                                        <input type="text" 
-                                               class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money" 
-                                               data-field="dedection" 
+                                    <td class="text-end gross-salary-cell money" data-value="<?= $gross_salary ?>">
+                                        <?= number_format($gross_salary, 0, ',', '.') ?>
+                                    </td>
+                                    <!-- <td class="text-end p-0">
+                                        <input type="text"
+                                               class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money"
+                                               data-field="dedection"
                                                value="<?= number_format($model->dedection, 0, ',', '.') ?>"
                                                <?= $model->status !== Payroll::STATUS_PENDING ? 'disabled' : '' ?>>
-                                    </td>
-                                    <td class="text-end p-0">
-                                        <input type="text" 
-                                               class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money" 
-                                               data-field="tax" 
+                                    </td> -->
+                                    <!-- <td class="text-end p-0">
+                                        <input type="text"
+                                               class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money"
+                                               data-field="tax"
                                                value="<?= number_format($model->tax, 0, ',', '.') ?>"
                                                <?= $model->status !== Payroll::STATUS_PENDING ? 'disabled' : '' ?>>
+                                    </td> -->
+                                    <td class="text-end tax-cell money" data-value="<?= $model->tax ?>">
+                                        <?= number_format($model->tax, 0, ',', '.') ?>
                                     </td>
                                     <td class="text-end fw-bold net-salary-cell" data-value="<?= $model->net_salary ?>">
                                         <?= number_format($model->net_salary, 0, ',', '.') ?>
@@ -221,6 +261,7 @@ $(function() {
             success: function(response) {
                 if (response.success) {
                     row.find('.net-salary-cell').text(response.net_salary_formatted).data('value', response.net_salary);
+                    row.find('.gross-salary-cell').text(response.gross_salary_formatted).data('value', response.gross_salary);
                     input.addClass('is-valid');
                     setTimeout(() => input.removeClass('is-valid'), 1000);
                 } else {

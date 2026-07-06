@@ -7,8 +7,10 @@ use Yii;
 use app\controllers\BaseController;
 use app\helpers\GeneralHelper;
 use app\models\master\Account;
+use app\models\master\Company;
 use app\models\master\search\AccountSearch;
 use yii\bootstrap5\Html;
+use yii\helpers\ArrayHelper;
 use yii\web\NotFoundHttpException;
 
 /**
@@ -55,9 +57,20 @@ class UserController extends BaseController
      */
     public function actionProcess($id = null)
     {
+        // Get company allowance structure
+        $company = Company::findOne($this->id_company);
+        $companyAllowances = $company ? ($company->allowance ?? []) : [];
+
         $model = null;
         if ($id) {
             $model = $this->findModel($id);
+
+            if ($model->allowance) {
+                $userAllowance = ArrayHelper::index($model->allowance, 'uuid');
+                foreach ($companyAllowances as $v) {
+                    $model->allowance_items[$v['uuid']] = $userAllowance[$v['uuid']]['value'] ?? null;
+                }
+            }
         }
 
         if (!$model) {
@@ -88,6 +101,32 @@ class UserController extends BaseController
                     $model->password = $oldModel->password;
                 }
 
+                // Handle allowance data
+                $allowanceData = [];
+                $fixedAllowanceTotal = 0;
+
+                if (isset($postData['allowance_items']) && is_array($postData['allowance_items'])) {
+                    foreach ($companyAllowances as $companyAllowance) {
+                        $uuid = $companyAllowance['uuid'];
+                        $value = isset($postData['allowance_items'][$uuid]) ? (int) $postData['allowance_items'][$uuid] : 0;
+                        $allowanceData[] = [
+                            'uuid' => $uuid,
+                            'name' => $companyAllowance['name'],
+                            'is_fixed' => $companyAllowance['is_fixed'],
+                            'value' => $value,
+                        ];
+
+                        // Sum fixed allowances for hourly rate calculation
+                        if ($companyAllowance['is_fixed'] == '1') {
+                            $fixedAllowanceTotal += $value;
+                        }
+                    }
+                }
+                $model->allowance = $allowanceData;
+
+                // Calculate hourly rate: (basic_salary + fixed_allowances) / DIV_HOURLY_RATE
+                $model->hourly_rate = (int) (($model->basic_salary + $fixedAllowanceTotal) / GeneralHelper::DIV_HOURLY_RATE);
+
                 if ($model->save()) {
                     if (!$isNewRecord) {
                         AuthAssignment::deleteAll(['user_id' => $model->id_user]);
@@ -111,6 +150,7 @@ class UserController extends BaseController
         return $this->render('process', [
             'model' => $model,
             'modelAuthAssignment' => $modelAuthAssignment,
+            'companyAllowances' => $companyAllowances,
         ]);
     }
 

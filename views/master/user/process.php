@@ -11,6 +11,7 @@ use yii\helpers\ArrayHelper;
 
 /** @var yii\web\View $this */
 /** @var app\models\master\Account $model */
+/** @var array $companyAllowances */
 
 $this->title = $model->isNewRecord ? 'Tambah User' : 'Ubah User';
 $this->params['breadcrumbs'][] = ['label' => 'Data User', 'url' => ['index']];
@@ -54,6 +55,10 @@ $positions = ArrayHelper::map(Position::find()->where(['id_company' => $controll
 
         <?= $form->field($model, 'id_position')->dropDownList($positions, ['prompt' => '- Pilih Jabatan -']) ?>
 
+        <?= $form->field($model, 'join_date')->textInput(['type' => 'date']) ?>
+
+        <?= $form->field($model, 'status')->dropDownList([1 => 'Active', 0 => 'Inactive'], ['class' => 'form-select w-50']) ?>
+
         <?= $form->field($model, 'basic_salary')->widget(NumberControl::classname(), [
             'maskedInputOptions' => [
                 'prefix' => '',
@@ -69,9 +74,27 @@ $positions = ArrayHelper::map(Position::find()->where(['id_company' => $controll
             ],
         ]) ?>
 
-        <?= $form->field($model, 'join_date')->textInput(['type' => 'date']) ?>
+        <?php
+        if (!empty($companyAllowances)):
+            foreach ($companyAllowances as $allowance):
+                echo $form->field($model, 'allowance_items[' . $allowance['uuid'] . ']')->widget(NumberControl::classname(), [
+                    'maskedInputOptions' => [
+                        'prefix' => '',
+                        'suffix' => '',
+                        'allowNegative' => false,
+                        'groupSeparator' => '.',
+                        'radixPoint' => ',',
+                        'digits' => 0,
+                        'rightAlign' => false,
+                    ],
+                    'displayOptions' => [
+                         'placeholder' => $allowance['name'],
+                    ],
+                ])->label($allowance['name']);
+            endforeach;
+        endif;
+        ?>
 
-        <?= $form->field($model, 'status')->dropDownList([1 => 'Active', 0 => 'Inactive'], ['class' => 'form-select w-50']) ?>
 
         <div class="form-group text-end mt-5 pt-3 border-top">
             <?= Html::a('<i class="fas fa-times me-1"></i> Batal', ['index'], ['class' => 'btn btn-light px-4 me-2 border']) ?>

@@ -48,6 +48,7 @@ use yii\helpers\ArrayHelper;
 class Account extends BaseModel
 {
 
+    public $allowance_items;
     /**
      * {@inheritdoc}
      */
@@ -71,7 +72,7 @@ class Account extends BaseModel
             [['email'], 'unique'],
             [['password', 'token'], 'string'],
             [['allowance'], 'default', 'value' => []],
-            [['allowance', 'created_at', 'updated_at'], 'safe'],
+            [['allowance', 'allowance_items', 'created_at', 'updated_at'], 'safe'],
             [['name', 'email', 'join_date', 'employee_code', 'phone'], 'string', 'max' => 255],
             [['id_client'], 'exist', 'skipOnError' => true, 'targetClass' => Company::class, 'targetAttribute' => ['id_client' => 'id_client']],
             [['id_company'], 'exist', 'skipOnError' => true, 'targetClass' => Company::class, 'targetAttribute' => ['id_company' => 'id_company']],

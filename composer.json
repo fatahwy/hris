@@ -41,7 +41,6 @@
         "kartik-v/yii2-widget-select2": "dev-master",
         "kartik-v/yii2-widget-typeahead": "dev-master",
         "kartik-v/yii2-widget-timepicker": "dev-master",
-        "kartik-v/yii2-inputmask": "^1.0",
         "mdmsoft/yii2-admin": "~2.0",
         "kartik-v/yii2-bootstrap5-dropdown": "^1.0",
         "kartik-v/yii2-widget-growl": "^1.1",

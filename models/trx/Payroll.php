@@ -17,7 +17,7 @@ use Yii;
  * @property string $period_start
  * @property string $period_end
  * @property int $basic_salary
- * @property int $allowance
+ * @property string|null $allowance
  * @property int $overtime
  * @property int $dedection
  * @property int $tax
@@ -61,9 +61,10 @@ class Payroll extends BaseModel
         return [
             [['net_salary'], 'default', 'value' => 0],
             [['id_company', 'id_user', 'period_start', 'period_end', 'status'], 'required'],
-            [['id_company', 'id_user', 'basic_salary', 'allowance', 'overtime', 'dedection', 'tax', 'net_salary', 'id_user_generate', 'id_user_verify', 'id_user_approve'], 'integer'],
+            [['id_company', 'id_user', 'basic_salary', 'overtime', 'dedection', 'tax', 'net_salary', 'id_user_generate', 'id_user_verify', 'id_user_approve'], 'integer'],
             [['period_start', 'period_end', 'user_verify_at', 'user_approve_at', 'created_at', 'updated_at'], 'safe'],
             [['status'], 'string'],
+            [['allowance'], 'safe'],
             ['status', 'in', 'range' => array_keys(self::optsStatus())],
             [['id_company'], 'exist', 'skipOnError' => true, 'targetClass' => Company::class, 'targetAttribute' => ['id_company' => 'id_company']],
             [['id_user'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['id_user' => 'id_user']],
