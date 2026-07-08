@@ -1,5 +1,7 @@
 <?php
 
+use app\helpers\GeneralHelper;
+use app\models\master\Shift;
 use kartik\select2\Select2;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
@@ -17,11 +19,7 @@ $this->params['breadcrumbs'][] = $this->title;
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js', ['position' => \yii\web\View::POS_END, 'depends' => [\yii\web\JqueryAsset::class]]);
 
 $userList = ArrayHelper::map($users, 'id_user', 'name');
-$shiftList = [];
-foreach ($shifts as $shift) {
-    $shiftList[$shift->id_shift] = "{$shift->name} ({$shift->workhour_start}-{$shift->workhour_end})";
-}
-
+$shifts = Shift::getList();
 ?>
 
 <div class="schedule-index">
@@ -46,12 +44,15 @@ foreach ($shifts as $shift) {
                     <?= Select2::widget([
                         'name' => 'shift_id',
                         'id' => 'select-shift',
-                        'data' => $shiftList,
+                        'data' => $shifts,
                         'options' => ['placeholder' => 'Pilih'],
                         'pluginOptions' => [
                             'allowClear' => true
                         ],
                     ]) ?>
+                </div>
+                <div class="col-md-4 text-end">
+                    <?= Html::a(GeneralHelper::faAdd('Lembur'), ['overtime'], ['class' => 'btn btn-primary']) ?>
                 </div>
             </div>
         </div>
@@ -158,6 +159,14 @@ jQuery(function($) {
         },
         events: function(fetchInfo, successCallback, failureCallback) {
             var userId = selectUser.val();
+            Swal.fire({
+                title: 'Loading...',
+                text: 'Memuat jadwal',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
             $.ajax({
                 url: '{$listUrl}',
                 dataType: 'json',
@@ -167,9 +176,11 @@ jQuery(function($) {
                     end: fetchInfo.endStr
                 },
                 success: function(data) {
+                    Swal.close();
                     successCallback(data);
                 },
                 error: function() {
+                    Swal.close();
                     failureCallback();
                 }
             });
@@ -179,14 +190,22 @@ jQuery(function($) {
             var shiftId = selectShift.val();
 
             if (!userId) {
-                Swal.fire('Error', 'Please select a User first', 'error');
+                Swal.fire('Error', 'Pilih pegawai terlebih dahulu', 'error');
                 return;
             }
             if (!shiftId) {
-                Swal.fire('Error', 'Please select a Shift first', 'error');
+                Swal.fire('Error', 'Pilih shift terlebih dahulu', 'error');
                 return;
             }
 
+            Swal.fire({
+                title: 'Loading...',
+                text: 'Membuat jadwal',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
             $.ajax({
                 url: '{$createUrl}',
                 type: 'POST',
@@ -197,26 +216,39 @@ jQuery(function($) {
                     _csrf: yii.getCsrfToken()
                 },
                 success: function(response) {
+                    Swal.close();
                     if (response.success) {
                         calendar.refetchEvents();
                         Swal.fire('Success', response.message, 'success');
                     } else {
                         Swal.fire('Error', response.message, 'error');
                     }
+                },
+                error: function() {
+                    Swal.close();
+                    Swal.fire('Error', 'Terjadi kesalahan', 'error');
                 }
             });
         },
         eventClick: function(info) {
             Swal.fire({
-                title: 'Delete Schedule?',
-                text: "Are you sure you want to delete this schedule?",
+                title: 'Hapus Jadwal?',
+                text: "Apakah anda yakin menghapus jadwal ini?",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!'
+                confirmButtonText: 'Ya'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Loading...',
+                        text: 'Menghapus jadwal',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
                     $.ajax({
                         url: '{$deleteUrl}',
                         type: 'POST',
@@ -225,12 +257,17 @@ jQuery(function($) {
                             _csrf: yii.getCsrfToken()
                         },
                         success: function(response) {
+                            Swal.close();
                             if (response.success) {
                                 info.event.remove();
                                 Swal.fire('Deleted!', response.message, 'success');
                             } else {
                                 Swal.fire('Error', response.message, 'error');
                             }
+                        },
+                        error: function() {
+                            Swal.close();
+                            Swal.fire('Error', 'Terjadi kesalahan', 'error');
                         }
                     });
                 }

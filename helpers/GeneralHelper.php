@@ -23,6 +23,7 @@ class GeneralHelper extends \mdm\admin\components\Helper
     const SUBMIT_ACT = 'SUBMIT_ACT';
     const SUBMIT_SAVE = 'SUBMIT_SAVE';
     const DIV_HOURLY_RATE = 173;
+    const ID_OVERTIME = 1;
 
     //    GENERAL HELPER =========
 

@@ -33,6 +33,7 @@ use Yii;
  * @property string|null $checkout_photo
  * @property string|null $created_at
  * @property string|null $updated_at
+ * @property boolean $is_overtime
  *
  * @property Company $company
  * @property Shift $shift
@@ -59,6 +60,7 @@ class Schedule extends BaseModel
             [['checkin_datetime', 'checkin_lat', 'checkin_long', 'checkin_photo', 'checkout_datetime', 'checkout_lat', 'checkout_long', 'checkout_photo'], 'default', 'value' => null],
             [['id_company', 'id_user', 'id_shift', 'date', 'shift_name', 'checkin_start', 'workhour_start', 'workhour_end', 'status'], 'required'],
             [['id_company', 'id_user', 'id_shift'], 'integer'],
+            [['is_overtime'], 'boolean'],
             [['date', 'checkin_start', 'workhour_start', 'workhour_end', 'checkin_datetime', 'checkout_datetime', 'created_at', 'updated_at'], 'safe'],
             [['shift_name', 'checkin_lat', 'checkin_long', 'checkin_photo', 'checkout_lat', 'checkout_long', 'checkout_photo'], 'string', 'max' => 255],
             [['status'], 'string', 'max' => 45],
@@ -94,6 +96,7 @@ class Schedule extends BaseModel
             'checkout_photo' => 'Checkout Photo',
             'created_at' => 'Tgl Buat',
             'updated_at' => 'Tgl Update',
+            'is_overtime' => 'Overtime',
         ];
     }
 

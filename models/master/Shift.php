@@ -96,8 +96,11 @@ class Shift extends BaseModel
     public static function getList()
     {
         $models = self::getQueryByCompany()
+            ->andWhere(['!=', 'id_shift', 1])
             ->all();
 
-        return ArrayHelper::map($models, 'id_shift', 'name');
+        return ArrayHelper::map($models, 'id_shift', function($m) {
+            return "{$m->name} ({$m->workhour_start}-{$m->workhour_end})";
+        });
     }
 }
