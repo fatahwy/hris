@@ -63,7 +63,8 @@ $indonesianMonths = [
                     <thead class="table-light">
                         <tr>
                             <th class="text-center" style="width: 50px;">#</th>
-                            <th>Karyawan</th>
+                            <th>Pegawai</th>
+                            <th>Status</th>
                             <th class="text-end">Gaji Pokok</th>
                             <?php if (!empty($companyAllowances)): ?>
                                 <?php foreach ($companyAllowances as $allowance): ?>
@@ -75,6 +76,7 @@ $indonesianMonths = [
                             <th class="text-end">Lembur</th>
                             <th class="text-end">Gross Salary</th>
                             <!-- <th class="text-end">Potongan</th> -->
+                            <th class="text-end">TER</th>
                             <th class="text-end">PPh</th>
                             <th class="text-end">Net Salary</th>
                             <th class="text-center">Status</th>
@@ -95,7 +97,6 @@ $indonesianMonths = [
                                 }
                                 $allowanceIndexed = ArrayHelper::index($allowanceData, 'uuid');
                                 $totalAllowance = 0;
-                                $gross_salary = $model->net_salary + $model->dedection + $model->tax;
                                 ?>
                                 <tr data-id="<?= $model->id_payroll ?>">
                                     <td class="text-center"><?= $index + 1 ?></td>
@@ -103,12 +104,9 @@ $indonesianMonths = [
                                         <div class="fw-bold text-uppercase"><?= Html::encode($model->user->name ?? '-') ?></div>
                                         <small class="text-muted"><?= Html::encode($model->user->employee_code ?? '') ?></small>
                                     </td>
-                                    <td class="text-end p-0">
-                                        <input type="text"
-                                               class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money"
-                                               data-field="basic_salary"
-                                               value="<?= number_format($model->basic_salary, 0, ',', '.') ?>"
-                                               <?= $model->status !== Payroll::STATUS_PENDING ? 'disabled' : '' ?>>
+                                    <td><?= $model->ptkp?:'-' ?></td>
+                                    <td class="text-end">
+                                        <?= number_format($model->basic_salary, 0, ',', '.') ?>
                                     </td>
                                     <?php if (!empty($companyAllowances)): ?>
                                         <?php foreach ($companyAllowances as $allowance): ?>
@@ -117,32 +115,26 @@ $indonesianMonths = [
                                             $value = $allowanceIndexed[$uuid]['value'] ?? 0;
                                             $totalAllowance += $value;
                                             ?>
-                                            <td class="text-end p-0">
-                                                <input type="text"
+                                            <td class="text-end">
+                                                <?= number_format($value, 0, ',', '.') ?>
+                                                <!-- <input type="text"
                                                        class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money"
                                                        data-field="allowance_item_<?= $uuid ?>"
-                                                       value="<?= number_format($value, 0, ',', '.') ?>"
-                                                       <?= $model->status !== Payroll::STATUS_PENDING ? 'disabled' : '' ?>>
+                                                       value=""
+                                                       <?= $model->status !== Payroll::STATUS_PENDING ? 'disabled' : '' ?>> -->
                                             </td>
                                         <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <td class="text-end p-0">
-                                            <input type="text"
-                                                   class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money"
-                                                   data-field="allowance"
-                                                   value="0"
-                                                   disabled>
-                                        </td>
                                     <?php endif; ?>
                                     <td class="text-end p-0">
-                                        <input type="text"
+                                        <?= number_format($model->overtime, 0, ',', '.') ?>
+                                        <!-- <input type="text"
                                                class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money"
                                                data-field="overtime"
                                                value="<?= number_format($model->overtime, 0, ',', '.') ?>"
-                                               <?= $model->status !== Payroll::STATUS_PENDING ? 'disabled' : '' ?>>
+                                               <?= $model->status !== Payroll::STATUS_PENDING ? 'disabled' : '' ?>> -->
                                     </td>
-                                    <td class="text-end gross-salary-cell money" data-value="<?= $gross_salary ?>">
-                                        <?= number_format($gross_salary, 0, ',', '.') ?>
+                                    <td class="text-end gross-salary-cell money" data-value="<?= $model->gross_salary ?>">
+                                        <?= number_format($model->gross_salary, 0, ',', '.') ?>
                                     </td>
                                     <!-- <td class="text-end p-0">
                                         <input type="text"
@@ -158,6 +150,7 @@ $indonesianMonths = [
                                                value="<?= number_format($model->tax, 0, ',', '.') ?>"
                                                <?= $model->status !== Payroll::STATUS_PENDING ? 'disabled' : '' ?>>
                                     </td> -->
+                                    <td><?= $model->ter ? $model->ter*100 : 0 ?>%</td>
                                     <td class="text-end tax-cell money" data-value="<?= $model->tax ?>">
                                         <?= number_format($model->tax, 0, ',', '.') ?>
                                     </td>
@@ -199,7 +192,7 @@ $indonesianMonths = [
 </div>
 
 <style>
-    .payroll-input:focus {
+    .payroll-input {
         background-color: #fff !important;
         box-shadow: inset 0 0 0 1px #0d6efd;
         border-radius: 0;

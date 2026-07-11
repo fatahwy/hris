@@ -44,8 +44,19 @@ class UserController extends BaseController
      */
     public function actionView($id)
     {
-        return $this->render('view', [
-            'model' => $this->findModel($id),
+        $model = $this->findModel($id);
+        $companyAllowances = $model->allowance ?? [];
+
+        if ($companyAllowances) {
+            foreach ($companyAllowances as $v) {
+                $model->allowance_items[$v['uuid']] = $v['value'] ?? null;
+            }
+        }
+
+        return $this->render('@app/views/master/user/process', [
+            'title' => 'User',
+            'model' => $model,
+            'companyAllowances' => $companyAllowances,
         ]);
     }
 

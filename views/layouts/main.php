@@ -37,7 +37,7 @@ if (!Yii::$app->user->isGuest && !Yii::$app->request->isAjax) {
         }
 
         // 2. Check if user needs a checkout warning
-        $checkoutAlertSchedule = Schedule::getActiveScheduleToClockOut();
+        $checkoutAlertSchedule = $pendingCheckin ? Schedule::getActiveScheduleToClockOut() : null;
     }
 }
 
@@ -759,8 +759,10 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
         <div class="sidebar-footer d-md-none border-top border-white-10 p-3">
             <div class="d-flex align-items-center justify-content-between">
-                <a href="<?= Url::to(['/site/profile']) ?>" class="d-flex align-items-center gap-2 text-white text-decoration-none user-profile-link">
-                    <div class="user-avatar bg-white text-primary" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                <a href="<?= Url::to(['/site/profile']) ?>"
+                    class="d-flex align-items-center gap-2 text-white text-decoration-none user-profile-link">
+                    <div class="user-avatar bg-white text-primary"
+                        style="width: 32px; height: 32px; font-size: 0.8rem;">
                         <?= strtoupper(substr($user->name ?? '', 0, 1)) ?>
                     </div>
                     <div class="d-flex flex-column" style="max-width: 120px;">
@@ -867,7 +869,8 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                         <div>
                             <strong>Peringatan Checkout!</strong> Jam kerja shift Anda
                             (<?= Html::encode($checkoutAlertSchedule->shift_name) ?>) telah berakhir pada pukul
-                            <?= date('H:i', strtotime($checkoutAlertSchedule->workhour_end)) ?>. Harap segera lakukan checkout kehadiran.
+                            <?= date('H:i', strtotime($checkoutAlertSchedule->workhour_end)) ?>. Harap segera lakukan
+                            checkout kehadiran.
                         </div>
                     </div>
                     <div class="ms-5 ms-md-0 me-md-4">

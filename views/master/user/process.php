@@ -1,6 +1,7 @@
 <?php
 
 use app\models\AuthItem;
+use app\models\master\Account;
 use app\models\master\Department;
 use app\models\master\Position;
 use kartik\form\ActiveForm;
@@ -14,10 +15,10 @@ use yii\helpers\ArrayHelper;
 /** @var array $companyAllowances */
 
 $currentPath = Yii::$app->request->pathInfo;
-$isProfile = in_array($currentPath, ['site/profile']);
+$isProfile = in_array($currentPath, ['site/profile', 'master/user/view']);
 
 if ($isProfile) {
-    $this->title = "Profile";
+    $this->title = $title ?? "Profile";
     $this->registerCss("
         .profile .form-control:disabled {
             background-color: inherit !important;
@@ -89,6 +90,18 @@ $positions = ArrayHelper::map(Position::find()->where(['id_company' => $controll
                 'disabled' => $isProfile,
             ],
         ]) ?>
+
+        <?=
+            $isProfile ?
+            $form->field($model, 'ptkp')->textInput(['disabled' => true])
+            : $form->field($model, 'ptkp')->widget(Select2::classname(), [
+                'data' => Account::listPtkp(true),
+                'options' => ['placeholder' => $isProfile ? '-' : '- Pilih PTKP -'],
+                'pluginOptions' => [
+                    'allowClear' => true,
+                ],
+            ])
+            ?>
 
         <?php
         if (!empty($companyAllowances)):

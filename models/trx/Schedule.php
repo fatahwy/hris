@@ -34,6 +34,7 @@ use Yii;
  * @property string|null $created_at
  * @property string|null $updated_at
  * @property boolean $is_overtime
+ * @property int $total_workhour
  *
  * @property Company $company
  * @property Shift $shift
@@ -59,7 +60,7 @@ class Schedule extends BaseModel
         return [
             [['checkin_datetime', 'checkin_lat', 'checkin_long', 'checkin_photo', 'checkout_datetime', 'checkout_lat', 'checkout_long', 'checkout_photo'], 'default', 'value' => null],
             [['id_company', 'id_user', 'id_shift', 'date', 'shift_name', 'checkin_start', 'workhour_start', 'workhour_end', 'status'], 'required'],
-            [['id_company', 'id_user', 'id_shift'], 'integer'],
+            [['id_company', 'id_user', 'id_shift', 'total_workhour'], 'integer'],
             [['is_overtime'], 'boolean'],
             [['date', 'checkin_start', 'workhour_start', 'workhour_end', 'checkin_datetime', 'checkout_datetime', 'created_at', 'updated_at'], 'safe'],
             [['shift_name', 'checkin_lat', 'checkin_long', 'checkin_photo', 'checkout_lat', 'checkout_long', 'checkout_photo'], 'string', 'max' => 255],
@@ -187,6 +188,17 @@ class Schedule extends BaseModel
 
         return $schedule;
 
+    }
+
+    public function beforeSubmit()
+    {
+        if ($this->total_workhour == 0 && !empty($this->checkin_datetime) && !empty($this->checkout_datetime)) {
+            $start = strtotime($this->workhour_start);
+            $end = strtotime($this->workhour_end);
+            $diffInSeconds = $end - $start;
+            $this->total_workhour = round($diffInSeconds / 3600);
+        }
+        return true;
     }
 
 }

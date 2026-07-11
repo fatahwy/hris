@@ -31,7 +31,7 @@ $userList = ArrayHelper::map($users, 'id_user', 'name');
                         'class' => 'form-check-input',
                         'checked' => true,
                     ]) ?>
-                    <?= Html::label('Long Shift', 'is_long_shift', ['class' => 'form-check-label fw-bold']) ?>
+                    <?= Html::label('Hari Libur/Weekend', 'is_long_shift', ['class' => 'form-check-label fw-bold']) ?>
                 </div>
             </div>
         </div>

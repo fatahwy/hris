@@ -71,6 +71,7 @@ class Account extends BaseModel
             [['id_client', 'id_company', 'status', 'id_department', 'id_position', 'basic_salary', 'is_online', 'hourly_rate'], 'integer'],
             [['email'], 'unique'],
             [['password', 'token'], 'string'],
+            [['ptkp'], 'validatePtkp'],
             [['allowance'], 'default', 'value' => []],
             [['allowance', 'allowance_items', 'created_at', 'updated_at'], 'safe'],
             [['name', 'email', 'join_date', 'employee_code', 'phone'], 'string', 'max' => 255],
@@ -79,6 +80,16 @@ class Account extends BaseModel
             [['id_department'], 'exist', 'skipOnError' => true, 'targetClass' => Department::class, 'targetAttribute' => ['id_department' => 'id_department']],
             [['id_position'], 'exist', 'skipOnError' => true, 'targetClass' => Position::class, 'targetAttribute' => ['id_position' => 'id_position']],
         ];
+    }
+
+    public function validatePtkp($attribute, $params)
+    {
+        if ($this->$attribute !== null) {
+            $validValues = array_keys(self::listPtkp());
+            if (!in_array($this->$attribute, $validValues)) {
+                $this->addError($attribute, 'Kode status PTKP harus sesuai dengan kode berikut: ' . implode(', ', $validValues));
+            }
+        }
     }
 
     /**
@@ -101,6 +112,7 @@ class Account extends BaseModel
             'id_position' => 'Jabatan',
             'basic_salary' => 'Gaji Pokok',
             'is_online' => 'Online',
+            'ptkp' => 'Status PTKP',
             'created_at' => 'Tgl Buat',
             'updated_at' => 'Tgl Update',
         ];
@@ -223,4 +235,26 @@ class Account extends BaseModel
 
         return ArrayHelper::map($models, 'id_user', 'name');
     }
+
+    public static function listPtkp($pairKey = false)
+    {
+        $kategoriPtkp = [
+            'TK' => 'A',
+            'TK/1' => 'A',
+            'K/0' => 'A',
+            'TK/2' => 'B',
+            'TK/3' => 'B',
+            'K/1' => 'B',
+            'K/2' => 'B',
+            'K/3' => 'C',
+        ];
+
+        if ($pairKey) {
+            $kategoriPtkp = array_keys($kategoriPtkp);
+            $kategoriPtkp = array_combine($kategoriPtkp, $kategoriPtkp);
+        }
+
+        return $kategoriPtkp;
+    }
+
 }

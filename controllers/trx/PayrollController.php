@@ -66,6 +66,7 @@ class PayrollController extends BaseController
                 $payroll->period_start = $periodStart;
                 $payroll->period_end = $periodEnd;
                 $payroll->basic_salary = $user->basic_salary ?? 0;
+                $payroll->ptkp = $user->ptkp ?: null;
 
                 // Calculate total allowance from user's allowance data
                 $allowanceData = [];
@@ -88,11 +89,14 @@ class PayrollController extends BaseController
 
                 $payroll->overtime = 0;
                 $payroll->dedection = 0;
-                $payroll->tax = 0;
-                $payroll->net_salary = $payroll->basic_salary + $totalAllowance;
+
+                $payroll->gross_salary = $payroll->basic_salary + $totalAllowance;
+                $payroll->ter = Payroll::getTER(Account::listPtkp()[$payroll->ptkp] ?? null, $payroll->gross_salary);
+                $payroll->tax = $payroll->gross_salary * $payroll->ter;
+
+                $payroll->net_salary = $payroll->gross_salary - $payroll->tax;
                 $payroll->status = Payroll::STATUS_PENDING;
                 $payroll->id_user_generate = $this->user->id_user;
-
                 if (!$payroll->save()) {
                     Yii::error("Failed to save payroll for user {$user->id_user}: " . json_encode($payroll->errors));
                 }
@@ -139,14 +143,14 @@ class PayrollController extends BaseController
                         $totalAllowance += $item['value'] ?? 0;
                     }
                 }
-                $gross_salary = $model->basic_salary + $totalAllowance + $model->overtime;
-                $model->net_salary = $gross_salary - $model->dedection - $model->tax;
+                $model->gross_salary = $model->basic_salary + $totalAllowance + $model->overtime;
+                $model->net_salary = $model->gross_salary - $model->dedection - $model->tax;
 
                 if ($model->save()) {
                     return [
                         'success' => true,
-                        'gross_salary' => $gross_salary,
-                        'gross_salary_formatted' => number_format($gross_salary, 0, ',', '.'),
+                        'gross_salary' => $model->gross_salary,
+                        'gross_salary_formatted' => number_format($model->gross_salary, 0, ',', '.'),
                         'net_salary' => $model->net_salary,
                         'net_salary_formatted' => number_format($model->net_salary, 0, ',', '.'),
                         'total_allowance' => $totalAllowance,
@@ -170,14 +174,14 @@ class PayrollController extends BaseController
                     $totalAllowance += $item['value'] ?? 0;
                 }
             }
-            $gross_salary = $model->basic_salary + $totalAllowance + $model->overtime;
-            $model->net_salary = $gross_salary - $model->dedection - $model->tax;
+            $model->gross_salary = $model->basic_salary + $totalAllowance + $model->overtime;
+            $model->net_salary = $model->gross_salary - $model->dedection - $model->tax;
 
             if ($model->save()) {
                 return [
                     'success' => true,
-                    'gross_salary' => $gross_salary,
-                    'gross_salary_formatted' => number_format($gross_salary, 0, ',', '.'),
+                    'gross_salary' => $model->gross_salary,
+                    'gross_salary_formatted' => number_format($model->gross_salary, 0, ',', '.'),
                     'net_salary' => $model->net_salary,
                     'net_salary_formatted' => number_format($model->net_salary, 0, ',', '.')
                 ];
@@ -187,40 +191,51 @@ class PayrollController extends BaseController
         return ['success' => false, 'message' => 'Failed to update.'];
     }
 
-    public function actionVerify($id)
+    public function actionVerify()
     {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        $model = $this->findModel($id);
+        $id = $this->request->post('id');
 
-        if ($model->status === 'PENDING') {
-            $model->status = Payroll::STATUS_DRAFT;
-            $model->id_user_verify = $this->user->id_user;
-            $model->user_verify_at = DBHelper::now();
-            if ($model->save()) {
-                return ['success' => true];
+        if ($id) {
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            $model = $this->findModel($id);
+
+            if ($model->status === Payroll::STATUS_PENDING) {
+                $model->status = Payroll::STATUS_DRAFT;
+                $model->id_user_verify = $this->user->id_user;
+                $model->user_verify_at = DBHelper::now();
+                if ($model->save()) {
+                    return ['success' => true];
+                }
             }
+        } else {
+            return ['success' => false, 'message' => 'ID payroll tidak ditemukan.'];
         }
 
         return ['success' => false, 'message' => 'Verification failed.'];
     }
 
-    public function actionApprove($id)
+    public function actionApprove()
     {
-        Yii::$app->response->format = Response::FORMAT_JSON;
+        $id = $this->request->post('id');
+        if ($id) {
+            Yii::$app->response->format = Response::FORMAT_JSON;
 
-        if (!RoleHelper::approvalPayroll()) {
-            throw new ForbiddenHttpException('You do not have permission to approve payroll.');
-        }
-
-        $model = $this->findModel($id);
-
-        if ($model->status === Payroll::STATUS_DRAFT) {
-            $model->status = Payroll::STATUS_APPROVE;
-            $model->id_user_approve = $this->user->id_user;
-            $model->user_approve_at = DBHelper::now();
-            if ($model->save()) {
-                return ['success' => true];
+            if (!RoleHelper::approvalPayroll()) {
+                throw new ForbiddenHttpException('You do not have permission to approve payroll.');
             }
+
+            $model = $this->findModel($id);
+
+            if ($model->status === Payroll::STATUS_DRAFT) {
+                $model->status = Payroll::STATUS_APPROVE;
+                $model->id_user_approve = $this->user->id_user;
+                $model->user_approve_at = DBHelper::now();
+                if ($model->save()) {
+                    return ['success' => true];
+                }
+            }
+        } else {
+            return ['success' => false, 'message' => 'ID payroll tidak ditemukan.'];
         }
 
         return ['success' => false, 'message' => 'Approval failed.'];
