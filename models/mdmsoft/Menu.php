@@ -78,9 +78,8 @@ class Menu extends \mdm\admin\models\Menu
         return $res;
     }
 
-    public static function renderMenu()
+    public static function renderMenu(string $parentId)
     {
-        $parentId = 'main';
         $route = '/' . Yii::$app->controller->route;
         $user = Yii::$app->user;
 
@@ -168,13 +167,15 @@ class Menu extends \mdm\admin\models\Menu
                 $isExpanded = $isChildActive ? 'true' : 'false';
                 $showClass = $isChildActive ? 'show' : '';
 
-                $html .= "<a href=\"#{$collapseId}\" data-bs-toggle=\"collapse\" aria-expanded=\"{$isExpanded}\" class=\"nav-item {$activeClass} justify-content-between px-3\">
-                                        <div class=\"d-flex align-items-center gap-3\">
-                                            <i class=\"bi {$item['icon']}\"></i> {$item['label']}
-                                        </div>
-                                        <i class=\"bi bi-caret-down-fill text-white-50 transition-caret\" style=\"font-size: 0.75rem;\"></i>
-                                    </a>";
-                $html .= "<div class=\"collapse {$showClass} mb-2\" id=\"{$collapseId}\">";
+                // menu utama
+                $html .= "
+                    <a href=\"#{$collapseId}\" data-bs-toggle=\"collapse\" aria-expanded=\"{$isExpanded}\" class=\"nav-item {$activeClass} justify-content-between px-3\">
+                        <div class=\"d-flex align-items-center gap-3\">
+                            <i class=\"bi {$item['icon']}\"></i> {$item['label']}
+                        </div>
+                        <i class=\"bi bi-caret-down-fill text-white-50 transition-caret\" style=\"font-size: 0.75rem;\"></i>
+                    </a>";
+                $html .= "<div class=\"collapse {$showClass} mb-2\" id=\"{$collapseId}\" data-bs-parent=\"#{$parentId}\">";
                 foreach ($item['items'] as $childKey => $child) {
                     $cUrlPath = rtrim($child['url'][0] ?? '/', '/');
                     if (empty($cUrlPath))
@@ -200,12 +201,13 @@ class Menu extends \mdm\admin\models\Menu
                         $isSubExpanded = $isSubChildActive ? 'true' : 'false';
                         $subShowClass = $isSubChildActive ? 'show' : '';
 
-                        $html .= "<a href=\"#{$subCollapseId}\" data-bs-toggle=\"collapse\" aria-expanded=\"{$isSubExpanded}\" class=\"nav-sub-item {$cActiveClass} justify-content-between\">
-                                                <div class=\"d-flex align-items-center gap-2\">
-                                                    <i class=\"bi {$child['icon']}\"></i> {$child['label']}
-                                                </div>
-                                                <i class=\"bi bi-caret-down-fill text-white-50 transition-caret\" style=\"font-size: 0.75rem;\"></i>
-                                            </a>";
+                        $html .= "
+                            <a href=\"#{$subCollapseId}\" data-bs-toggle=\"collapse\" data-bs-parent=\"#{$collapseId}\" aria-expanded=\"{$isSubExpanded}\" class=\"nav-sub-item {$cActiveClass} justify-content-between\">
+                                <div class=\"d-flex align-items-center gap-2\">
+                                    <i class=\"bi {$child['icon']}\"></i> {$child['label']}
+                                </div>
+                                <i class=\"bi bi-caret-down-fill text-white-50 transition-caret\" style=\"font-size: 0.75rem;\"></i>
+                            </a>";
                         $html .= "<div class=\"collapse {$subShowClass}\" id=\"{$subCollapseId}\">";
                         foreach ($child['items'] as $subKey => $subChild) {
                             $subUrlRaw = rtrim($subChild['url'][0] ?? '/', '/');
@@ -224,26 +226,27 @@ class Menu extends \mdm\admin\models\Menu
 
                             $url = Url::to($subChild['url'][0] ?? '/');
                             $html .= "
-                                                <a href=\"{$url}\" class=\"nav-sub-item nav-sub-sub-item {$sActiveClass}\">
-                                                    <i class=\"bi {$subChild['icon']}\"></i> {$subChild['label']}
-                                                </a>";
+                                <a href=\"{$url}\" class=\"nav-sub-item nav-sub-sub-item {$sActiveClass}\">
+                                    <i class=\"bi {$subChild['icon']}\"></i> {$subChild['label']}
+                                </a>";
                         }
                         $html .= "</div>";
                     } else {
                         $cActiveClass = $isCActive ? 'active text-white' : '';
                         $url = Url::to($child['url'][0] ?? '/');
                         $html .= "
-                                                <a href=\"{$url}\" class=\"nav-sub-item {$cActiveClass}\">
-                                                    <i class=\"bi {$child['icon']}\"></i> {$child['label']}
-                                                </a>";
+                            <a href=\"{$url}\" class=\"nav-sub-item {$cActiveClass}\">
+                                <i class=\"bi {$child['icon']}\"></i> {$child['label']}
+                            </a>";
                     }
                 }
                 $html .= "</div>";
             } else {
                 $url = Url::to($item['url']['0'] ?? '/');
-                $html .= "<a href=\"{$url}\" class=\"nav-item px-3 {$activeClass}\">
-                                        <i class=\"bi {$item['icon']}\"></i> {$item['label']}
-                                    </a>";
+                $html .= "
+                    <a href=\"{$url}\" class=\"nav-item px-3 {$activeClass}\">
+                        <i class=\"bi {$item['icon']}\"></i> {$item['label']}
+                    </a>";
             }
         }
         return $html;

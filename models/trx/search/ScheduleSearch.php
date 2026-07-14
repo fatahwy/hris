@@ -26,8 +26,8 @@ class ScheduleSearch extends Schedule
     public function rules()
     {
         return [
-            [['id_schedule', 'id_company', 'id_user', 'id_shift'], 'integer'],
-            [['date', 'shift_name', 'checkin_start', 'workhour_start', 'workhour_end', 'status', 'checkin_datetime', 'checkout_datetime'], 'safe'],
+            [['id_schedule', 'id_company', 'id_shift'], 'integer'],
+            [['id_user', 'date', 'shift_name', 'checkin_start', 'workhour_start', 'workhour_end', 'status', 'checkin_datetime', 'checkout_datetime'], 'safe'],
             [['date_from', 'date_to', 'checkin_start_from', 'checkin_start_to', 'workhour_end_from', 'workhour_end_to', 'checkin_datetime_from', 'checkin_datetime_to', 'checkout_datetime_from', 'checkout_datetime_to'], 'safe'],
         ];
     }
@@ -99,7 +99,11 @@ class ScheduleSearch extends Schedule
         if (is_numeric($this->id_user)) {
             $query->andFilterWhere(['schedule.id_user' => $this->id_user]);
         } else {
-            $query->andFilterWhere(['like', 'user.name', $this->id_user]);
+            $query->andFilterWhere([
+                'OR',
+                ['like', 'user.name', $this->id_user],
+                ['user.uuid' => $this->id_user]
+            ]);
         }
 
         $dataProvider = new ActiveDataProvider([

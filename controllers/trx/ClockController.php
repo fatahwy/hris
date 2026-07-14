@@ -16,11 +16,12 @@ class ClockController extends BaseController
         $get = $this->findModel();
         $model = $get['model'];
         $type = $get['type'];
+        $formatter = Yii::$app->formatter;
 
         if (!$model) {
             $model = Schedule::getActiveSchedule();
             if ($model) {
-                Yii::$app->session->setFlash('warning', 'Anda sudah clock in.');
+                Yii::$app->session->setFlash('warning', 'Anda sudah clock in. Jadwal kerja anda dari ' . $formatter->asDatetime($model->workhour_start) . ' sampai ' . $formatter->asDatetime($model->workhour_end));
             } else {
                 Yii::$app->session->setFlash('error', 'Anda tidak punya jadwal kerja.');
             }
@@ -36,10 +37,10 @@ class ClockController extends BaseController
         }
 
         if ($type === 'in') {
-            if ($model->checkin_datetime !== null) {
-                Yii::$app->session->setFlash('warning', 'Anda sudah clock in.');
-                return $this->redirect(['/']);
-            }
+            // if ($model->checkin_datetime !== null) {
+            //     Yii::$app->session->setFlash('warning', 'Anda sudah clock in.');
+            //     return $this->redirect(['/']);
+            // }
 
             $nowStr = DBHelper::now();
             if ($nowStr < $checkinStart || $nowStr > $workhourEnd) {
@@ -47,10 +48,10 @@ class ClockController extends BaseController
                 return $this->redirect(['/']);
             }
         } else {
-            if ($model->checkin_datetime === null) {
-                Yii::$app->session->setFlash('error', 'Anda belum clock in.');
-                return $this->redirect(['/']);
-            }
+            // if ($model->checkin_datetime === null) {
+            //     Yii::$app->session->setFlash('error', 'Anda belum clock in.');
+            //     return $this->redirect(['/']);
+            // }
         }
 
         return $this->render('clock', [
@@ -82,7 +83,7 @@ class ClockController extends BaseController
 
             $dirPath = Yii::getAlias('@webroot/uploads/attendance');
             if (!is_dir($dirPath)) {
-                mkdir($dirPath, 0777, true);
+                mkdir($dirPath, 0755, true);
             }
 
             $fileName = $type . '_' . $model->id_schedule . '_' . time() . '.jpg';
@@ -103,7 +104,7 @@ class ClockController extends BaseController
                 $model->status = Schedule::STATUS_DONE;
             }
 
-            if ($model->save(false)) {
+            if ($model->save()) {
                 Yii::$app->session->setFlash('success', 'Clock ' . strtoupper($type) . ' Success!');
                 return ['success' => true];
             }

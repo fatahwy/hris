@@ -560,8 +560,8 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             </span>
         </div>
 
-        <div class="sidebar-nav">
-            <?= Menu::renderMenu() ?>
+        <div class="sidebar-nav" id="main">
+            <?= Menu::renderMenu('main') ?>
         </div>
 
         <div class="sidebar-footer d-md-none border-top border-white-10 p-3">

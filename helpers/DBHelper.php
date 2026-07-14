@@ -79,8 +79,8 @@ class DBHelper
         $submenu = [
             // Laporan
             ['Kehadiran', $report, '/report/attendance/index', 1, $defIcon],
-            ['Izin & Cuti', $report, '/report/leave/index', 1, $defIcon],
-            ['Payroll', $report, '/report/payroll/index', 1, $defIcon],
+            // ['Izin & Cuti', $report, '/report/leave/index', 1, $defIcon],
+            // ['Payroll', $report, '/report/payroll/index', 1, $defIcon],
             // Master
             ['Client', $master, '/master/client/index', 1, $defIcon],
             ['Perusahaan', $master, '/master/company/index', 1, $defIcon],
@@ -162,9 +162,9 @@ class DBHelper
             // Dashboard
             'dashboard' => '',
             // Laporan
-            '/report/attendance/*' => "Laporan|Presensi",
-            '/report/leave/*' => "Laporan|Izin & Cuti",
-            '/report/payroll/*' => "Laporan|Payroll",
+            '/report/attendance/*' => "Laporan|Kehadiran",
+            // '/report/leave/*' => "Laporan|Izin & Cuti",
+            // '/report/payroll/*' => "Laporan|Payroll",
             // Master
             '/master/client/*' => "Master|Client",
             '/master/company/*' => "Master|Perusahaan",

@@ -83,7 +83,7 @@ class Schedule extends BaseModel
         return [
             'id_schedule' => 'Id Schedule',
             'id_company' => 'Perusahaan',
-            'id_user' => 'Karyawan',
+            'id_user' => 'Pegawai',
             'id_shift' => 'Shift',
             'date' => 'Tanggal',
             'shift_name' => 'Nama Shift',
