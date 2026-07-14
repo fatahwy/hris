@@ -41,7 +41,7 @@ class LeaveTypeSearch extends LeaveType
      */
     public function search($params, $formName = null)
     {
-        $query = self::getQueryByCompany();
+        $query = LeaveType::getQueryByCompany();
 
         // add conditions that should always apply here
 

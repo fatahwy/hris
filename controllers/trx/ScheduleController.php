@@ -14,7 +14,7 @@ class ScheduleController extends BaseController
 {
     public function actionIndex()
     {
-        $users = Account::getQueryByCompany()
+        $users = Account::getQueryByCompany('user')
             ->andWhere(['status' => 1])
             ->all();
 
@@ -108,7 +108,7 @@ class ScheduleController extends BaseController
         $model->checkin_start = $checkinDate . ' ' . $shift->checkin_start;
         $model->workhour_start = $workhourStartDate . ' ' . $shift->workhour_start;
         $model->workhour_end = $workhourEndDate . ' ' . $shift->workhour_end;
-        $model->status = 'Scheduled'; // Default status
+        $model->status = Schedule::STATUS_SCHEDULED; // Default status
 
         if ($model->save()) {
             return ['success' => true, 'message' => 'Jadwal berhasil ditambahkan'];
@@ -137,7 +137,7 @@ class ScheduleController extends BaseController
 
     public function actionOvertime()
     {
-        $users = Account::getQueryByCompany()
+        $users = Account::getQueryByCompany('user')
             ->andWhere(['status' => 1])
             ->indexBy('id_user')
             ->all();
@@ -192,7 +192,7 @@ class ScheduleController extends BaseController
             $model->shift_name = $mShift->name;
             $model->is_overtime = true;
             $model->id_shift = $mShift->id_shift;
-            $model->status = 'Scheduled'; // Default status
+            $model->status = Schedule::STATUS_SCHEDULED; // Default status
 
             if ($model->save()) {
                 return ['success' => true, 'message' => 'Pengajuan lembur berhasil disimpan'];

@@ -41,7 +41,7 @@ class ShiftSearch extends Shift
      */
     public function search($params, $formName = null)
     {
-        $query = self::getQueryByCompany()
+        $query = Shift::getQueryByCompany()
             ->andWhere(['!=', 'id_shift', 1]);
 
         // add conditions that should always apply here

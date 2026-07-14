@@ -1,7 +1,9 @@
 <?php
 
 /** @var yii\web\View $this */
+/** @var app\models\trx\Schedule[] $recentAttendances */
 
+use app\models\trx\Schedule;
 use yii\helpers\Html;
 use kartik\daterange\DateRangePicker;
 
@@ -140,26 +142,10 @@ use kartik\daterange\DateRangePicker;
                             <?= Html::encode($attendance->shift_name) ?>
                         </td>
                         <td class="text-muted border-light small py-3 fw-medium">
-                            <?= Yii::$app->formatter->asDate($attendance->date, 'medium') ?>
+                            <?= Yii::$app->formatter->asDatetime($attendance->workhour_start) ?>
                         </td>
                         <td class="border-light small py-3 fw-medium">
-                            <?php
-                            $workhourEnd = $attendance->date . ' ' . $attendance->workhour_end;
-                            $statusName = 'Belum Checkin';
-                            $badgeClass = 'bg-secondary';
-
-                            if ($attendance->checkin_datetime !== null && $attendance->checkout_datetime === null) {
-                                $statusName = 'Checkin';
-                                $badgeClass = 'bg-info text-dark';
-                            } elseif ($attendance->checkin_datetime === null && $nowStr > $workhourEnd) {
-                                $statusName = 'Absent';
-                                $badgeClass = 'bg-danger';
-                            } elseif ($attendance->checkin_datetime !== null && $attendance->checkout_datetime !== null) {
-                                $statusName = 'Selesai';
-                                $badgeClass = 'bg-success';
-                            }
-                            ?>
-                            <span class="badge <?= $badgeClass ?>"><?= Html::encode($statusName) ?></span>
+                            <?= Schedule::getLabelChip($attendance); ?>
                         </td>
                         <td class="text-end border-light text-muted px-4 py-3">
                             <?= $attendance->checkin_datetime ? date('H:i', strtotime($attendance->checkin_datetime)) : '-' ?>

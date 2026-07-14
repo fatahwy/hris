@@ -10,17 +10,16 @@ use app\models\master\Client;
 use app\models\master\Company;
 use app\models\mdmsoft\Menu;
 use app\widgets\Alert;
-use kartik\depdrop\DepDrop;
 use kartik\select2\Select2;
 use richardfan\widget\JSRegister;
 use yii\bootstrap5\Breadcrumbs;
 use yii\bootstrap5\Html;
 use yii\bootstrap5\BootstrapPluginAsset;
-use yii\db\Query;
 use yii\helpers\Url;
 use app\helpers\DBHelper;
 use app\models\trx\Schedule;
 
+$user = Yii::$app->user->identity;
 $checkoutAlertSchedule = null;
 if (!Yii::$app->user->isGuest && !Yii::$app->request->isAjax) {
     $currentRoute = Yii::$app->controller ? Yii::$app->controller->route : '';
@@ -32,7 +31,7 @@ if (!Yii::$app->user->isGuest && !Yii::$app->request->isAjax) {
         $pendingCheckin = Schedule::getAvailableSchedule();
 
         if ($pendingCheckin) {
-            Yii::$app->response->redirect(['/trx/attendance/clock', 'id' => $pendingCheckin->id_schedule, 'type' => 'in'])->send();
+            Yii::$app->response->redirect(['/trx/clock', 'id' => $pendingCheckin->id_schedule, 'type' => 'in'])->send();
             exit;
         }
 
@@ -47,26 +46,27 @@ BootstrapPluginAsset::register($this);
 $js = JSRegister::begin();
 ?>
 <script>
-    $('#id_client_env, #id_company_env').on('change', function (e) {
-        $.post('<?= Url::toRoute("/site/env") ?>', { [e.target.name]: e.target.value }, function (d) {
+    $('#id_client_env, #id_company_env').on('change', function(e) {
+        $.post('<?= Url::toRoute("/site/env") ?>', {
+            [e.target.name]: e.target.value
+        }, function(d) {
             location.reload();
         });
     });
 
     // Sidebar Toggle Logic
-    $('.burger-menu, .sidebar-backdrop, .sidebar-nav .nav-link:not([data-bs-toggle])').on('click', function () {
+    $('.burger-menu, .sidebar-backdrop, .sidebar-nav .nav-link:not([data-bs-toggle])').on('click', function() {
         if ($(window).width() < 768) {
             $('body').toggleClass('sidebar-open');
         }
     });
 
     // Close sidebar on window resize if it was open
-    $(window).on('resize', function () {
+    $(window).on('resize', function() {
         if ($(window).width() >= 768) {
             $('body').removeClass('sidebar-open');
         }
     });
-
 </script>
 <?php
 $js->end();
@@ -164,67 +164,13 @@ $this->registerCss("
     }
 ");
 
-$user = GeneralHelper::identity();
-$d = Yii::$app->cache->getOrSet('filteredMenusNested' . $user->id_user, function () use ($user) {
-    $routes = (new Query())
-        ->from(['aa' => 'auth_assignment'])
-        ->innerJoin(['aic' => 'auth_item_child'], 'aa.item_name=aic.parent')
-        ->innerJoin(['ai' => 'auth_item'], 'aic.child=ai.name')
-        ->leftJoin(['aic2' => 'auth_item_child'], 'ai.name=aic2.parent')
-        ->where(['aa.user_id' => $user->id_user])
-        ->all();
 
-    $filteredRoutes = [];
-    foreach ($routes as $key => $value) {
-        $d = !$value['child'] || str_contains($value['child'], '*') ? $value['route_menu'] : $value['child'];
-        if ($d) {
-            $filteredRoutes[$d] = $d;
-        }
-    }
-
-    function nestedMenu($menus, $level)
-    {
-        $res = [];
-        foreach ($menus as $i => $val) {
-            if ($val['parent_name'] == $level) {
-                if ($val['route'] && str_contains($val['route'], 'MstKpi[number_period]')) {
-                    $val['route'] = str_replace('MstKpi[number_period]', 'MstKpi[number_period]=' . date('n'), $val['route']);
-                }
-                $res[$i] = [];
-                $res[$i]['label'] = $val['name'];
-                $res[$i]['icon'] = $val['icon'] ?: '';
-                $res[$i]['url'] = [$val['route']];
-                $res[$i]['items'] = nestedMenu($menus, $val['name']);
-            } else {
-                continue;
-            }
-        }
-
-        return $res;
-    }
-
-    $menus = Menu::getMenuSource();
-
-    if (!empty($filteredRoutes['all_access'])) {
-        $d = nestedMenu($menus, null);
-    } else {
-        $filteredMenus = [];
-        foreach ($menus as $value) {
-            if ($value['name'] == 'Dashboard' || $value['route'] == null || !empty($filteredRoutes[$value['route']])) {
-                $filteredMenus[] = $value;
-            }
-        }
-        $filteredMenusNested = nestedMenu($filteredMenus, null);
-
-        $d = [];
-        foreach ($filteredMenusNested as $value) {
-            if (!empty($value['url'][0]) || (empty($value['url'][0]) && $value['items'])) {
-                $d[] = $value;
-            }
-        }
-    }
-    return $d;
-});
+    // echo '<pre>';
+    // print_r($d);
+    // print_r($filteredMenusNested);
+    // die;
+//     return $d;
+// });
 
 $this->registerCssFile(
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
@@ -621,145 +567,13 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             </span>
         </div>
 
-
         <div class="sidebar-nav">
-            <?php
-            $route = '/' . Yii::$app->controller->route;
-
-            if (!function_exists('renderMenu')) {
-                function renderMenu($items, $route, $parentId = 'main', $user)
-                {
-                    $html = '';
-                    foreach ($items as $key => $item) {
-                        $urlPath = rtrim($item['url'][0] ?? '/', '/');
-                        if (empty($urlPath))
-                            $urlPath = '/';
-                        else if (!str_starts_with($urlPath, '/'))
-                            $urlPath = '/' . $urlPath;
-
-                        if (!in_array($urlPath, ['/site/index', '/'])) {
-                            if (!GeneralHelper::checkRoute($urlPath, Yii::$app->getRequest()->get(), $user)) {
-                                continue;
-                            }
-                        }
-
-                        $isActive = ($route == $urlPath) || ($route == '/' && $urlPath == '/site/index');
-
-                        // Check if any child is active
-                        $isChildActive = false;
-                        if (!empty($item['items'])) {
-                            $checkActive = function ($children) use (&$checkActive, $route) {
-                                foreach ($children as $child) {
-                                    $cUrl = rtrim($child['url'][0] ?? '/', '/');
-                                    if (empty($cUrl))
-                                        $cUrl = '/';
-                                    else if (!str_starts_with($cUrl, '/'))
-                                        $cUrl = '/' . $cUrl;
-                                    if ($route == $cUrl || (!empty($child['items']) && $checkActive($child['items']))) {
-                                        return true;
-                                    }
-                                }
-                                return false;
-                            };
-                            $isChildActive = $checkActive($item['items']);
-                        }
-
-                        $activeClass = ($isActive || $isChildActive) ? 'active' : '';
-                        $collapseId = "collapse_{$parentId}_{$key}";
-
-                        if (!empty($item['items'])) {
-                            $isExpanded = $isChildActive ? 'true' : 'false';
-                            $showClass = $isChildActive ? 'show' : '';
-
-                            $html .= "<a href=\"#{$collapseId}\" data-bs-toggle=\"collapse\" aria-expanded=\"{$isExpanded}\" class=\"nav-item {$activeClass} justify-content-between px-3\">
-                                        <div class=\"d-flex align-items-center gap-3\">
-                                            <i class=\"bi {$item['icon']}\"></i> {$item['label']}
-                                        </div>
-                                        <i class=\"bi bi-caret-down-fill text-white-50 transition-caret\" style=\"font-size: 0.75rem;\"></i>
-                                    </a>";
-                            $html .= "<div class=\"collapse {$showClass} mb-2\" id=\"{$collapseId}\">";
-                            foreach ($item['items'] as $childKey => $child) {
-                                $cUrlPath = rtrim($child['url'][0] ?? '/', '/');
-                                if (empty($cUrlPath))
-                                    $cUrlPath = '/';
-                                else if (!str_starts_with($cUrlPath, '/'))
-                                    $cUrlPath = '/' . $cUrlPath;
-
-                                // Check route access for child
-                                if (!GeneralHelper::checkRoute($cUrlPath, Yii::$app->getRequest()->get(), $user)) {
-                                    continue;
-                                }
-
-                                $isCActive = ($route == $cUrlPath) || ($route == '/' && $cUrlPath == '/site/index');
-
-                                $hasSubChildren = !empty($child['items']);
-                                $isSubChildActive = false;
-
-                                if ($hasSubChildren) {
-                                    $subCollapseId = "collapse_{$collapseId}_{$childKey}";
-                                    $isSubChildActive = $checkActive($child['items']);
-                                    $isCActive = $isCActive || $isSubChildActive;
-                                    $cActiveClass = $isCActive ? 'active' : '';
-                                    $isSubExpanded = $isSubChildActive ? 'true' : 'false';
-                                    $subShowClass = $isSubChildActive ? 'show' : '';
-
-                                    $html .= "<a href=\"#{$subCollapseId}\" data-bs-toggle=\"collapse\" aria-expanded=\"{$isSubExpanded}\" class=\"nav-sub-item {$cActiveClass} justify-content-between\">
-                                                <div class=\"d-flex align-items-center gap-2\">
-                                                    <i class=\"bi {$child['icon']}\"></i> {$child['label']}
-                                                </div>
-                                                <i class=\"bi bi-caret-down-fill text-white-50 transition-caret\" style=\"font-size: 0.75rem;\"></i>
-                                            </a>";
-                                    $html .= "<div class=\"collapse {$subShowClass}\" id=\"{$subCollapseId}\">";
-                                    foreach ($child['items'] as $subKey => $subChild) {
-                                        $subUrlRaw = rtrim($subChild['url'][0] ?? '/', '/');
-                                        if (empty($subUrlRaw))
-                                            $subUrlRaw = '/';
-                                        else if (!str_starts_with($subUrlRaw, '/'))
-                                            $subUrlRaw = '/' . $subUrlRaw;
-
-                                        // Check route access for sub-child
-                                        if (!GeneralHelper::checkRoute($subUrlRaw, Yii::$app->getRequest()->get(), $user)) {
-                                            continue;
-                                        }
-
-                                        $isSubActive = ($route == $subUrlRaw) || ($route == '/' && $subUrlRaw == '/site/index');
-                                        $sActiveClass = $isSubActive ? 'active text-white' : '';
-
-                                        $url = Url::to($subChild['url'][0] ?? '/');
-                                        $html .= "
-                                                <a href=\"{$url}\" class=\"nav-sub-item nav-sub-sub-item {$sActiveClass}\">
-                                                    <i class=\"bi {$subChild['icon']}\"></i> {$subChild['label']}
-                                                </a>";
-                                    }
-                                    $html .= "</div>";
-                                } else {
-                                    $cActiveClass = $isCActive ? 'active text-white' : '';
-                                    $url = Url::to($child['url'][0] ?? '/');
-                                    $html .= "
-                                                <a href=\"{$url}\" class=\"nav-sub-item {$cActiveClass}\">
-                                                    <i class=\"bi {$child['icon']}\"></i> {$child['label']}
-                                                </a>";
-                                }
-                            }
-                            $html .= "</div>";
-                        } else {
-                            $url = Url::to($item['url']['0'] ?? '/');
-                            $html .= "<a href=\"{$url}\" class=\"nav-item px-3 {$activeClass}\">
-                                        <i class=\"bi {$item['icon']}\"></i> {$item['label']}
-                                    </a>";
-                        }
-                    }
-                    return $html;
-                }
-            }
-
-            echo renderMenu($d, $route, 'main', Yii::$app->user);
-            ?>
+            <?= Menu::renderMenu() ?>
         </div>
 
         <div class="sidebar-footer d-md-none border-top border-white-10 p-3">
             <div class="d-flex align-items-center justify-content-between">
-                <a href="<?= Url::to(['/site/profile']) ?>"
+                <a href="<?= Url::to(['/profile']) ?>"
                     class="d-flex align-items-center gap-2 text-white text-decoration-none user-profile-link">
                     <div class="user-avatar bg-white text-primary"
                         style="width: 32px; height: 32px; font-size: 0.8rem;">
@@ -826,7 +640,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                 <!-- <i class="bi bi-question-circle"></i> -->
                 <!-- <i class="bi bi-gear"></i> -->
 
-                <a href="<?= Url::to(['/site/profile']) ?>" class="user-block">
+                <a href="<?= Url::to(['/profile']) ?>" class="user-block">
                     <span class="text-dark fw-medium small">
                         <?= $user->name ?? '' ?>
                     </span>
@@ -874,7 +688,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                         </div>
                     </div>
                     <div class="ms-5 ms-md-0 me-md-4">
-                        <?= Html::a('<i class="bi bi-box-arrow-left me-1"></i> Checkout Sekarang', ['/trx/attendance/clock', 'id' => $checkoutAlertSchedule->id_schedule, 'type' => 'out'], ['class' => 'btn btn-warning btn-sm text-dark fw-bold rounded-2 px-3']) ?>
+                        <?= Html::a('<i class="bi bi-box-arrow-left me-1"></i> Checkout Sekarang', ['/trx/clock', 'id' => $checkoutAlertSchedule->id_schedule, 'type' => 'out'], ['class' => 'btn btn-warning btn-sm text-dark fw-bold rounded-2 px-3']) ?>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>

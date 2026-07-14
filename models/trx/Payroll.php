@@ -2,6 +2,7 @@
 
 namespace app\models\trx;
 
+use app\helpers\GeneralHelper;
 use app\models\master\Account;
 use app\models\master\Company;
 use app\models\BaseModel;
@@ -27,6 +28,7 @@ use Yii;
  * @property int $id_user_generate
  * @property int $id_user_verify
  * @property int $id_user_approve
+ * @property int $hourly_rate
  * @property string|null $user_verify_at
  * @property string|null $user_approve_at
  * @property string|null $created_at
@@ -61,7 +63,7 @@ class Payroll extends BaseModel
     {
         return [
             [['net_salary'], 'default', 'value' => 0],
-            [['id_company', 'id_user', 'period_start', 'period_end', 'status'], 'required'],
+            [['id_company', 'id_user', 'period_start', 'period_end', 'status', 'hourly_rate'], 'required'],
             [['id_company', 'id_user', 'basic_salary', 'overtime', 'dedection', 'tax', 'gross_salary', 'net_salary', 'id_user_generate', 'id_user_verify', 'id_user_approve'], 'integer'],
             [['period_start', 'period_end', 'user_verify_at', 'user_approve_at', 'created_at', 'updated_at'], 'safe'],
             [['status'], 'string'],
@@ -180,7 +182,7 @@ class Payroll extends BaseModel
 
     public static function getTER(?string $categoryTer, float|int $penghasilan): float
     {
-        if(!$categoryTer) {
+        if (!$categoryTer) {
             return 0;
         }
 
@@ -325,6 +327,45 @@ class Payroll extends BaseModel
         }
 
         return 0;
+    }
+
+    public function calculateOvertimePay(array $listLembur): float
+    {
+        $totalPay = 0;
+        $hourlyWage = $this->hourly_rate;
+
+        foreach ($listLembur as $lembur) {
+            $hours = (int) ($lembur->total_workhour ?? 0);
+            $isWeekend = $lembur->id_shift !== GeneralHelper::ID_OVERTIME;
+
+            if ($hours <= 0) {
+                continue;
+            }
+
+            if (!$isWeekend) {
+                // Hari kerja biasa
+                for ($i = 1; $i <= $hours; $i++) {
+                    if ($i == 1) {
+                        $totalPay += 1.5 * $hourlyWage;
+                    } else {
+                        $totalPay += 2 * $hourlyWage;
+                    }
+                }
+            } else {
+                // Hari libur / weekend (5 hari kerja)
+                for ($i = 1; $i <= $hours; $i++) {
+                    if ($i <= 7) {
+                        $totalPay += 2 * $hourlyWage;
+                    } elseif ($i == 8) {
+                        $totalPay += 3 * $hourlyWage;
+                    } else {
+                        $totalPay += 4 * $hourlyWage;
+                    }
+                }
+            }
+        }
+
+        return $totalPay;
     }
 
 }

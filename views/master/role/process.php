@@ -1,11 +1,11 @@
 <?php
 
 use app\helpers\GeneralHelper;
+use yii\bootstrap5\ActiveForm;
 use yii\helpers\Html;
-use yii\widgets\ActiveForm;
 
 /** @var yii\web\View $this */
-/** @var app\models\master\Client $model */
+/** @var app\models\AuthItem $model */
 /** @var yii\widgets\ActiveForm $form */
 
 $isNewRecord = $model->isNewRecord;

@@ -41,7 +41,7 @@ class DepartmentSearch extends Department
      */
     public function search($params, $formName = null)
     {
-        $query = self::getQueryByCompany();
+        $query = Department::getQueryByCompany();
 
         // add conditions that should always apply here
 

@@ -427,7 +427,7 @@ class GeneralHelper extends \mdm\admin\components\Helper
     public static function cGridExport($dataProvider, $columns, $title, $id = 'selector', $filterModel = null, $toggleAllData = true, $showBtnExport = true)
     {
         $btnExport = ExportMenu::widget(array_merge([
-            'filename' => self::slugify($title) . '-' . date('Ymd'),
+            'filename' => strtolower(str_replace(' ', '-', $title)) . '-' . date('Ymd'),
             'dataProvider' => $dataProvider,
         ], self::setExportList($columns)));
 

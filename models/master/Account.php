@@ -230,7 +230,7 @@ class Account extends BaseModel
 
     public static function getList()
     {
-        $models = self::getQueryByCompany()
+        $models = self::getQueryByCompany('user')
             ->all();
 
         return ArrayHelper::map($models, 'id_user', 'name');

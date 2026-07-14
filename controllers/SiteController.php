@@ -75,6 +75,7 @@ class SiteController extends BaseController
             ->with(['user'])
             ->where(['id_company' => $id_company])
             ->andWhere(['between', 'date', $startDate, $endDate])
+            ->andWhere(['<', 'checkin_start', DBHelper::now()])
             ->orderBy(['date' => SORT_DESC, 'checkin_datetime' => SORT_DESC])
             ->limit(10)
             ->all();
@@ -313,42 +314,23 @@ class SiteController extends BaseController
             ->send();
     }
 
-    public function actionProfile()
-    {
-        $model = $this->user;
-        if (!$model) {
-            throw new \yii\web\NotFoundHttpException('Halaman yang Anda cari tidak ditemukan.');
-        }
-
-        $company = $model->company;
-        $companyAllowances = $company ? ($company->allowance ?? []) : [];
-
-        if ($model->allowance) {
-            $userAllowance = \yii\helpers\ArrayHelper::index($model->allowance, 'uuid');
-            foreach ($companyAllowances as $v) {
-                $model->allowance_items[$v['uuid']] = $userAllowance[$v['uuid']]['value'] ?? null;
-            }
-        }
-
-        return $this->render('@app/views/master/user/process', [
-            'model' => $model,
-            'companyAllowances' => $companyAllowances,
-        ]);
-    }
-
     public function actionInit($id = null, $id_branch = null)
     {
         ini_set('max_execution_time', 60);
         switch ($id) {
             case "menu":
                 DBHelper::initMenu();
-                GeneralHelper::cacheFlush();
                 die($id);
             case "view":
                 DBHelper::initView();
                 die($id);
             case "flush":
                 GeneralHelper::cacheFlush();
+                $auth = Yii::$app->authManager;
+                if ($auth instanceof \yii\rbac\DbManager) {
+                    $auth->invalidateCache();
+                    die('clear');
+                }
                 die($id);
             case "opcache":
                 if (function_exists('opcache_get_status')) {
@@ -367,5 +349,4 @@ class SiteController extends BaseController
                 die('id salah');
         }
     }
-
 }

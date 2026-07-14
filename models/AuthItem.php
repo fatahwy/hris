@@ -62,6 +62,7 @@ class AuthItem extends ActiveRecord
     {
         return [
             'name' => 'Name',
+            'label' => 'Role',
             'type' => 'Type',
             'description' => 'Description',
             'rule_name' => 'Rule Name',

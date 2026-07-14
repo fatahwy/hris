@@ -86,6 +86,7 @@ class UserController extends BaseController
 
         if (!$model) {
             $model = new Account();
+            $model->scenario = 'create';
         }
 
         $modelAuthAssignment = $model->role ?? new AuthAssignment();
@@ -136,7 +137,7 @@ class UserController extends BaseController
                 $model->allowance = $allowanceData;
 
                 // Calculate hourly rate: (basic_salary + fixed_allowances) / DIV_HOURLY_RATE
-                $model->hourly_rate = (int) (($model->basic_salary + $fixedAllowanceTotal) / GeneralHelper::DIV_HOURLY_RATE);
+                $model->hourly_rate = (int) (((int) $model->basic_salary + $fixedAllowanceTotal) / GeneralHelper::DIV_HOURLY_RATE);
 
                 if ($model->save()) {
                     if (!$isNewRecord) {

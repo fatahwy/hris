@@ -61,10 +61,11 @@ class BaseModel extends ActiveRecord
         $dep->invalidate(Yii::$app->cache, $tag);
     }
 
-    public static function getQueryByCompany()
+    public static function getQueryByCompany($tableName = '')
     {
+        $tableName = $tableName ?: self::tableName();
         $query = self::find()
-            ->andWhere(['id_company' => GeneralHelper::session('id_company')]);
+            ->andWhere(["$tableName.id_company" => GeneralHelper::session('id_company')]);
 
         return $query;
     }

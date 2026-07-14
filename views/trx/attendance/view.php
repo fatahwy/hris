@@ -1,21 +1,22 @@
 <?php
 
+use app\models\trx\Schedule;
 use yii\helpers\Html;
 use yii\widgets\DetailView;
 
-$this->title = 'Detail Presensi: ' . $model->date;
-$this->params['breadcrumbs'][] = ['label' => 'Presensi', 'url' => ['index']];
-$this->params['breadcrumbs'][] = $this->title;
+/** @var app\models\trx\Schedule $model */
 
-$nowStr = date('Y-m-d H:i:s');
+$this->title = 'Detail Kehadiran: ' . $model->user->name . ' - ' . $model->date;
+$this->params['breadcrumbs'][] = ['label' => 'Kehadiran', 'url' => ['index']];
+$this->params['breadcrumbs'][] = $this->title;
 ?>
 
 <div class="schedule-view">
-    <div class="row mb-3">
+    <!-- <div class="row mb-3">
         <div class="col-md-12 text-end">
             <?= Html::a('<i class="bi bi-arrow-left"></i> Kembali', ['index'], ['class' => 'btn btn-secondary']) ?>
         </div>
-    </div>
+    </div> -->
 
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-primary text-white">
@@ -32,24 +33,9 @@ $nowStr = date('Y-m-d H:i:s');
                     [
                         'attribute' => 'status',
                         'format' => 'raw',
-                        'value' => function ($model) use ($nowStr) {
-                                        $workhourEnd = $model->date . ' ' . $model->workhour_end;
-                                        $statusName = 'Belum Checkin';
-                                        $badgeClass = 'bg-secondary';
-
-                                        if ($model->checkin_datetime !== null && $model->checkout_datetime === null) {
-                                            $statusName = 'Checkin';
-                                            $badgeClass = 'bg-info text-dark';
-                                        } elseif ($model->checkin_datetime === null && $nowStr > $workhourEnd) {
-                                            $statusName = 'Absent';
-                                            $badgeClass = 'bg-danger';
-                                        } elseif ($model->checkin_datetime !== null && $model->checkout_datetime !== null) {
-                                            $statusName = 'Done';
-                                            $badgeClass = 'bg-success';
-                                        }
-
-                                        return Html::tag('span', Html::encode($statusName), ['class' => "badge $badgeClass"]);
-                                    },
+                        'value' => function ($model) {
+                            return Schedule::getLabelChip($model);
+                        },
                     ],
                 ],
             ]) ?>

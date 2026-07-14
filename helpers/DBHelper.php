@@ -61,8 +61,8 @@ class DBHelper
         $dashboard = 1;
         $report = 2;
         $master = 3;
-        $data = 4;
-        $trx = 5;
+        $hr = 4;
+        $employee = 5;
         $setting = 6;
         $log = 7;
 
@@ -71,13 +71,14 @@ class DBHelper
         $menu[$dashboard] = ['Dashboard', null, '/site/index', 1, 'bi-house'];
         $menu[$report] = ['Laporan', null, null, 1, 'bi-bar-chart'];
         $menu[$master] = ['Master', null, null, 1, 'bi-file-earmark-text'];
-        $menu[$trx] = ['Transaksi', null, null, 1, 'bi-activity'];
+        $menu[$hr] = ['HR', null, null, 1, 'bi-hr'];
+        $menu[$employee] = ['Pegawai', null, null, 1, 'bi-person'];
         $menu[$setting] = ['Setting', null, null, 1, 'bi-gear'];
         $menu[$log] = ['Log', null, '/log', 1, 'bi-hdd-stack'];
 
         $submenu = [
             // Laporan
-            ['Presensi', $report, '/report/attendance/index', 1, $defIcon],
+            ['Kehadiran', $report, '/report/attendance/index', 1, $defIcon],
             ['Izin & Cuti', $report, '/report/leave/index', 1, $defIcon],
             ['Payroll', $report, '/report/payroll/index', 1, $defIcon],
             // Master
@@ -90,11 +91,13 @@ class DBHelper
             ['Role', $master, '/master/role/index', 1, $defIcon],
             ['Tunjangan', $master, '/master/allowance/index', 1, $defIcon],
             ['User', $master, '/master/user/index', 1, $defIcon],
-            // Trx
-            ['Presensi', $trx, '/trx/attendance/index', 1, $defIcon],
-            ['Jadwal kerja', $trx, '/trx/schedule/index', 1, $defIcon],
-            ['Izin & Cuti', $trx, '/trx/leave-request/index', 1, $defIcon],
-            ['Payroll', $trx, '/trx/payroll/index', 1, $defIcon],
+            // HR
+            ['Jadwal kerja', $hr, '/trx/schedule/index', 1, $defIcon],
+            ['Kehadiran', $hr, '/trx/attendance/index', 1, $defIcon],
+            ['Payroll', $hr, '/trx/payroll/index', 1, $defIcon],
+            // Pegawai
+            ['Presensi', $employee, '/trx/clock/index', 1, $defIcon],
+            ['Izin & Cuti', $employee, '/trx/leave-request/index', 1, $defIcon],
             // Setting
             ['Hak Akses Menu', $setting, '/setting/access-rule/index', 1, $defIcon],
         ];
@@ -135,7 +138,7 @@ class DBHelper
 
                 if (($flag = $model->save()) == false) {
                     $transaction->rollBack();
-                    echo '<pre>';
+                    echo '<pre>1';
                     print_r($model);
                     die;
                 }
@@ -145,7 +148,9 @@ class DBHelper
                 $transaction->commit();
             }
         } catch (Exception $exc) {
-            echo $exc->getTraceAsString();
+            echo '<pre>2';
+            print_r($exc);
+            die;
         }
 
         // ACCESS RULE
@@ -170,14 +175,15 @@ class DBHelper
             '/master/role/*' => "Master|Role",
             '/master/allowance/*' => "Master|Tunjangan",
             '/master/user/*' => "Master|User",
-            // Data
-            // Transaksi
-            '/trx/attendance/*' => "Transaksi|Presensi",
-            '/trx/schedule/*' => "Transaksi|Jadwal Kerja",
-            '/trx/leave-request/*' => "Transaksi|Izin & Cuti",
-            'approval_leave' => "Transaksi|Approval Izin & Cuti",
-            '/trx/payroll/*' => "Transaksi|Payroll",
-            'approval_payroll' => "Transaksi|Approval Payroll",
+            // HR
+            '/trx/schedule/*' => "HR|Jadwal Kerja",
+            '/trx/attendance/*' => "HR|Kehadiran",
+            'approval_leave' => "HR|Approval Izin & Cuti",
+            '/trx/payroll/*' => "HR|Payroll",
+            'approval_payroll' => "HR|Approval Payroll",
+            // Pegawai
+            // '/trx/clock/*' => "Pegawai|Presensi",
+            '/trx/leave-request/*' => "Pegawai|Izin & Cuti",
             // Setting
             '/setting/access-rule/*' => "Setting|Hak Akses Menu",
         ];
@@ -188,6 +194,7 @@ class DBHelper
                 "/gridview/*",
                 "/site/*",
                 "/profile/*",
+                "/trx/clock/*",
             ],
             'all_access' => [
                 "/*",
@@ -246,7 +253,7 @@ class DBHelper
                 $model->parent = $parent;
                 $model->child = $child;
                 if (($flag = $model->save()) == false) {
-                    echo '<pre>';
+                    echo '<pre>3';
                     print_r($model);
                     die;
                 }
@@ -257,7 +264,7 @@ class DBHelper
         //     self::updateBaseRoute($m['name']);
         // }
 
-        // GeneralHelper::cacheFlush();
+        GeneralHelper::cacheFlush();
     }
 
     public static function updateBaseRoute($role)

@@ -25,17 +25,17 @@ $config = [
             'path' => '@runtime/queue',
         ],
         'mailer' => [
-            'class' => 'yii\swiftmailer\Mailer',
+            'class' => \yii\symfonymailer\Mailer::class,
             // send all mails to a file by default. You have to set
             // 'useFileTransport' to false and configure transport
             // for the mailer to send real emails.
             'useFileTransport' => false,
             'transport' => [
-                'class' => 'Swift_SmtpTransport',
+                'scheme' => 'smtp',
                 'host' => $env['mail_host'],
                 'username' => $env['mail_username'],
                 'password' => $env['mail_password'],
-                'port' => '465',
+                'port' => 465,
                 'encryption' => 'ssl',
                 'streamOptions' => [
                     'ssl' => [

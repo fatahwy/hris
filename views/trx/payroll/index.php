@@ -125,7 +125,7 @@ $indonesianMonths = [
                                             </td>
                                         <?php endforeach; ?>
                                     <?php endif; ?>
-                                    <td class="text-end p-0">
+                                    <td class="text-end">
                                         <?= number_format($model->overtime, 0, ',', '.') ?>
                                         <!-- <input type="text"
                                                class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money"
@@ -150,7 +150,7 @@ $indonesianMonths = [
                                                value="<?= number_format($model->tax, 0, ',', '.') ?>"
                                                <?= $model->status !== Payroll::STATUS_PENDING ? 'disabled' : '' ?>>
                                     </td> -->
-                                    <td><?= $model->ter ? $model->ter*100 : 0 ?>%</td>
+                                    <td class="text-end"><?= $model->ter ? $model->ter*100 : 0 ?>%</td>
                                     <td class="text-end tax-cell money" data-value="<?= $model->tax ?>">
                                         <?= number_format($model->tax, 0, ',', '.') ?>
                                     </td>

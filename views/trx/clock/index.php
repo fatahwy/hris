@@ -8,24 +8,25 @@ use kartik\daterange\DateRangePicker;
 /** @var app\models\trx\search\ScheduleSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Kehadiran';
+$this->title = 'Presensi';
 $this->params['breadcrumbs'][] = $this->title;
 
-echo GridView::widget([
+?>
+<?= GridView::widget([
     'dataProvider' => $dataProvider,
     'filterModel' => $searchModel,
-    // 'toolbar' => [
-    //     'content' => ($availableSchedule ? Html::a('<i class="bi bi-clock"></i> Clock In', ['clock', 'id' => $availableSchedule->id_schedule, 'type' => 'in'], [
-    //         'class' => 'btn btn-primary',
-    //         'title' => 'Clock In',
-    //         'data-pjax' => '0'
-    //     ]) : '') . ' ' .
-    //         ($activeSchedule ? Html::a('<i class="bi bi-clock"></i> Clock Out', ['clock', 'id' => $activeSchedule->id_schedule, 'type' => 'out'], [
-    //             'class' => 'btn btn-warning',
-    //             'title' => 'Clock Out',
-    //             'data-pjax' => '0'
-    //         ]) : ''),
-    // ],
+    'toolbar' => [
+        'content' => ($availableSchedule ? Html::a('<i class="bi bi-clock"></i> Clock In', ['clock', 'id' => $availableSchedule->id_schedule, 'type' => 'in'], [
+            'class' => 'btn btn-primary',
+            'title' => 'Clock In',
+            'data-pjax' => '0'
+        ]) : '') . ' ' .
+            ($activeSchedule ? Html::a('<i class="bi bi-clock"></i> Clock Out', ['clock', 'id' => $activeSchedule->id_schedule, 'type' => 'out'], [
+                'class' => 'btn btn-warning',
+                'title' => 'Clock Out',
+                'data-pjax' => '0'
+            ]) : ''),
+    ],
     'columns' => [
         ['class' => 'kartik\grid\SerialColumn'],
 
@@ -45,11 +46,6 @@ echo GridView::widget([
                     'class' => 'form-control',
                 ],
             ]),
-        ],
-        [
-            'attribute' => 'id_user',
-            'value' => 'user.name',
-            'visible' => empty($hideUser),
         ],
         'shift_name',
         [
@@ -93,19 +89,11 @@ echo GridView::widget([
                 return Schedule::getLabelChip($model);
             },
             'filter' => [
-                Schedule::STATUS_SCHEDULED => 'Scheduled',
+                Schedule::STATUS_SCHEDULED => 'Belum Checkin',
                 Schedule::STATUS_CHECKIN => 'Checkin',
                 Schedule::STATUS_ABSENT => 'Absent',
                 Schedule::STATUS_DONE => 'Selesai',
-            ],
-            'filterType' => GridView::FILTER_SELECT2,
-            'filterWidgetOptions' => [
-                'options' => ['prompt' => 'Pilih'],
-                'pluginOptions' => [
-                    'allowClear' => true,
-                    'width' => '100px'
-                ],
-            ],
+            ]
         ],
         [
             'attribute' => 'checkin_datetime',
@@ -155,4 +143,4 @@ echo GridView::widget([
             ],
         ],
     ],
-]);
+]); ?>

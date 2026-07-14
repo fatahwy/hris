@@ -41,7 +41,7 @@ class AccountSearch extends Account
      */
     public function search($params)
     {
-        $query = self::getQueryByCompany()
+        $query = self::getQueryByCompany('user')
             ->with(['department', 'position']);
 
         if (!RoleHelper::isSuper()) {

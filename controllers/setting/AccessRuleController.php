@@ -44,8 +44,8 @@ class AccessRuleController extends BaseController
         if (empty($listRole[$model->parent])) {
             $selectedRole = array_key_first($listRole);
             if (!$selectedRole) {
-                GeneralHelper::flashFailed('Role belum diset');
-                return $this->redirect(['/']);
+                GeneralHelper::flashFailed('Role belum diset. Silahkan buat terlebih dahulu.');
+                return $this->redirect(['/master/role/process']);
             }
             return $this->redirect(['index', 'role' => $selectedRole]);
         }

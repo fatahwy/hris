@@ -9,6 +9,7 @@ use app\models\master\Company;
 use app\models\master\Shift;
 use app\models\BaseModel;
 use Yii;
+use yii\bootstrap5\Html;
 
 /**
  * This is the model class for table "schedule".
@@ -42,7 +43,10 @@ use Yii;
  */
 class Schedule extends BaseModel
 {
-
+    const STATUS_ABSENT = 'Absent';
+    const STATUS_SCHEDULED = 'Scheduled';
+    const STATUS_CHECKIN = 'Checkin';
+    const STATUS_DONE = 'Done';
 
     /**
      * {@inheritdoc}
@@ -187,7 +191,6 @@ class Schedule extends BaseModel
             ->one();
 
         return $schedule;
-
     }
 
     public function beforeSubmit()
@@ -198,7 +201,34 @@ class Schedule extends BaseModel
             $diffInSeconds = $end - $start;
             $this->total_workhour = round($diffInSeconds / 3600);
         }
+
         return true;
     }
 
+    public static function getLabelChip(Schedule $model)
+    {
+        $statusName = $model->status;
+
+        switch ($model->status) {
+            case 'Checkin':
+                $badgeClass = 'bg-info text-dark';
+                break;
+            case 'Absent':
+                $badgeClass = 'bg-danger';
+                break;
+            case 'Done':
+                $statusName = 'Selesai';
+                $badgeClass = 'bg-success';
+                break;
+            default:
+                // $now = DBHelper::now();
+                // if ($model->checkin_start < $now && $model->workhour_end > $now) {
+                //     $statusName = 'Belum Checkin';
+                // }
+                $badgeClass = 'bg-secondary';
+                break;
+        }
+
+        return Html::tag('span', Html::encode($statusName), ['class' => "badge $badgeClass"]);
+    }
 }

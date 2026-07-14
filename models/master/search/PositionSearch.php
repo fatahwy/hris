@@ -41,7 +41,7 @@ class PositionSearch extends Position
      */
     public function search($params, $formName = null)
     {
-        $query = self::getQueryByCompany();
+        $query = Position::getQueryByCompany();
 
         // add conditions that should always apply here
 

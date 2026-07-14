@@ -12,10 +12,11 @@ use yii\helpers\ArrayHelper;
 
 /** @var yii\web\View $this */
 /** @var app\models\master\Account $model */
+/** @var app\models\AuthAssignment $modelAuthAssignment */
 /** @var array $companyAllowances */
 
 $currentPath = Yii::$app->request->pathInfo;
-$isProfile = in_array($currentPath, ['site/profile', 'master/user/view']);
+$isProfile = in_array($currentPath, ['profile', 'profile/index', 'master/user/view']);
 
 if ($isProfile) {
     $this->title = $title ?? "Profile";
