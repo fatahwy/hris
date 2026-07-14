@@ -85,7 +85,7 @@ class Payroll extends BaseModel
         return [
             'id_payroll' => 'Id Payroll',
             'id_company' => 'Perusahaan',
-            'id_user' => 'Karyawan',
+            'id_user' => 'Pegawai',
             'period_start' => 'Periode Awal',
             'period_end' => 'Periode Akhir',
             'basic_salary' => 'Gaji Pokok',
@@ -329,6 +329,9 @@ class Payroll extends BaseModel
         return 0;
     }
 
+    /**
+     * @param Schedule[] $listLembur
+     */
     public function calculateOvertimePay(array $listLembur): float
     {
         $totalPay = 0;

@@ -1,30 +1,22 @@
 <?php
 
+use app\helpers\GeneralHelper;
 use app\helpers\RoleHelper;
 use app\models\trx\Payroll;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\helpers\ArrayHelper;
 
+/** @var integer $month */
+/** @var integer $year */
+/** @var array $companyAllowances */
+
 $this->title = 'Manajemen Payroll';
 $this->params['breadcrumbs'][] = $this->title;
 
+$formatter = Yii::$app->formatter;
 $canApprove = RoleHelper::approvalPayroll();
 
-$indonesianMonths = [
-    '01' => 'Januari',
-    '02' => 'Februari',
-    '03' => 'Maret',
-    '04' => 'April',
-    '05' => 'Mei',
-    '06' => 'Juni',
-    '07' => 'Juli',
-    '08' => 'Agustus',
-    '09' => 'September',
-    '10' => 'Oktober',
-    '11' => 'November',
-    '12' => 'Desember',
-];
 ?>
 
 <div class="payroll-index">
@@ -37,7 +29,7 @@ $indonesianMonths = [
                 <div class="d-flex gap-2">
                     <form action="<?= Url::to(['index']) ?>" method="get" class="d-flex gap-2 align-items-center">
                         <select name="month" class="form-select form-select-sm" style="width: auto;">
-                            <?php foreach ($indonesianMonths as $mCode => $mName): ?>
+                            <?php foreach (GeneralHelper::getMonths() as $mCode => $mName): ?>
                                 <option value="<?= $mCode ?>" <?= $month == $mCode ? 'selected' : '' ?>>
                                     <?= $mName ?>
                                 </option>
@@ -104,9 +96,9 @@ $indonesianMonths = [
                                         <div class="fw-bold text-uppercase"><?= Html::encode($model->user->name ?? '-') ?></div>
                                         <small class="text-muted"><?= Html::encode($model->user->employee_code ?? '') ?></small>
                                     </td>
-                                    <td><?= $model->ptkp?:'-' ?></td>
+                                    <td><?= $model->ptkp ?: '-' ?></td>
                                     <td class="text-end">
-                                        <?= number_format($model->basic_salary, 0, ',', '.') ?>
+                                        <?= $formatter->asInteger($model->basic_salary) ?>
                                     </td>
                                     <?php if (!empty($companyAllowances)): ?>
                                         <?php foreach ($companyAllowances as $allowance): ?>
@@ -116,7 +108,7 @@ $indonesianMonths = [
                                             $totalAllowance += $value;
                                             ?>
                                             <td class="text-end">
-                                                <?= number_format($value, 0, ',', '.') ?>
+                                                <?= $formatter->asInteger($value) ?>
                                                 <!-- <input type="text"
                                                        class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money"
                                                        data-field="allowance_item_<?= $uuid ?>"
@@ -126,36 +118,36 @@ $indonesianMonths = [
                                         <?php endforeach; ?>
                                     <?php endif; ?>
                                     <td class="text-end">
-                                        <?= number_format($model->overtime, 0, ',', '.') ?>
+                                        <?= $formatter->asInteger($model->overtime) ?>
                                         <!-- <input type="text"
                                                class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money"
                                                data-field="overtime"
-                                               value="<?= number_format($model->overtime, 0, ',', '.') ?>"
+                                               value="<?= $formatter->asInteger($model->overtime) ?>"
                                                <?= $model->status !== Payroll::STATUS_PENDING ? 'disabled' : '' ?>> -->
                                     </td>
                                     <td class="text-end gross-salary-cell money" data-value="<?= $model->gross_salary ?>">
-                                        <?= number_format($model->gross_salary, 0, ',', '.') ?>
+                                        <?= $formatter->asInteger($model->gross_salary) ?>
                                     </td>
                                     <!-- <td class="text-end p-0">
                                         <input type="text"
                                                class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money"
                                                data-field="dedection"
-                                               value="<?= number_format($model->dedection, 0, ',', '.') ?>"
+                                               value="<?= $formatter->asInteger($model->dedection) ?>"
                                                <?= $model->status !== Payroll::STATUS_PENDING ? 'disabled' : '' ?>>
                                     </td> -->
                                     <!-- <td class="text-end p-0">
                                         <input type="text"
                                                class="form-control form-control-sm border-0 bg-transparent text-end payroll-input money"
                                                data-field="tax"
-                                               value="<?= number_format($model->tax, 0, ',', '.') ?>"
+                                               value="<?= $formatter->asInteger($model->tax) ?>"
                                                <?= $model->status !== Payroll::STATUS_PENDING ? 'disabled' : '' ?>>
                                     </td> -->
-                                    <td class="text-end"><?= $model->ter ? $model->ter*100 : 0 ?>%</td>
+                                    <td class="text-end"><?= $model->ter ? $model->ter * 100 : 0 ?>%</td>
                                     <td class="text-end tax-cell money" data-value="<?= $model->tax ?>">
-                                        <?= number_format($model->tax, 0, ',', '.') ?>
+                                        <?= $formatter->asInteger($model->tax) ?>
                                     </td>
                                     <td class="text-end fw-bold net-salary-cell" data-value="<?= $model->net_salary ?>">
-                                        <?= number_format($model->net_salary, 0, ',', '.') ?>
+                                        <?= $formatter->asInteger($model->net_salary) ?>
                                     </td>
                                     <td class="text-center">
                                         <?php if ($model->status === 'PENDING'): ?>
@@ -197,14 +189,17 @@ $indonesianMonths = [
         box-shadow: inset 0 0 0 1px #0d6efd;
         border-radius: 0;
     }
+
     #payroll-table td {
         padding: 0.5rem;
     }
+
     #payroll-table th {
         font-size: 0.85rem;
         text-transform: uppercase;
         letter-spacing: 0.02em;
     }
+
     .is-valid {
         background-color: #d1e7dd !important;
     }

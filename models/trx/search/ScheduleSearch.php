@@ -44,7 +44,7 @@ class ScheduleSearch extends Schedule
             $range = explode(' - ', $this->date);
             $this->date_from = $range[0];
             $this->date_to = $range[1] ?? $range[0];
-            $this->date = null;
+            // $this->date = null;
         }
 
         // Parse date range for checkin_start
@@ -52,7 +52,7 @@ class ScheduleSearch extends Schedule
             $range = explode(' - ', $this->checkin_start);
             $this->checkin_start_from = $range[0];
             $this->checkin_start_to = $range[1] ?? $range[0];
-            $this->checkin_start = null;
+            // $this->checkin_start = null;
         }
 
         // Parse date range for workhour_end
@@ -60,7 +60,7 @@ class ScheduleSearch extends Schedule
             $range = explode(' - ', $this->workhour_end);
             $this->workhour_end_from = $range[0];
             $this->workhour_end_to = $range[1] ?? $range[0];
-            $this->workhour_end = null;
+            // $this->workhour_end = null;
         }
 
         // Parse date range for checkin_datetime
@@ -68,7 +68,7 @@ class ScheduleSearch extends Schedule
             $range = explode(' - ', $this->checkin_datetime);
             $this->checkin_datetime_from = $range[0];
             $this->checkin_datetime_to = $range[1] ?? $range[0];
-            $this->checkin_datetime = null;
+            // $this->checkin_datetime = null;
         }
 
         // Parse date range for checkout_datetime
@@ -76,7 +76,7 @@ class ScheduleSearch extends Schedule
             $range = explode(' - ', $this->checkout_datetime);
             $this->checkout_datetime_from = $range[0];
             $this->checkout_datetime_to = $range[1] ?? $range[0];
-            $this->checkout_datetime = null;
+            // $this->checkout_datetime = null;
         }
 
         return parent::beforeValidate();
@@ -97,9 +97,20 @@ class ScheduleSearch extends Schedule
             ->andFilterWhere(['like', 'shift_name', $this->shift_name]);
 
         if (is_numeric($this->id_user)) {
-            $query->andWhere(['schedule.id_user' => $this->id_user]);
+            $query->andFilterWhere(['schedule.id_user' => $this->id_user]);
         } else {
-            $query->andWhere(['like', 'user.name', $this->id_user]);
+            $query->andFilterWhere(['like', 'user.name', $this->id_user]);
+        }
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'sort' => [
+                'defaultOrder' => ['date' => SORT_DESC]
+            ]
+        ]);
+
+        if (!$this->validate()) {
+            return $dataProvider;
         }
 
         // Date range filtering
@@ -146,13 +157,6 @@ class ScheduleSearch extends Schedule
         } elseif (!empty($this->checkout_datetime_to)) {
             $query->andWhere(['<=', 'checkout_datetime', $this->checkout_datetime_to]);
         }
-
-        $dataProvider = new ActiveDataProvider([
-            'query' => $query,
-            'sort' => [
-                'defaultOrder' => ['date' => SORT_DESC]
-            ]
-        ]);
 
         return $dataProvider;
     }

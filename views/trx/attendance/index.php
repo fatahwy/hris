@@ -32,19 +32,19 @@ echo GridView::widget([
         [
             'attribute' => 'date',
             'format' => 'date',
-            'filter' => DateRangePicker::widget([
-                'model' => $searchModel,
-                'attribute' => 'date',
+            'filterType' => GridView::FILTER_DATE_RANGE,
+            'filterWidgetOptions' => [
                 'convertFormat' => true,
                 'pluginOptions' => [
-                    'locale' => ['format' => 'Y-m-d'],
+                    'locale' => [
+                        'format' => 'Y-m-d',
+                    ],
                     'opens' => 'left',
                 ],
                 'options' => [
                     'placeholder' => 'Pilih Tanggal',
-                    'class' => 'form-control',
                 ],
-            ]),
+            ],
         ],
         [
             'attribute' => 'id_user',
@@ -55,36 +55,36 @@ echo GridView::widget([
         [
             'attribute' => 'checkin_start',
             'format' => 'datetime',
-            'filter' => DateRangePicker::widget([
-                'model' => $searchModel,
-                'attribute' => 'checkin_start',
+            'filterType' => GridView::FILTER_DATE_RANGE,
+            'filterWidgetOptions' => [
                 'convertFormat' => true,
                 'pluginOptions' => [
-                    'locale' => ['format' => 'Y-m-d H:i:s'],
+                    'locale' => [
+                        'format' => 'Y-m-d',
+                    ],
                     'opens' => 'left',
                 ],
                 'options' => [
                     'placeholder' => 'Pilih Tanggal',
-                    'class' => 'form-control',
                 ],
-            ]),
+            ],
         ],
         [
             'attribute' => 'workhour_end',
             'format' => 'datetime',
-            'filter' => DateRangePicker::widget([
-                'model' => $searchModel,
-                'attribute' => 'workhour_end',
+            'filterType' => GridView::FILTER_DATE_RANGE,
+            'filterWidgetOptions' => [
                 'convertFormat' => true,
                 'pluginOptions' => [
-                    'locale' => ['format' => 'Y-m-d H:i:s'],
+                    'locale' => [
+                        'format' => 'Y-m-d',
+                    ],
                     'opens' => 'left',
                 ],
                 'options' => [
                     'placeholder' => 'Pilih Tanggal',
-                    'class' => 'form-control',
                 ],
-            ]),
+            ],
         ],
         [
             'attribute' => 'status',
@@ -110,36 +110,36 @@ echo GridView::widget([
         [
             'attribute' => 'checkin_datetime',
             'format' => 'datetime',
-            'filter' => DateRangePicker::widget([
-                'model' => $searchModel,
-                'attribute' => 'checkin_datetime',
+            'filterType' => GridView::FILTER_DATE_RANGE,
+            'filterWidgetOptions' => [
                 'convertFormat' => true,
                 'pluginOptions' => [
-                    'locale' => ['format' => 'Y-m-d H:i:s'],
+                    'locale' => [
+                        'format' => 'Y-m-d',
+                    ],
                     'opens' => 'left',
                 ],
                 'options' => [
                     'placeholder' => 'Pilih Tanggal',
-                    'class' => 'form-control',
                 ],
-            ]),
+            ],
         ],
         [
             'attribute' => 'checkout_datetime',
             'format' => 'datetime',
-            'filter' => DateRangePicker::widget([
-                'model' => $searchModel,
-                'attribute' => 'checkout_datetime',
+            'filterType' => GridView::FILTER_DATE_RANGE,
+            'filterWidgetOptions' => [
                 'convertFormat' => true,
                 'pluginOptions' => [
-                    'locale' => ['format' => 'Y-m-d H:i:s'],
+                    'locale' => [
+                        'format' => 'Y-m-d',
+                    ],
                     'opens' => 'left',
                 ],
                 'options' => [
                     'placeholder' => 'Pilih Tanggal',
-                    'class' => 'form-control',
                 ],
-            ]),
+            ],
         ],
         [
             'class' => 'kartik\grid\ActionColumn',

@@ -23,7 +23,7 @@ $user = Yii::$app->user->identity;
 $checkoutAlertSchedule = null;
 if (!Yii::$app->user->isGuest && !Yii::$app->request->isAjax) {
     $currentRoute = Yii::$app->controller ? Yii::$app->controller->route : '';
-    if ($currentRoute !== 'trx/attendance/clock' && $currentRoute !== 'site/logout') {
+    if (!in_array($currentRoute, ['trx/clock/index', 'site/logout', 'site/error'])) {
         $userId = Yii::$app->user->identity->id_user;
         $nowStr = DBHelper::now();
 
@@ -164,13 +164,6 @@ $this->registerCss("
     }
 ");
 
-
-    // echo '<pre>';
-    // print_r($d);
-    // print_r($filteredMenusNested);
-    // die;
-//     return $d;
-// });
 
 $this->registerCssFile(
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',

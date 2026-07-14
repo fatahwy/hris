@@ -6,8 +6,9 @@ use yii\web\View;
 
 /** @var yii\web\View $this */
 /** @var app\models\trx\Schedule $model */
+/** @var string $type */
 
-
+$type = $type ?? 'in';
 $typeName = $type === 'in' ? 'Clock In' : 'Clock Out';
 $this->title = $typeName . ' - ' . date('d M Y', strtotime($model->date));
 $this->params['breadcrumbs'][] = ['label' => 'Presensi', 'url' => ['index']];

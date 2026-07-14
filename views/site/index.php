@@ -2,11 +2,17 @@
 
 /** @var yii\web\View $this */
 /** @var app\models\trx\Schedule[] $recentAttendances */
+/** @var string $dateRange */
+/** @var int $totalEmployees */
+/** @var int $presentInPeriod */
+/** @var int $pendingApprovals */
+/** @var int $monthlyPayroll */
 
 use app\models\trx\Schedule;
 use yii\helpers\Html;
 use kartik\daterange\DateRangePicker;
 
+$formatter = Yii::$app->formatter;
 ?>
 <div class="site-index pb-4">
     <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
@@ -49,7 +55,7 @@ use kartik\daterange\DateRangePicker;
                 <div class="card-body p-4">
                     <div class="text-secondary fw-semibold mb-3 py-1" style="font-size: 0.95rem;">Total Pegawai</div>
                     <div class="d-flex justify-content-between align-items-center mb-1">
-                        <h2 class="fw-bold text-dark mb-0"><?= number_format($totalEmployees) ?></h2>
+                        <h2 class="fw-bold text-dark mb-0"><?= $formatter->asInteger($totalEmployees) ?></h2>
                         <div class="bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center"
                             style="width: 50px; height: 50px; border-radius: 14px;">
                             <i class="bi bi-people fs-4"></i>
@@ -66,13 +72,13 @@ use kartik\daterange\DateRangePicker;
                     <div class="text-secondary fw-semibold mb-3 py-1" style="font-size: 0.95rem;">Kehadiran
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-1">
-                        <h2 class="fw-bold text-dark mb-0"><?= number_format($presentInPeriod) ?></h2>
+                        <h2 class="fw-bold text-dark mb-0"><?= $formatter->asInteger($presentInPeriod) ?></h2>
                         <div class="bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center"
                             style="width: 50px; height: 50px; border-radius: 14px;">
                             <i class="bi bi-clipboard-check fs-4"></i>
                         </div>
                     </div>
-                    <div class="text-secondary mb-1 mt-3" style="font-size: 0.85rem;">Total Absensi</div>
+                    <div class="text-secondary mb-1 mt-3" style="font-size: 0.85rem;">Total Prensensi</div>
                 </div>
             </div>
         </div>
@@ -83,7 +89,7 @@ use kartik\daterange\DateRangePicker;
                     <div class="text-secondary fw-semibold mb-3 py-1" style="font-size: 0.95rem;">Pending Approvals
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-1">
-                        <h2 class="fw-bold text-dark mb-0"><?= number_format($pendingApprovals) ?></h2>
+                        <h2 class="fw-bold text-dark mb-0"><?= $formatter->asInteger($pendingApprovals) ?></h2>
                         <div class="bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center"
                             style="width: 50px; height: 50px; border-radius: 14px;">
                             <i class="bi bi-clock fs-4"></i>
@@ -100,8 +106,8 @@ use kartik\daterange\DateRangePicker;
                 <div class="card-body p-4">
                     <div class="text-secondary fw-semibold mb-3 py-1" style="font-size: 0.95rem;">Monthly Payroll</div>
                     <div class="d-flex justify-content-between align-items-center mb-1">
-                        <h2 class="fw-bold text-dark mb-0" style="font-size: 1.5rem;">Rp
-                            <?= number_format($monthlyPayroll, 0, ',', '.') ?>
+                        <h2 class="fw-bold text-dark mb-0" style="font-size: 1.5rem;">
+                            <?= $formatter->asCurrency($monthlyPayroll) ?>
                         </h2>
                         <div class="bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center"
                             style="width: 50px; height: 50px; border-radius: 14px;">

@@ -12,6 +12,9 @@ use yii\web\Response;
 use app\models\LoginForm;
 use app\models\RegisterForm;
 use app\models\master\Account;
+use app\models\trx\LeaveRequest;
+use app\models\trx\Payroll;
+use app\models\trx\Schedule;
 
 class SiteController extends BaseController
 {
@@ -52,30 +55,39 @@ class SiteController extends BaseController
             $dateRange = "$startDate - $endDate";
         }
 
+        $user = $this->user;
+        $isAllUser = RoleHelper::allUser();
+        $isApprovalPayroll = RoleHelper::approvalPayroll();
+        $isApprovalLeave = RoleHelper::approvalLeave();
+
         $totalEmployees = Account::find()->where(['id_company' => $id_company, 'status' => 1])->count();
 
-        $presentInPeriod = \app\models\trx\Schedule::find()
+        $presentInPeriod = Schedule::find()
             ->where(['id_company' => $id_company])
             ->andWhere(['between', 'date', $startDate, $endDate])
             ->andWhere(['not', ['checkin_datetime' => null]])
+            ->andFilterWhere(['id_user' => $isAllUser ? null: $user->id_user])
             ->count();
 
-        $pendingApprovals = \app\models\trx\LeaveRequest::find()
+        $pendingApprovals = LeaveRequest::find()
             ->innerJoinWith('user')
-            ->where(['user.id_company' => $id_company, 'leave_request.status' => \app\models\trx\LeaveRequest::STATUS_PENDING])
+            ->where(['user.id_company' => $id_company, 'leave_request.status' => LeaveRequest::STATUS_PENDING])
+            ->andFilterWhere(['leave_request.id_user' => $isApprovalLeave ? null: $user->id_user])
             ->count();
 
-        $monthlyPayroll = \app\models\trx\Payroll::find()
-            ->where(['id_company' => $id_company, 'status' => \app\models\trx\Payroll::STATUS_APPROVE])
+        $monthlyPayroll = Payroll::find()
+            ->where(['id_company' => $id_company, 'status' => Payroll::STATUS_APPROVE])
             ->andWhere(['>=', 'period_start', $startDate])
             ->andWhere(['<=', 'period_end', $endDate])
+            ->andFilterWhere(['id_user' => $isApprovalPayroll ? null: $user->id_user])
             ->sum('net_salary') ?: 0;
 
-        $recentAttendances = \app\models\trx\Schedule::find()
+        $recentAttendances = Schedule::find()
             ->with(['user'])
             ->where(['id_company' => $id_company])
             ->andWhere(['between', 'date', $startDate, $endDate])
             ->andWhere(['<', 'checkin_start', DBHelper::now()])
+            ->andFilterWhere(['schedule.id_user' => $isAllUser ? null: $user->id_user])
             ->orderBy(['date' => SORT_DESC, 'checkin_datetime' => SORT_DESC])
             ->limit(10)
             ->all();

@@ -21,16 +21,15 @@ class PayrollController extends BaseController
 {
     public function actionIndex($month = null, $year = null)
     {
-        $month = $month ?? date('m');
-        $year = $year ?? date('Y');
+        $month = $month ?: date('n');
+        $year = $year ?: date('Y');
 
-        $periodStart = "$year-$month-01";
+        $periodStart = date('Y-m-d', strtotime("$year-$month-01"));
         $periodEnd = date('Y-m-t', strtotime($periodStart));
 
-        $query = Payroll::find()->where(['id_company' => $this->id_company])
-            ->andWhere(['period_start' => $periodStart, 'period_end' => $periodEnd]);
-
-        $models = $query->all();
+        $models = Payroll::find()->where(['id_company' => $this->id_company])
+            ->andWhere(['period_start' => $periodStart, 'period_end' => $periodEnd])
+            ->all();
 
         // Get company allowance structure for display
         $company = Company::findOne($this->id_company);
@@ -40,8 +39,6 @@ class PayrollController extends BaseController
             'models' => $models,
             'month' => $month,
             'year' => $year,
-            'periodStart' => $periodStart,
-            'periodEnd' => $periodEnd,
             'companyAllowances' => $companyAllowances,
         ]);
     }
@@ -59,15 +56,19 @@ class PayrollController extends BaseController
         // $startDate = date('Y-m-' . $cutoffSalary, strtotime('-1 month'));
         // $endDate = date('Y-m-' . $cutoffSalary, strtotime($periodEnd));
 
-        $overtimeList = Schedule::find()
+        $modelOvertime = Schedule::find()
             ->andWhere(['id_company' => $this->id_company, 'is_overtime' => true])
             ->andWhere(['>', 'total_workhour', 0])
             ->andWhere(['>=', 'date', $periodStart])
             ->andWhere(['<=', 'date', $periodEnd])
             ->andWhere(['!=', 'checkin_datetime', null])
             ->andWhere(['!=', 'checkout_datetime', null])
-            ->indexBy(['id_user'])
             ->all();
+
+        $overtimeList = [];
+        foreach ($modelOvertime as $m) {
+            $overtimeList[$m->id_user][] = $m;
+        }
 
         $transaction = Yii::$app->db->beginTransaction();
         try {
@@ -87,7 +88,7 @@ class PayrollController extends BaseController
                     $payroll->period_end = $periodEnd;
                     $payroll->basic_salary = $user->basic_salary ?? 0;
                     $payroll->ptkp = $user->ptkp;
-                    $payroll->hourly_rate = $user->hourly_rate?:0;
+                    $payroll->hourly_rate = $user->hourly_rate ?: 0;
 
                     // Calculate total allowance from user's allowance data
                     $allowanceData = [];
@@ -136,90 +137,90 @@ class PayrollController extends BaseController
         return $this->redirect(['index', 'month' => $month, 'year' => $year]);
     }
 
-    public function actionUpdateCell()
-    {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        $id = Yii::$app->request->post('id');
-        $field = Yii::$app->request->post('field');
-        $value = Yii::$app->request->post('value');
+    // public function actionUpdateCell()
+    // {
+    //     Yii::$app->response->format = Response::FORMAT_JSON;
+    //     $id = Yii::$app->request->post('id');
+    //     $field = Yii::$app->request->post('field');
+    //     $value = Yii::$app->request->post('value');
 
-        $model = $this->findModel($id);
+    //     $model = $this->findModel($id);
 
-        if ($model->status !== 'PENDING') {
-            return ['success' => false, 'message' => 'Cannot update verified payroll.'];
-        }
+    //     if ($model->status !== 'PENDING') {
+    //         return ['success' => false, 'message' => 'Cannot update verified payroll.'];
+    //     }
 
-        // Handle allowance item updates
-        if (strpos($field, 'allowance_item_') === 0) {
-            $uuid = str_replace('allowance_item_', '', $field);
-            $allowanceData = $model->allowance ?? [];
-            if (is_string($allowanceData)) {
-                $allowanceData = json_decode($allowanceData, true) ?? [];
-            }
-            $allowanceIndexed = ArrayHelper::index($allowanceData, 'uuid');
+    //     // Handle allowance item updates
+    //     if (strpos($field, 'allowance_item_') === 0) {
+    //         $uuid = str_replace('allowance_item_', '', $field);
+    //         $allowanceData = $model->allowance ?? [];
+    //         if (is_string($allowanceData)) {
+    //             $allowanceData = json_decode($allowanceData, true) ?? [];
+    //         }
+    //         $allowanceIndexed = ArrayHelper::index($allowanceData, 'uuid');
 
-            if (isset($allowanceIndexed[$uuid])) {
-                $allowanceIndexed[$uuid]['value'] = intval($value);
-                $model->allowance = array_values($allowanceIndexed);
+    //         if (isset($allowanceIndexed[$uuid])) {
+    //             $allowanceIndexed[$uuid]['value'] = intval($value);
+    //             $model->allowance = array_values($allowanceIndexed);
 
-                // Recalculate total allowance and net salary
-                $totalAllowance = 0;
-                $allowanceForCalc = $model->allowance;
-                if (is_string($allowanceForCalc)) {
-                    $allowanceForCalc = json_decode($allowanceForCalc, true) ?? [];
-                }
-                if (is_array($allowanceForCalc)) {
-                    foreach ($allowanceForCalc as $item) {
-                        $totalAllowance += $item['value'] ?? 0;
-                    }
-                }
-                $model->gross_salary = $model->basic_salary + $totalAllowance + $model->overtime;
-                $model->net_salary = $model->gross_salary - $model->dedection - $model->tax;
+    //             // Recalculate total allowance and net salary
+    //             $totalAllowance = 0;
+    //             $allowanceForCalc = $model->allowance;
+    //             if (is_string($allowanceForCalc)) {
+    //                 $allowanceForCalc = json_decode($allowanceForCalc, true) ?? [];
+    //             }
+    //             if (is_array($allowanceForCalc)) {
+    //                 foreach ($allowanceForCalc as $item) {
+    //                     $totalAllowance += $item['value'] ?? 0;
+    //                 }
+    //             }
+    //             $model->gross_salary = $model->basic_salary + $totalAllowance + $model->overtime;
+    //             $model->net_salary = $model->gross_salary - $model->dedection - $model->tax;
 
-                if ($model->save()) {
-                    return [
-                        'success' => true,
-                        'gross_salary' => $model->gross_salary,
-                        'gross_salary_formatted' => number_format($model->gross_salary, 0, ',', '.'),
-                        'net_salary' => $model->net_salary,
-                        'net_salary_formatted' => number_format($model->net_salary, 0, ',', '.'),
-                        'total_allowance' => $totalAllowance,
-                        'total_allowance_formatted' => number_format($totalAllowance, 0, ',', '.')
-                    ];
-                }
-            }
-        }
+    //             if ($model->save()) {
+    //                 return [
+    //                     'success' => true,
+    //                     'gross_salary' => $model->gross_salary,
+    //                     'gross_salary_formatted' => number_format($model->gross_salary, 0, ',', '.'),
+    //                     'net_salary' => $model->net_salary,
+    //                     'net_salary_formatted' => number_format($model->net_salary, 0, ',', '.'),
+    //                     'total_allowance' => $totalAllowance,
+    //                     'total_allowance_formatted' => number_format($totalAllowance, 0, ',', '.')
+    //                 ];
+    //             }
+    //         }
+    //     }
 
-        if (in_array($field, ['basic_salary', 'overtime', 'dedection', 'tax'])) {
-            $model->$field = intval($value);
+    //     if (in_array($field, ['basic_salary', 'overtime', 'dedection', 'tax'])) {
+    //         $model->$field = intval($value);
 
-            // Recalculate net salary with total allowance
-            $totalAllowance = 0;
-            $allowanceForCalc = $model->allowance;
-            if (is_string($allowanceForCalc)) {
-                $allowanceForCalc = json_decode($allowanceForCalc, true) ?? [];
-            }
-            if (is_array($allowanceForCalc)) {
-                foreach ($allowanceForCalc as $item) {
-                    $totalAllowance += $item['value'] ?? 0;
-                }
-            }
-            $model->gross_salary = $model->basic_salary + $totalAllowance + $model->overtime;
-            $model->net_salary = $model->gross_salary - $model->dedection - $model->tax;
+    //         // Recalculate net salary with total allowance
+    //         $totalAllowance = 0;
+    //         $allowanceForCalc = $model->allowance;
+    //         if (is_string($allowanceForCalc)) {
+    //             $allowanceForCalc = json_decode($allowanceForCalc, true) ?? [];
+    //         }
+    //         if (is_array($allowanceForCalc)) {
+    //             foreach ($allowanceForCalc as $item) {
+    //                 $totalAllowance += $item['value'] ?? 0;
+    //             }
+    //         }
+    //         $model->gross_salary = $model->basic_salary + $totalAllowance + $model->overtime;
+    //         $model->net_salary = $model->gross_salary - $model->dedection - $model->tax;
 
-            if ($model->save()) {
-                return [
-                    'success' => true,
-                    'gross_salary' => $model->gross_salary,
-                    'gross_salary_formatted' => number_format($model->gross_salary, 0, ',', '.'),
-                    'net_salary' => $model->net_salary,
-                    'net_salary_formatted' => number_format($model->net_salary, 0, ',', '.')
-                ];
-            }
-        }
+    //         if ($model->save()) {
+    //             return [
+    //                 'success' => true,
+    //                 'gross_salary' => $model->gross_salary,
+    //                 'gross_salary_formatted' => number_format($model->gross_salary, 0, ',', '.'),
+    //                 'net_salary' => $model->net_salary,
+    //                 'net_salary_formatted' => number_format($model->net_salary, 0, ',', '.')
+    //             ];
+    //         }
+    //     }
 
-        return ['success' => false, 'message' => 'Failed to update.'];
-    }
+    //     return ['success' => false, 'message' => 'Failed to update.'];
+    // }
 
     public function actionVerify()
     {
