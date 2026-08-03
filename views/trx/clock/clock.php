@@ -14,7 +14,7 @@ $this->title = $typeName . ' - ' . date('d M Y', strtotime($model->date));
 $this->params['breadcrumbs'][] = ['label' => 'Presensi', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 
-$saveUrl = Url::to(['save', 'id' => $model->id_schedule, 'type' => $type]);
+$saveUrl = Url::to(['save']);
 $indexUrl = Url::to(['index']);
 ?>
 

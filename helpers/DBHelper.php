@@ -61,18 +61,20 @@ class DBHelper
         $dashboard = 1;
         $report = 2;
         $master = 3;
-        $hr = 4;
-        $employee = 5;
-        $setting = 6;
-        $log = 7;
+        $presensi = 4;
+        $payroll = 5;
+        $izin = 6;
+        $setting = 7;
+        $log = 8;
 
         $defIcon = 'bi-border-width';
         // name, parent, route, stat
         $menu[$dashboard] = ['Dashboard', null, '/site/index', 1, 'bi-house'];
         $menu[$report] = ['Laporan', null, null, 1, 'bi-bar-chart'];
         $menu[$master] = ['Master', null, null, 1, 'bi-file-earmark-text'];
-        $menu[$hr] = ['HR', null, null, 1, 'bi-hr'];
-        $menu[$employee] = ['Pegawai', null, null, 1, 'bi-person'];
+        $menu[$presensi] = ['Presensi', null, null, 1, 'bi-hr'];
+        $menu[$payroll] = ['Payroll', null, '/trx/payroll/index', 1, 'bi-cash'];
+        $menu[$izin] = ['Izin', null, '/trx/leave-request/index', 1, 'bi-door-open'];
         $menu[$setting] = ['Setting', null, null, 1, 'bi-gear'];
         $menu[$log] = ['Log', null, '/log', 1, 'bi-hdd-stack'];
 
@@ -91,13 +93,10 @@ class DBHelper
             ['Role', $master, '/master/role/index', 1, $defIcon],
             ['Tunjangan', $master, '/master/allowance/index', 1, $defIcon],
             ['User', $master, '/master/user/index', 1, $defIcon],
-            // HR
-            ['Jadwal kerja', $hr, '/trx/schedule/index', 1, $defIcon],
-            ['Kehadiran', $hr, '/trx/attendance/index', 1, $defIcon],
-            ['Payroll', $hr, '/trx/payroll/index', 1, $defIcon],
-            // Pegawai
-            ['Presensi', $employee, '/trx/clock/index', 1, $defIcon],
-            ['Izin & Cuti', $employee, '/trx/leave-request/index', 1, $defIcon],
+            // Presensi
+            ['Absensi', $presensi, '/trx/clock/index', 1, $defIcon],
+            ['Jadwal kerja', $presensi, '/trx/schedule/index', 1, $defIcon],
+            ['Kehadiran', $presensi, '/trx/attendance/index', 1, $defIcon],
             // Setting
             ['Hak Akses Menu', $setting, '/setting/access-rule/index', 1, $defIcon],
         ];

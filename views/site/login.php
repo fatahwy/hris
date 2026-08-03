@@ -17,8 +17,12 @@ $this->registerCssFile('@web/css/login.css', ['depends' => [\app\assets\AppAsset
     <!-- Left Panel: Logo & Branding -->
     <div class="login-left">
         <div class="login-branding">
-            <img src="<?= Yii::getAlias('@web/images/login-logo.png') ?>" alt="Pranata HR Logo" class="login-logo"
-                id="login-logo">
+            <div class="login-logo" id="login-logo" style="background-color: white;padding: 8px;">
+                <img width="100%" src="<?= Yii::getAlias('@web/images/login-logo.png') ?>" alt="Pranata HR Logo">
+                <!-- <div style="font-size:12px;margin-top: 8px;">
+                    by <a href="https://gerimisstudio.com/" target="_blank">Gerimis Studio</a>
+                </div> -->
+            </div>
         </div>
     </div>
 

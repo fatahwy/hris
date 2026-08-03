@@ -157,7 +157,7 @@ class ScheduleController extends BaseController
             if ($isPerHour) { // is per hour
                 $mShift = Shift::findOne(GeneralHelper::ID_OVERTIME);
 
-                $model->workhour_start = date('Y-m-d H:i:s', strtotime($model->workhour_date . ' ' . $post['workhour_start']));
+                $model->workhour_start = date('Y-m-d H:i:s', strtotime($model->date . ' ' . $post['workhour_start']));
                 $model->workhour_end = date('Y-m-d H:i:s', strtotime($model->workhour_start) . " +" . $post['workhour_end'] . " hours");
                 $model->checkin_start = date('Y-m-d 00:00:00', strtotime($model->workhour_start));
             } else { // is long shift

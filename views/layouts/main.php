@@ -31,12 +31,12 @@ if (!Yii::$app->user->isGuest && !Yii::$app->request->isAjax) {
         $pendingCheckin = Schedule::getAvailableSchedule();
 
         if ($pendingCheckin) {
-            Yii::$app->response->redirect(['/trx/clock', 'id' => $pendingCheckin->id_schedule, 'type' => 'in'])->send();
+            Yii::$app->response->redirect(['/trx/clock'])->send();
             exit;
         }
 
         // 2. Check if user needs a checkout warning
-        $checkoutAlertSchedule = $pendingCheckin ? Schedule::getActiveScheduleToClockOut() : null;
+        $checkoutAlertSchedule = $pendingCheckin ? null : Schedule::getActiveScheduleToClockOut();
     }
 }
 
@@ -676,12 +676,11 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                         <div>
                             <strong>Peringatan Checkout!</strong> Jam kerja shift Anda
                             (<?= Html::encode($checkoutAlertSchedule->shift_name) ?>) telah berakhir pada pukul
-                            <?= date('H:i', strtotime($checkoutAlertSchedule->workhour_end)) ?>. Harap segera lakukan
-                            checkout kehadiran.
+                            <?= date('H:i', strtotime($checkoutAlertSchedule->workhour_end)) ?>. Harap segera lakukan checkout.
                         </div>
                     </div>
                     <div class="ms-5 ms-md-0 me-md-4">
-                        <?= Html::a('<i class="bi bi-box-arrow-left me-1"></i> Checkout Sekarang', ['/trx/clock', 'id' => $checkoutAlertSchedule->id_schedule, 'type' => 'out'], ['class' => 'btn btn-warning btn-sm text-dark fw-bold rounded-2 px-3']) ?>
+                        <?= Html::a('<i class="bi bi-box-arrow-left me-1"></i> Checkout Sekarang', ['/trx/clock'], ['class' => 'btn btn-warning btn-sm text-dark fw-bold rounded-2 px-3']) ?>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>

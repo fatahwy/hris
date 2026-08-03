@@ -137,97 +137,9 @@ class PayrollController extends BaseController
         return $this->redirect(['index', 'month' => $month, 'year' => $year]);
     }
 
-    // public function actionUpdateCell()
-    // {
-    //     Yii::$app->response->format = Response::FORMAT_JSON;
-    //     $id = Yii::$app->request->post('id');
-    //     $field = Yii::$app->request->post('field');
-    //     $value = Yii::$app->request->post('value');
-
-    //     $model = $this->findModel($id);
-
-    //     if ($model->status !== 'PENDING') {
-    //         return ['success' => false, 'message' => 'Cannot update verified payroll.'];
-    //     }
-
-    //     // Handle allowance item updates
-    //     if (strpos($field, 'allowance_item_') === 0) {
-    //         $uuid = str_replace('allowance_item_', '', $field);
-    //         $allowanceData = $model->allowance ?? [];
-    //         if (is_string($allowanceData)) {
-    //             $allowanceData = json_decode($allowanceData, true) ?? [];
-    //         }
-    //         $allowanceIndexed = ArrayHelper::index($allowanceData, 'uuid');
-
-    //         if (isset($allowanceIndexed[$uuid])) {
-    //             $allowanceIndexed[$uuid]['value'] = intval($value);
-    //             $model->allowance = array_values($allowanceIndexed);
-
-    //             // Recalculate total allowance and net salary
-    //             $totalAllowance = 0;
-    //             $allowanceForCalc = $model->allowance;
-    //             if (is_string($allowanceForCalc)) {
-    //                 $allowanceForCalc = json_decode($allowanceForCalc, true) ?? [];
-    //             }
-    //             if (is_array($allowanceForCalc)) {
-    //                 foreach ($allowanceForCalc as $item) {
-    //                     $totalAllowance += $item['value'] ?? 0;
-    //                 }
-    //             }
-    //             $model->gross_salary = $model->basic_salary + $totalAllowance + $model->overtime;
-    //             $model->net_salary = $model->gross_salary - $model->dedection - $model->tax;
-
-    //             if ($model->save()) {
-    //                 return [
-    //                     'success' => true,
-    //                     'gross_salary' => $model->gross_salary,
-    //                     'gross_salary_formatted' => number_format($model->gross_salary, 0, ',', '.'),
-    //                     'net_salary' => $model->net_salary,
-    //                     'net_salary_formatted' => number_format($model->net_salary, 0, ',', '.'),
-    //                     'total_allowance' => $totalAllowance,
-    //                     'total_allowance_formatted' => number_format($totalAllowance, 0, ',', '.')
-    //                 ];
-    //             }
-    //         }
-    //     }
-
-    //     if (in_array($field, ['basic_salary', 'overtime', 'dedection', 'tax'])) {
-    //         $model->$field = intval($value);
-
-    //         // Recalculate net salary with total allowance
-    //         $totalAllowance = 0;
-    //         $allowanceForCalc = $model->allowance;
-    //         if (is_string($allowanceForCalc)) {
-    //             $allowanceForCalc = json_decode($allowanceForCalc, true) ?? [];
-    //         }
-    //         if (is_array($allowanceForCalc)) {
-    //             foreach ($allowanceForCalc as $item) {
-    //                 $totalAllowance += $item['value'] ?? 0;
-    //             }
-    //         }
-    //         $model->gross_salary = $model->basic_salary + $totalAllowance + $model->overtime;
-    //         $model->net_salary = $model->gross_salary - $model->dedection - $model->tax;
-
-    //         if ($model->save()) {
-    //             return [
-    //                 'success' => true,
-    //                 'gross_salary' => $model->gross_salary,
-    //                 'gross_salary_formatted' => number_format($model->gross_salary, 0, ',', '.'),
-    //                 'net_salary' => $model->net_salary,
-    //                 'net_salary_formatted' => number_format($model->net_salary, 0, ',', '.')
-    //             ];
-    //         }
-    //     }
-
-    //     return ['success' => false, 'message' => 'Failed to update.'];
-    // }
-
-    public function actionVerify()
+    public function actionVerify($id)
     {
-        $id = $this->request->post('id');
-
-        if ($id) {
-            Yii::$app->response->format = Response::FORMAT_JSON;
+        if ($this->request->isPost) {
             $model = $this->findModel($id);
 
             if ($model->status === Payroll::STATUS_PENDING) {
@@ -235,22 +147,19 @@ class PayrollController extends BaseController
                 $model->id_user_verify = $this->user->id_user;
                 $model->user_verify_at = DBHelper::now();
                 if ($model->save()) {
-                    return ['success' => true];
+                    $strtotime = strtotime($model->period_start);
+                    GeneralHelper::flashSucceed('Payroll telah diverifikasi');
+                    return $this->redirect(['index', 'month' => date('n', $strtotime), 'year' => date('Y', $strtotime)]);
                 }
             }
-        } else {
-            return ['success' => false, 'message' => 'ID payroll tidak ditemukan.'];
         }
 
-        return ['success' => false, 'message' => 'Verification failed.'];
+        return $this->redirect(['index']);
     }
 
-    public function actionApprove()
+    public function actionApprove($id)
     {
-        $id = $this->request->post('id');
-        if ($id) {
-            Yii::$app->response->format = Response::FORMAT_JSON;
-
+        if ($this->request->isPost) {
             if (!RoleHelper::approvalPayroll()) {
                 throw new ForbiddenHttpException('You do not have permission to approve payroll.');
             }
@@ -262,14 +171,14 @@ class PayrollController extends BaseController
                 $model->id_user_approve = $this->user->id_user;
                 $model->user_approve_at = DBHelper::now();
                 if ($model->save()) {
-                    return ['success' => true];
+                    $strtotime = strtotime($model->period_start);
+                    GeneralHelper::flashSucceed('Payroll telah disetujui');
+                    return $this->redirect(['index', 'month' => date('n', $strtotime), 'year' => date('Y', $strtotime)]);
                 }
             }
-        } else {
-            return ['success' => false, 'message' => 'ID payroll tidak ditemukan.'];
         }
 
-        return ['success' => false, 'message' => 'Approval failed.'];
+        return $this->redirect(['index']);
     }
 
     protected function findModel($id)
