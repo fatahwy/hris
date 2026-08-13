@@ -51,8 +51,11 @@ class Schedule extends BaseModel
     const STATUS_PRESENT_EARLY_CLOCK_OUT = 'Early_Clock_Out';
     const STATUS_PRESENT_LATE = 'Late';
     const STATUS_PRESENT_ABSENT = 'Absent';
-
-    public $status_present;
+    const STATUS_PRESENT_PAID_LEAVE = 'Paid_Leave';
+    const STATUS_PRESENT_UNPAID_LEAVE = 'Unpaid_Leave';
+    const STATUS_PRESENT_SICK = 'Sick';
+    const STATUS_PRESENT_DAY_OFF = 'Day_Off';
+    const STATUS_PRESENT_HOLIDAY = 'Holiday';
 
     public static function optsStatusPresent()
     {
@@ -60,6 +63,11 @@ class Schedule extends BaseModel
             self::STATUS_PRESENT_EARLY_CLOCK_OUT => 'Pulang Cepat (Early Clock Out)',
             self::STATUS_PRESENT_LATE => 'Terlambat (Late)',
             self::STATUS_PRESENT_ABSENT => 'Mangkir / Tidak Hadir (Absent)',
+            // self::STATUS_PRESENT_PAID_LEAVE => 'Cuti Dibayar (Paid Leave)',
+            // self::STATUS_PRESENT_UNPAID_LEAVE => 'Cuti Tidak Dibayar (Unpaid Leave)',
+            // self::STATUS_PRESENT_SICK => 'Sakit (Sick)',
+            // self::STATUS_PRESENT_DAY_OFF => 'Hari Libur (Day Off)',
+            // self::STATUS_PRESENT_HOLIDAY => 'Hari Libur Nasional (Holiday)',
         ];
     }
 
@@ -208,13 +216,51 @@ class Schedule extends BaseModel
         return $schedule;
     }
 
-    public function beforeSubmit()
+    public function beforeSave($insert)
     {
+        if (!parent::beforeSave($insert)) {
+            return false;
+        }
+
         if ($this->total_workhour == 0 && !empty($this->checkin_datetime) && !empty($this->checkout_datetime)) {
             $start = strtotime($this->workhour_start);
             $end = strtotime($this->workhour_end);
             $diffInSeconds = $end - $start;
             $this->total_workhour = round($diffInSeconds / 3600);
+        }
+
+        // Determine status_present (Absent, Early Clock Out, Late)
+        $isAbsent = ($this->status === self::STATUS_ABSENT || $this->status_present === self::STATUS_PRESENT_ABSENT);
+        if (!$isAbsent && empty($this->checkin_datetime) && !empty($this->date) && $this->date < date('Y-m-d')) {
+            $isAbsent = true;
+        }
+
+        $isEarly = false;
+        if (!empty($this->checkout_datetime) && !empty($this->workhour_end) && !empty($this->date)) {
+            $workhourEnd = strtotime($this->date . ' ' . $this->workhour_end);
+            $checkout = strtotime($this->checkout_datetime);
+            if ($checkout && $workhourEnd && $checkout < $workhourEnd) {
+                $isEarly = true;
+            }
+        }
+
+        $isLate = false;
+        if (!empty($this->checkin_datetime) && !empty($this->workhour_start) && !empty($this->date)) {
+            $workhourStart = strtotime($this->date . ' ' . $this->workhour_start);
+            $checkin = strtotime($this->checkin_datetime);
+            if ($checkin && $workhourStart && $checkin > $workhourStart) {
+                $isLate = true;
+            }
+        }
+
+        if ($isAbsent) {
+            $this->status_present = self::STATUS_PRESENT_ABSENT;
+        } elseif ($isEarly) {
+            $this->status_present = self::STATUS_PRESENT_EARLY_CLOCK_OUT;
+        } elseif ($isLate) {
+            $this->status_present = self::STATUS_PRESENT_LATE;
+        } else {
+            $this->status_present = null;
         }
 
         return true;

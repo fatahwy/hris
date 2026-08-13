@@ -15,7 +15,7 @@ class CronController extends Controller
     public function actionIndex()
     {
         Schedule::updateAll(
-            ['status' => Schedule::STATUS_ABSENT],
+            ['status' => Schedule::STATUS_ABSENT, 'status_present' => Schedule::STATUS_PRESENT_ABSENT],
             ['and', ['status' => Schedule::STATUS_SCHEDULED], ['<', 'workhour_end', DBHelper::now()]]
         );
 
