@@ -70,6 +70,22 @@ class LeaveRequestController extends BaseController
                 $model->id_approver = $this->user->id_user;
                 $model->approve_reason = $temp->approve_reason;
                 $model->approve_at = DBHelper::now();
+
+                $mLeaveType = $model->leaveType;
+                $permissionOnDuty = in_array((int) $model->id_leave_type, LeaveType::P_ON_DUTY);
+                if (!$permissionOnDuty && $mLeaveType->category == LeaveType::CATEGORY_LEAVE) {
+                    $mSchedule = Schedule::find()
+                        ->where(['id_user' => $model->id_user])
+                        ->andWhere(['>=', 'date', $model->start_date])
+                        ->andWhere(['<=', 'date', $model->end_date])
+                        ->all();
+                    if ($mSchedule) {
+                        foreach ($mSchedule as $value) {
+                            $value->status_present = Schedule::STATUS_PRESENT_PAID_LEAVE;
+                            $value->save();
+                        }
+                    }
+                }
             }
 
             if ($model->save()) {
