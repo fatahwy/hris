@@ -14,6 +14,7 @@ use Yii;
  * @property int $id_leave_request
  * @property int $id_user
  * @property int $id_leave_type
+ * @property int|null $id_schedule
  * @property string $start_date
  * @property string $end_date
  * @property int $total_day
@@ -26,6 +27,7 @@ use Yii;
  *
  * @property Account $approver
  * @property LeaveType $leaveType
+ * @property Schedule|null $schedule
  * @property Account $user
  */
 class LeaveRequest extends BaseModel
@@ -52,14 +54,28 @@ class LeaveRequest extends BaseModel
     public function rules()
     {
         return [
-            [['attachment'], 'default', 'value' => null],
+            [['attachment', 'id_schedule'], 'default', 'value' => null],
             [['id_user', 'id_leave_type', 'start_date', 'end_date', 'total_day', 'reason', 'status'], 'required'],
+            [
+                ['id_schedule'],
+                'required',
+                'when' => function ($model) {
+                    return in_array((int) $model->id_leave_type, LeaveType::P_ON_DUTY);
+                },
+                'whenClient' => "function (attribute, value) {
+                var scheduleTypes = [" . implode(',', LeaveType::P_ON_DUTY) . "];
+                var leaveTypeId = $('#leaverequest-id_leave_type').val();
+                return scheduleTypes.indexOf(parseInt(leaveTypeId)) !== -1;
+            }",
+                'message' => 'Jadwal Kerja harus dipilih untuk jenis izin ini.'
+            ],
             [['id_approver', 'approve_reason'], 'required', 'on' => 'approval'],
-            [['id_user', 'id_leave_type', 'total_day', 'id_approver'], 'integer'],
+            [['id_user', 'id_leave_type', 'id_schedule', 'total_day', 'id_approver'], 'integer'],
             [['start_date', 'end_date', 'approve_at', 'created_at', 'updated_at'], 'safe'],
             [['reason', 'attachment', 'status', 'approve_reason'], 'string'],
             ['status', 'in', 'range' => array_keys(self::optsStatus())],
             [['id_leave_type'], 'exist', 'skipOnError' => true, 'targetClass' => LeaveType::class, 'targetAttribute' => ['id_leave_type' => 'id_leave_type']],
+            [['id_schedule'], 'exist', 'skipOnError' => true, 'targetClass' => Schedule::class, 'targetAttribute' => ['id_schedule' => 'id_schedule']],
             [['id_user'], 'exist', 'skipOnError' => true, 'targetClass' => Account::class, 'targetAttribute' => ['id_user' => 'id_user']],
             [['id_approver'], 'exist', 'skipOnError' => true, 'targetClass' => Account::class, 'targetAttribute' => ['id_approver' => 'id_user']],
             ['total_day', 'validateMaxDay'],
@@ -204,12 +220,14 @@ class LeaveRequest extends BaseModel
      */
     public function attributeLabels()
     {
+        $flag = in_array((int) $this->id_leave_type, LeaveType::P_ON_DUTY);
         return [
             'id_leave_request' => 'Id',
             'id_user' => 'Pegawai',
             'id_leave_type' => 'Jenis Cuti',
-            'start_date' => 'Tanggal Mulai',
-            'end_date' => 'Tanggal Selesai',
+            'id_schedule' => 'Jadwal Kerja',
+            'start_date' => $flag ? 'Jam Mulai' : 'Tanggal Mulai',
+            'end_date' => $flag ? 'Jam Selesai' : 'Tanggal Selesai',
             'total_day' => 'Total Hari',
             'reason' => 'Alasan',
             'attachment' => 'Attachment',
@@ -238,6 +256,16 @@ class LeaveRequest extends BaseModel
     public function getLeaveType()
     {
         return $this->hasOne(LeaveType::class, ['id_leave_type' => 'id_leave_type']);
+    }
+
+    /**
+     * Gets query for [[Schedule]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getSchedule()
+    {
+        return $this->hasOne(Schedule::class, ['id_schedule' => 'id_schedule']);
     }
 
     /**

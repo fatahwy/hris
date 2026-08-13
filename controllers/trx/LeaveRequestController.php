@@ -5,9 +5,12 @@ namespace app\controllers\trx;
 use app\helpers\DBHelper;
 use app\helpers\GeneralHelper;
 use app\helpers\RoleHelper;
+use app\models\master\LeaveType;
 use app\models\trx\LeaveRequest;
+use app\models\trx\Schedule;
 use app\models\trx\search\LeaveRequestSearch;
 use app\controllers\BaseController;
+use Yii;
 use yii\bootstrap5\Html;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -90,9 +93,24 @@ class LeaveRequestController extends BaseController
         }
         if (!$model) {
             $model = new LeaveRequest();
+            $model->load($this->request->get());
         }
 
+        $permissionOnDuty = in_array((int) $model->id_leave_type, LeaveType::P_ON_DUTY);
+
         if ($model->load($this->request->post())) {
+            $permissionOnDuty = in_array((int) $model->id_leave_type, LeaveType::P_ON_DUTY);
+
+            if ($permissionOnDuty) {
+                $mSchedule = Schedule::findOne(['id_schedule' => $model->id_schedule, 'id_user' => $this->user->id_user]);
+                if ($mSchedule) {
+                    $model->start_date = $mSchedule->date . ' ' . $model->start_date;
+                    $model->end_date = $mSchedule->date . ' ' . $model->end_date;
+                }
+            } else {
+                $model->id_schedule = null;
+            }
+
             $model->id_user = $this->user->id_user;
             $model->id_approver = null;
             $model->approve_reason = null;
@@ -106,6 +124,7 @@ class LeaveRequestController extends BaseController
         }
 
         return $this->render('process', [
+            'permissionOnDuty' => $permissionOnDuty,
             'model' => $model,
         ]);
     }

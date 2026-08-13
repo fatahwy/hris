@@ -88,7 +88,7 @@ class DBHelper
             ['Perusahaan', $master, '/master/company/index', 1, $defIcon],
             ['Departemen', $master, '/master/department/index', 1, $defIcon],
             ['Jabatan', $master, '/master/position/index', 1, $defIcon],
-            ['Izin & Cuti', $master, '/master/leave-type/index', 1, $defIcon],
+            ['Cuti', $master, '/master/leave-type/index', 1, $defIcon],
             ['Shift', $master, '/master/shift/index', 1, $defIcon],
             ['Role', $master, '/master/role/index', 1, $defIcon],
             ['Tunjangan', $master, '/master/allowance/index', 1, $defIcon],
@@ -98,6 +98,7 @@ class DBHelper
             ['Jadwal kerja', $presensi, '/trx/schedule/index', 1, $defIcon],
             ['Kehadiran', $presensi, '/trx/attendance/index', 1, $defIcon],
             // Setting
+            ['Umum', $setting, '/setting/general/index', 1, $defIcon],
             ['Hak Akses Menu', $setting, '/setting/access-rule/index', 1, $defIcon],
         ];
 
@@ -169,7 +170,7 @@ class DBHelper
             '/master/company/*' => "Master|Perusahaan",
             '/master/department/*' => "Master|Departemen",
             '/master/position/*' => "Master|Jabatan",
-            '/master/leave-type/*' => "Master|Tipe Cuti",
+            '/master/leave-type/*' => "Master|Cuti",
             '/master/shift/*' => "Master|Shift",
             '/master/role/*' => "Master|Role",
             '/master/allowance/*' => "Master|Tunjangan",

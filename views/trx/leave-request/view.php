@@ -55,6 +55,19 @@ $this->params['breadcrumbs'][] = $this->title;
                             return $model->leaveType->name ?? null;
                         }
                     ],
+                    [
+                        'attribute' => 'id_schedule',
+                        'value' => function ($model) {
+                            if ($model->schedule) {
+                                $s = $model->schedule;
+                                $workStart = date('H:i', strtotime($s->workhour_start));
+                                $workEnd = date('H:i', strtotime($s->workhour_end));
+                                return $s->date . ' - ' . $s->shift_name . ' (' . $workStart . ' - ' . $workEnd . ')';
+                            }
+                            return null;
+                        },
+                        'visible' => !empty($model->id_schedule),
+                    ],
                     'start_date:date',
                     'end_date:date',
                     'total_day',

@@ -45,6 +45,7 @@ class LeaveTypeController extends BaseController
 
         if ($model->load($this->request->post())) {
             $model->id_company = $this->id_company;
+            $model->category = LeaveType::CATEGORY_LEAVE;
 
             if ($model->save()) {
                 GeneralHelper::flashSucceed();
@@ -74,7 +75,12 @@ class LeaveTypeController extends BaseController
      */
     protected function findModel($id)
     {
-        if (($model = LeaveType::findOne(['uuid' => $id])) !== null) {
+        $model = LeaveType::find()
+            ->andWhere(['uuid' => $id])
+            ->andWhere(['category' => LeaveType::CATEGORY_LEAVE])
+            ->andWhere(['not', ['id_leave_type' => LeaveType::RES_ID]])
+            ->one();
+        if ($model !== null) {
             return $model;
         }
 

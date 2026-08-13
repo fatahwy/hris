@@ -1,32 +1,39 @@
 <?php
 
 use app\models\master\LeaveType;
-use app\models\master\Account;
 use kartik\form\ActiveForm;
 use kartik\select2\Select2;
 use yii\bootstrap5\Html;
-use yii\helpers\ArrayHelper;
-use app\helpers\GeneralHelper;
+use yii\helpers\Url;
+use yii\web\JsExpression;
 
 /** @var yii\web\View $this */
 /** @var app\models\trx\LeaveRequest $model */
 
 $isApproval = !empty($isApproval);
 if ($isApproval) {
-    $this->title = 'Approval Leave Request';
+    $this->title = 'Approval Izin & Cuti';
 } else {
-    $this->title = $model->isNewRecord ? 'Create Leave Request' : 'Update Leave Request';
+    $this->title = $model->isNewRecord ? 'Create Izin & Cuti' : 'Update Izin & Cuti';
 }
 $this->params['breadcrumbs'][] = ['label' => 'Izin & Cuti', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 
 $leaveTypes = LeaveType::getList();
+
+$initScheduleText = '';
+if ($model->id_schedule && $model->schedule) {
+    $s = $model->schedule;
+    $workStart = date('H:i', strtotime($s->workhour_start));
+    $workEnd = date('H:i', strtotime($s->workhour_end));
+    $initScheduleText = $s->date . ' - ' . $s->shift_name . ' (' . $workStart . ' - ' . $workEnd . ')';
+}
 ?>
 
 <div class="card modern-form-card">
     <div class="card-body p-4">
 
-        <?php $form = ActiveForm::begin(); ?>
+        <?php $form = ActiveForm::begin(['id' => 'leave-request-form']); ?>
 
         <div class="mb-4 text-muted border-bottom pb-2">
             <i class="fas fa-info-circle me-1"></i> Form Leave Request
@@ -39,12 +46,42 @@ $leaveTypes = LeaveType::getList();
             'options' => ['placeholder' => '- Pilih Tipe Cuti -', 'disabled' => $isApproval],
         ]) ?>
 
+        <?= $form->field($model, 'id_schedule', [
+            'options' => [
+                'id' => 'container-id-schedule',
+                'style' => $permissionOnDuty ? '' : 'display: none;',
+            ],
+        ])->widget(Select2::classname(), [
+                    'initValueText' => $initScheduleText,
+                    'options' => ['placeholder' => '- Pilih Jadwal -', 'disabled' => $isApproval, 'id' => 'select-id-schedule'],
+                    'pluginOptions' => [
+                        'allowClear' => true,
+                        'minimumInputLength' => 0,
+                        'ajax' => [
+                            'url' => Url::to(['/json/schedule/list']),
+                            'dataType' => 'json',
+                            'data' => new JsExpression('function(params) { return {q: params.term}; }'),
+                        ],
+                        'escapeMarkup' => new JsExpression('function (markup) { return markup; }'),
+                        'templateResult' => new JsExpression('function(s) { return s.text; }'),
+                        'templateSelection' => new JsExpression('function(s) { return s.text; }'),
+                    ],
+                    'pluginEvents' => [
+                        'select2:select' => 'function(e) {
+                    if (e.params && e.params.data && e.params.data.date) {
+                        $("#' . Html::getInputId($model, 'start_date') . '").val(e.params.data.date);
+                        $("#' . Html::getInputId($model, 'end_date') . '").val(e.params.data.date);
+                    }
+                }',
+                    ],
+                ]) ?>
+
         <div class="row">
             <div class="col-md-6">
-                <?= $form->field($model, 'start_date')->textInput(['type' => 'date', 'disabled' => $isApproval]) ?>
+                <?= $form->field($model, 'start_date')->textInput(['type' => $permissionOnDuty ? 'time' : 'date', 'disabled' => $isApproval]) ?>
             </div>
             <div class="col-md-6">
-                <?= $form->field($model, 'end_date')->textInput(['type' => 'date', 'disabled' => $isApproval]) ?>
+                <?= $form->field($model, 'end_date')->textInput(['type' => $permissionOnDuty ? 'time' : 'date', 'disabled' => $isApproval]) ?>
             </div>
         </div>
 
@@ -73,3 +110,21 @@ $leaveTypes = LeaveType::getList();
 
     </div>
 </div>
+
+<?php
+$leaveTypeId = Html::getInputId($model, 'id_leave_type');
+$scheduleInputId = Html::getInputId($model, 'id_schedule');
+$pLate = LeaveType::P_LATE;
+$pBackfirst = LeaveType::P_BACKFIRST;
+$pLeaveoffice = LeaveType::P_LEAVEOFFICE;
+$url = Url::toRoute(["process"]);
+
+$js = <<<JS
+$(document).ready(function() {
+    $('#$leaveTypeId').on('change', function() {
+        window.location = '$url?' + $('#leave-request-form').serialize();
+    });
+});
+JS;
+$this->registerJs($js);
+?>

@@ -102,6 +102,13 @@ $gridColumns[] = [
     'contentOptions' => ['class' => 'money'],
 ];
 $gridColumns[] = [
+    'attribute' => 'dedection',
+    'label' => 'Potongan',
+    'format' => 'integer',
+    'hAlign' => 'right',
+    'contentOptions' => ['class' => 'text-danger'],
+];
+$gridColumns[] = [
     'attribute' => 'net_salary',
     'label' => 'Net Salary',
     'format' => 'integer',

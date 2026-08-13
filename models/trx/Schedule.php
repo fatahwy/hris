@@ -23,6 +23,7 @@ use yii\bootstrap5\Html;
  * @property string $checkin_start
  * @property string $workhour_start
  * @property string $workhour_end
+ * @property string $status_present
  * @property string $status
  * @property string|null $checkin_datetime
  * @property string|null $checkin_lat
@@ -47,6 +48,20 @@ class Schedule extends BaseModel
     const STATUS_SCHEDULED = 'Scheduled';
     const STATUS_CHECKIN = 'Checkin';
     const STATUS_DONE = 'Done';
+    const STATUS_PRESENT_EARLY_CLOCK_OUT = 'Early_Clock_Out';
+    const STATUS_PRESENT_LATE = 'Late';
+    const STATUS_PRESENT_ABSENT = 'Absent';
+
+    public $status_present;
+
+    public static function optsStatusPresent()
+    {
+        return [
+            self::STATUS_PRESENT_EARLY_CLOCK_OUT => 'Pulang Cepat (Early Clock Out)',
+            self::STATUS_PRESENT_LATE => 'Terlambat (Late)',
+            self::STATUS_PRESENT_ABSENT => 'Mangkir / Tidak Hadir (Absent)',
+        ];
+    }
 
     /**
      * {@inheritdoc}
@@ -68,7 +83,7 @@ class Schedule extends BaseModel
             [['is_overtime'], 'boolean'],
             [['date', 'checkin_start', 'workhour_start', 'workhour_end', 'checkin_datetime', 'checkout_datetime', 'created_at', 'updated_at'], 'safe'],
             [['shift_name', 'checkin_lat', 'checkin_long', 'checkin_photo', 'checkout_lat', 'checkout_long', 'checkout_photo'], 'string', 'max' => 255],
-            [['status'], 'string', 'max' => 45],
+            [['status', 'status_present'], 'string', 'max' => 45],
             [['id_company'], 'exist', 'skipOnError' => true, 'targetClass' => Company::class, 'targetAttribute' => ['id_company' => 'id_company']],
             [['id_user'], 'exist', 'skipOnError' => true, 'targetClass' => Account::class, 'targetAttribute' => ['id_user' => 'id_user']],
             [['id_shift'], 'exist', 'skipOnError' => true, 'targetClass' => Shift::class, 'targetAttribute' => ['id_shift' => 'id_shift']],

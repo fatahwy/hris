@@ -2,6 +2,7 @@
 
 namespace app\models\master;
 
+use app\helpers\GeneralHelper;
 use app\models\trx\LeaveRequest;
 use app\models\BaseModel;
 use Yii;
@@ -31,6 +32,15 @@ class LeaveType extends BaseModel
      */
     const CATEGORY_PERMISSION = 'PERMISSION';
     const CATEGORY_LEAVE = 'LEAVE';
+
+    const P_SICK = 1;
+    const P_LATE = 2;
+    const P_BACKFIRST = 3;
+    const P_LEAVEOFFICE = 4;
+    const L_YEARLY = 11;
+
+    const RES_ID = [self::P_SICK, self::P_LATE, self::P_BACKFIRST, self::P_LEAVEOFFICE, self::L_YEARLY];
+    const P_ON_DUTY = [self::P_LATE, self::P_BACKFIRST, self::P_LEAVEOFFICE];
 
     /**
      * {@inheritdoc}
@@ -146,6 +156,18 @@ class LeaveType extends BaseModel
     public function setCategoryToLeave()
     {
         $this->category = self::CATEGORY_LEAVE;
+    }
+
+    public static function getQueryByCompany($tableName = '')
+    {
+        $query = self::find()
+            ->andWhere([
+                'OR',
+                ["leave_type.id_company" => GeneralHelper::session('id_company')],
+                ["leave_type.id_leave_type" => self::RES_ID]
+            ]);
+            
+        return $query;
     }
 
     public static function getList()

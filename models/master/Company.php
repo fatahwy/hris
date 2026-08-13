@@ -56,8 +56,8 @@ class Company extends BaseModel
             [['max_user'], 'default', 'value' => 10],
             [['id_client', 'name'], 'required'],
             [['id_client', 'status', 'max_user'], 'integer'],
-            [['allowance'], 'default', 'value' => []],
-            [['allowance', 'created_at', 'updated_at'], 'safe'],
+            [['allowance', 'setting'], 'default', 'value' => []],
+            [['allowance', 'setting', 'created_at', 'updated_at'], 'safe'],
             [['name', 'address'], 'string', 'max' => 255],
             [['id_client'], 'exist', 'skipOnError' => true, 'targetClass' => Client::class, 'targetAttribute' => ['id_client' => 'id_client']],
         ];
@@ -184,6 +184,30 @@ class Company extends BaseModel
             ->all();
 
         return ArrayHelper::map($models, 'id_company', 'name');
+    }
+
+    public function getSetting()
+    {
+        $row = (new \yii\db\Query())
+            ->from('company')
+            ->where(['id_company' => $this->id_company])
+            ->one();
+
+        if ($row && !empty($row['setting'])) {
+            return is_string($row['setting']) ? json_decode($row['setting'], true) : $row['setting'];
+        }
+        return [];
+    }
+
+    public function saveSetting($data)
+    {
+        $company = Company::findOne($this->id_company);
+        if($company) {
+            $company->setting = $data;
+            $company->save(false);
+        }
+
+        return true;
     }
 
 }

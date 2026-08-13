@@ -10,12 +10,12 @@ use yii\helpers\Html;
 /** @var yii\widgets\ActiveForm $form */
 $isNewRecord = $model->isNewRecord;
 if ($isNewRecord) {
-    $this->title = 'Tambah Izin & Cuti';
-    $this->params['breadcrumbs'][] = ['label' => 'Izin & Cuti', 'url' => ['index']];
+    $this->title = 'Tambah Cuti';
+    $this->params['breadcrumbs'][] = ['label' => 'Cuti', 'url' => ['index']];
     $this->params['breadcrumbs'][] = $this->title;
 } else {
-    $this->title = 'Update Izin & Cuti: ' . $model->name;
-    $this->params['breadcrumbs'][] = ['label' => 'Izin & Cuti', 'url' => ['index']];
+    $this->title = 'Update Cuti: ' . $model->name;
+    $this->params['breadcrumbs'][] = ['label' => 'Cuti', 'url' => ['index']];
     $this->params['breadcrumbs'][] = ['label' => $model->name];
     $this->params['breadcrumbs'][] = 'Update';
 }
@@ -28,7 +28,7 @@ if ($isNewRecord) {
 
         <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
 
-        <?= $form->field($model, 'category')->dropDownList(LeaveType::optsCategory(), ['disabled' => !$isNewRecord]) ?>
+        <!-- <?= $form->field($model, 'category')->dropDownList(LeaveType::optsCategory(), ['disabled' => !$isNewRecord]) ?> -->
 
         <?= $form->field($model, 'max_day')->textInput() ?>
 

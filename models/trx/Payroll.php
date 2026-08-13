@@ -41,6 +41,8 @@ use Yii;
 class Payroll extends BaseModel
 {
 
+    public $ter;
+
     /**
      * ENUM field values
      */
@@ -369,6 +371,106 @@ class Payroll extends BaseModel
         }
 
         return $totalPay;
+    }
+
+    /**
+     * Calculate deductions for user's schedules based on company setting.
+     *
+     * @param Schedule[] $userSchedules
+     * @param array $deductionSettings
+     * @return array Array containing 'total' => float, 'details' => array
+     */
+    public static function calculateDeductionDetails(array $userSchedules, array $deductionSettings): array
+    {
+        $totalDeduction = 0;
+        $details = [];
+
+        $earlyRule = $deductionSettings[Schedule::STATUS_PRESENT_EARLY_CLOCK_OUT] ?? [];
+        $lateRule = $deductionSettings[Schedule::STATUS_PRESENT_LATE] ?? [];
+        $absentRule = $deductionSettings[Schedule::STATUS_PRESENT_ABSENT] ?? [];
+
+        foreach ($userSchedules as $s) {
+            // 1. Early Clock Out
+            if (!empty($earlyRule['source']) && !empty($earlyRule['amount']) && (float)$earlyRule['amount'] > 0) {
+                $isEarly = ($s->status_present === Schedule::STATUS_PRESENT_EARLY_CLOCK_OUT);
+                $earlyMinutes = 0;
+                if ($s->checkout_datetime && $s->workhour_end) {
+                    $workhourEnd = strtotime($s->date . ' ' . $s->workhour_end);
+                    $checkout = strtotime($s->checkout_datetime);
+                    if ($checkout < $workhourEnd) {
+                        $isEarly = true;
+                        $earlyMinutes = max(0, (int)ceil(($workhourEnd - $checkout) / 60));
+                    }
+                }
+                $stepMinutes = (int)($earlyRule['minutes'] ?? 0);
+                if ($isEarly && $earlyMinutes > 0 && $stepMinutes > 0) {
+                    $multiplier = (int)ceil($earlyMinutes / $stepMinutes);
+                    $penalty = $multiplier * (float)$earlyRule['amount'];
+                    $totalDeduction += $penalty;
+                    $details[] = [
+                        'type' => Schedule::STATUS_PRESENT_EARLY_CLOCK_OUT,
+                        'date' => $s->date,
+                        'source' => $earlyRule['source'],
+                        'minutes' => $earlyMinutes,
+                        'multiplier' => $multiplier,
+                        'amount' => $penalty,
+                    ];
+                }
+            }
+
+            // 2. Late
+            if (!empty($lateRule['source']) && !empty($lateRule['amount']) && (float)$lateRule['amount'] > 0) {
+                $isLate = ($s->status_present === Schedule::STATUS_PRESENT_LATE);
+                $lateMinutes = 0;
+                if ($s->checkin_datetime && $s->workhour_start) {
+                    $workhourStart = strtotime($s->date . ' ' . $s->workhour_start);
+                    $checkin = strtotime($s->checkin_datetime);
+                    if ($checkin > $workhourStart) {
+                        $isLate = true;
+                        $lateMinutes = max(0, (int)ceil(($checkin - $workhourStart) / 60));
+                    }
+                }
+                $stepMinutes = (int)($lateRule['minutes'] ?? 0);
+                if ($isLate && $lateMinutes > 0 && $stepMinutes > 0) {
+                    $multiplier = (int)ceil($lateMinutes / $stepMinutes);
+                    $penalty = $multiplier * (float)$lateRule['amount'];
+                    $totalDeduction += $penalty;
+                    $details[] = [
+                        'type' => Schedule::STATUS_PRESENT_LATE,
+                        'date' => $s->date,
+                        'source' => $lateRule['source'],
+                        'minutes' => $lateMinutes,
+                        'multiplier' => $multiplier,
+                        'amount' => $penalty,
+                    ];
+                }
+            }
+
+            // 3. Absent
+            if (!empty($absentRule['source']) && !empty($absentRule['amount']) && (float)$absentRule['amount'] > 0) {
+                $isAbsent = ($s->status === Schedule::STATUS_ABSENT || $s->status_present === Schedule::STATUS_PRESENT_ABSENT);
+                if (!$isAbsent && empty($s->checkin_datetime) && $s->date < date('Y-m-d')) {
+                    $isAbsent = true;
+                }
+                if ($isAbsent) {
+                    $penalty = (float)$absentRule['amount'];
+                    $totalDeduction += $penalty;
+                    $details[] = [
+                        'type' => Schedule::STATUS_PRESENT_ABSENT,
+                        'date' => $s->date,
+                        'source' => $absentRule['source'],
+                        'minutes' => 0,
+                        'multiplier' => 1,
+                        'amount' => $penalty,
+                    ];
+                }
+            }
+        }
+
+        return [
+            'total' => $totalDeduction,
+            'details' => $details,
+        ];
     }
 
 }

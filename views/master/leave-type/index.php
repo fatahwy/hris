@@ -55,7 +55,15 @@ $this->params['breadcrumbs'][] = $this->title;
             'template' => '{process} {delete}',
             'urlCreator' => function ($action, LeaveType $model, $key, $index, $column) {
                 return Url::toRoute([$action, 'id' => $model->uuid]);
-            }
+            },
+            'visibleButtons' => [
+                'process' => function ($model) {
+                    return !in_array(intval($model->id_leave_type), LeaveType::RES_ID);
+                },
+                'delete' => function ($model) {
+                    return !in_array(intval($model->id_leave_type), LeaveType::RES_ID);
+                },
+            ],
         ],
     ],
 ]); ?>

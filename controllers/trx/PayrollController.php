@@ -70,6 +70,20 @@ class PayrollController extends BaseController
             $overtimeList[$m->id_user][] = $m;
         }
 
+        $companySettings = $company ? $company->getSetting() : [];
+        $deductionSettings = $companySettings['deductions'] ?? [];
+
+        $modelSchedules = Schedule::find()
+            ->andWhere(['id_company' => $this->id_company])
+            ->andWhere(['>=', 'date', $periodStart])
+            ->andWhere(['<=', 'date', $periodEnd])
+            ->all();
+
+        $scheduleList = [];
+        foreach ($modelSchedules as $m) {
+            $scheduleList[$m->id_user][] = $m;
+        }
+
         $transaction = Yii::$app->db->beginTransaction();
         try {
             $flag = true;
@@ -110,13 +124,16 @@ class PayrollController extends BaseController
                     $payroll->allowance = $allowanceData;
 
                     $payroll->overtime = $payroll->calculateOvertimePay($overtimeList[$user->id_user] ?? []);
-                    $payroll->dedection = 0;
+                    
+                    $userSchedules = $scheduleList[$user->id_user] ?? [];
+                    $deductionResult = Payroll::calculateDeductionDetails($userSchedules, $deductionSettings);
+                    $payroll->dedection = (int)round($deductionResult['total']);
 
-                    $payroll->gross_salary = $payroll->basic_salary + $totalAllowance;
+                    $payroll->gross_salary = $payroll->basic_salary + $totalAllowance + $payroll->overtime;
                     $payroll->ter = Payroll::getTER(Account::listPtkp()[$payroll->ptkp] ?? null, $payroll->gross_salary);
                     $payroll->tax = $payroll->gross_salary * $payroll->ter;
 
-                    $payroll->net_salary = $payroll->gross_salary - $payroll->tax;
+                    $payroll->net_salary = max(0, $payroll->gross_salary - $payroll->tax - $payroll->dedection);
                     $payroll->status = Payroll::STATUS_PENDING;
                     $payroll->id_user_generate = $this->user->id_user;
                     if (!$payroll->save()) {
