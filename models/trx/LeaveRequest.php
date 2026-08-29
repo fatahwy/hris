@@ -82,12 +82,20 @@ class LeaveRequest extends BaseModel
         ];
     }
 
+    public function beforeValidate()
+    {
+        $this->status = self::STATUS_PENDING;
+        $this->total_day = 0;
+
+        return true;
+    }
+
     public function beforeSave($insert)
     {
-        if ($insert) {
-            $this->status = self::STATUS_PENDING;
+        $leaveType = $this->leaveType;
+        if ($leaveType && $leaveType->isCategoryLeave()) {
+            $this->total_day = GeneralHelper::countDay($this->start_date, $this->end_date);
         }
-        $this->total_day = GeneralHelper::countDay($this->start_date, $this->end_date);
 
         return parent::beforeSave($insert);
     }
@@ -99,11 +107,11 @@ class LeaveRequest extends BaseModel
     {
         if (!$this->hasErrors()) {
             $leaveType = $this->leaveType;
-            if ($leaveType && $leaveType->max_day !== null) {
+            if ($leaveType && $leaveType->isCategoryLeave() && $leaveType->max_day !== null) {
                 $user = Account::findOne($this->id_user);
                 $remaining = self::getRemainingDays($user, $this->id_leave_type, $this->start_date ?: date('Y-m-d'), $this->id_leave_request);
                 if ($this->$attribute > $remaining) {
-                    $this->addError($attribute, 'Total leave days exceed the maximum allowed (' . $leaveType->max_day . ' days). You only have ' . $remaining . ' days left.');
+                    $this->addError($attribute, 'Total hari cuti melebihi kuota (' . $leaveType->max_day . ' hari). Sisa cuti Anda (' . $remaining . ' hari).');
                 }
             }
         }
@@ -126,6 +134,7 @@ class LeaveRequest extends BaseModel
 
         $leaveType = LeaveType::find()
             ->where(['id_leave_type' => $id_leave_type])
+            ->andWhere(['category' => LeaveType::CATEGORY_LEAVE])
             ->cache(10)
             ->one();
         if (!$leaveType || $leaveType->max_day === null) {
@@ -220,11 +229,12 @@ class LeaveRequest extends BaseModel
      */
     public function attributeLabels()
     {
+        $leaveType = $this->leaveType;
         $flag = in_array((int) $this->id_leave_type, LeaveType::P_ON_DUTY);
         return [
             'id_leave_request' => 'Id',
             'id_user' => 'Pegawai',
-            'id_leave_type' => 'Jenis Cuti',
+            'id_leave_type' => 'Tipe ' . ($leaveType && $leaveType->isCategoryPermission() ? 'Izin' : 'Cuti'),
             'id_schedule' => 'Jadwal Kerja',
             'start_date' => $flag ? 'Jam Mulai' : 'Tanggal Mulai',
             'end_date' => $flag ? 'Jam Selesai' : 'Tanggal Selesai',

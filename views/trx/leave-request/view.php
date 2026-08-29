@@ -1,5 +1,6 @@
 <?php
 
+use app\helpers\DateHelper;
 use app\models\master\Account;
 use yii\bootstrap5\Html;
 use yii\widgets\DetailView;
@@ -8,7 +9,10 @@ use app\helpers\GeneralHelper;
 /** @var yii\web\View $this */
 /** @var app\models\trx\LeaveRequest $model */
 
-$this->title = 'Leave Request: #' . $model->id_leave_request;
+$leaveType = $model->leaveType->isCategoryLeave() ? 'Cuti' : 'Izin';
+$jadwalKerja = DateHelper::getHumanRangeDate($model->start_date, $model->end_date, $permissionOnDuty);
+
+$this->title = "Pengajuan " . $leaveType . " : " . ($model->leaveType->name ?? null) . " - " . $jadwalKerja;
 $this->params['breadcrumbs'][] = ['label' => 'Izin & Cuti', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
@@ -36,8 +40,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <div class="card modern-form-card shadow-sm">
         <div class="card-header bg-white border-bottom pb-2 pt-3">
-            <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-calendar-alt text-primary me-2"></i> Detail Leave
-                Request</h5>
+            <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-calendar-alt text-primary me-2"></i> Detail Pengajuan <?= $leaveType ?></h5>
         </div>
         <div class="card-body p-0">
             <?= DetailView::widget([
@@ -68,8 +71,12 @@ $this->params['breadcrumbs'][] = $this->title;
                         },
                         'visible' => !empty($model->id_schedule),
                     ],
-                    'start_date:date',
-                    'end_date:date',
+                    [
+                        'label' => ($permissionOnDuty ? 'Jam' : 'Tanggal') . " $leaveType",
+                        'value' => function ($model) use ($jadwalKerja) {
+                            return $jadwalKerja;
+                        },
+                    ],
                     'total_day',
                     'reason:ntext',
                     'attachment:ntext',

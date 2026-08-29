@@ -45,8 +45,12 @@ class LeaveRequestController extends BaseController
      */
     public function actionView($id_leave_request)
     {
+        $model = $this->findModel($id_leave_request);
+        $permissionOnDuty = in_array((int) $model->leaveType->id_leave_type, LeaveType::P_ON_DUTY);
+
         return $this->render('view', [
-            'model' => $this->findModel($id_leave_request),
+            'model' => $model,
+            'permissionOnDuty' => $permissionOnDuty,
         ]);
     }
 
@@ -117,16 +121,21 @@ class LeaveRequestController extends BaseController
         if ($model->load($this->request->post())) {
             $permissionOnDuty = in_array((int) $model->id_leave_type, LeaveType::P_ON_DUTY);
 
+            $startTime = '00:00:00';
+            $endTime = '23:59:59';
+
             if ($permissionOnDuty) {
                 $mSchedule = Schedule::findOne(['id_schedule' => $model->id_schedule, 'id_user' => $this->user->id_user]);
                 if ($mSchedule) {
-                    $model->start_date = $mSchedule->date . ' ' . $model->start_date;
-                    $model->end_date = $mSchedule->date . ' ' . $model->end_date;
+                    $startTime = $model->start_date;
+                    $endTime = $model->end_date;
                 }
             } else {
                 $model->id_schedule = null;
             }
 
+            $model->start_date = date('Y-m-d H:i:00', strtotime($mSchedule->date . ' ' . $startTime));
+            $model->end_date = date('Y-m-d H:i:00', strtotime($mSchedule->date . ' ' . $endTime));
             $model->id_user = $this->user->id_user;
             $model->id_approver = null;
             $model->approve_reason = null;
@@ -137,6 +146,15 @@ class LeaveRequestController extends BaseController
                 return $this->redirect(['view', 'id_leave_request' => $model->id_leave_request]);
             }
             GeneralHelper::flashFailed(Html::errorSummary($model));
+        }
+
+        if ($permissionOnDuty) {
+            if ($model->start_date) {
+                $model->start_date = date('H:i', strtotime($model->start_date));
+            }
+            if ($model->end_date) {
+                $model->end_date = date('H:i', strtotime($model->end_date));
+            }
         }
 
         return $this->render('process', [

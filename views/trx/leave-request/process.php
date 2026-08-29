@@ -14,7 +14,7 @@ $isApproval = !empty($isApproval);
 if ($isApproval) {
     $this->title = 'Approval Izin & Cuti';
 } else {
-    $this->title = $model->isNewRecord ? 'Create Izin & Cuti' : 'Update Izin & Cuti';
+    $this->title = $model->isNewRecord ? 'Pengajuan Izin & Cuti' : 'Update Izin & Cuti';
 }
 $this->params['breadcrumbs'][] = ['label' => 'Izin & Cuti', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
