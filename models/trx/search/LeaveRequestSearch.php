@@ -61,11 +61,11 @@ class LeaveRequestSearch extends LeaveRequest
 
         $this->load($params, $formName);
 
-        if (!$this->validate()) {
-            // uncomment the following line if you do not want to return any records when validation fails
-            // $query->where('0=1');
-            return $dataProvider;
-        }
+        // if (!$this->validate()) {
+        //     // uncomment the following line if you do not want to return any records when validation fails
+        //     // $query->where('0=1');
+        //     return $dataProvider;
+        // }
 
         // grid filtering conditions
         $query->andFilterWhere([
@@ -82,7 +82,7 @@ class LeaveRequestSearch extends LeaveRequest
 
         $query->andFilterWhere(['like', 'reason', $this->reason])
             ->andFilterWhere(['like', 'attachment', $this->attachment])
-            ->andFilterWhere(['like', 'status', $this->status]);
+            ->andFilterWhere(['leave_request.status' => $this->status]);
 
         return $dataProvider;
     }

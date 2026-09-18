@@ -86,6 +86,15 @@ if ($currentUser) {
                     },
                 'contentOptions' => ['class' => 'text-center'],
                 'headerOptions' => ['class' => 'text-center'],
+                'filter' => LeaveRequest::optsStatus(),
+                'filterType' => GridView::FILTER_SELECT2,
+                'filterWidgetOptions' => [
+                    'options' => ['prompt' => 'Pilih'],
+                    'pluginOptions' => [
+                        'allowClear' => true,
+                        'width' => '100px'
+                    ],
+                ],
             ],
             [
                 'class' => ButtonActionColumn::className(),
@@ -107,7 +116,7 @@ if ($currentUser) {
                                 'class' => 'btn btn-sm btn-success',
                                 'title' => 'Approve',
                                 'data-bs-toggle' => 'tooltip',
-                                'data-confirm' => 'Are you sure you want to process this request?',
+                                'data-confirm' => 'Apakah anda yakin akan memproses permintaan ini?',
                             ]);
                         },
                 ],
