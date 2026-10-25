@@ -10,6 +10,7 @@ use yii\web\JsExpression;
 /** @var yii\web\View $this */
 /** @var app\models\trx\LeaveRequest $model */
 
+$permissionOnDuty = $permissionOnDuty ?? false;
 $isApproval = !empty($isApproval);
 if ($isApproval) {
     $this->title = 'Approval Izin & Cuti';

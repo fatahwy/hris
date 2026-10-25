@@ -129,13 +129,13 @@ class LeaveRequestController extends BaseController
                 if ($mSchedule) {
                     $startTime = $model->start_date;
                     $endTime = $model->end_date;
+                    $model->start_date = date('Y-m-d H:i:00', strtotime($mSchedule->date . ' ' . $startTime));
+                    $model->end_date = date('Y-m-d H:i:00', strtotime($mSchedule->date . ' ' . $endTime));
                 }
             } else {
                 $model->id_schedule = null;
             }
 
-            $model->start_date = date('Y-m-d H:i:00', strtotime($mSchedule->date . ' ' . $startTime));
-            $model->end_date = date('Y-m-d H:i:00', strtotime($mSchedule->date . ' ' . $endTime));
             $model->id_user = $this->user->id_user;
             $model->id_approver = null;
             $model->approve_reason = null;
@@ -185,5 +185,4 @@ class LeaveRequestController extends BaseController
 
         throw new NotFoundHttpException('The requested page does not exist.');
     }
-
 }
