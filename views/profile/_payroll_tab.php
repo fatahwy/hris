@@ -12,7 +12,10 @@ echo GridView::widget([
     'dataProvider' => $payrollDataProvider,
     'filterModel' => $payrollSearch,
     // 'layout' => '{items}{pager}',
-    'tableOptions' => ['class' => 'table table-striped table-hover'],
+    'responsive' => true,
+    'responsiveWrap' => false,
+    'containerOptions' => ['style' => 'overflow-x: auto;'],
+    'tableOptions' => ['class' => 'table table-striped table-hover text-nowrap'],
     'columns' => [
         ['class' => 'yii\grid\SerialColumn'],
         [
@@ -101,6 +104,25 @@ echo GridView::widget([
                 'options' => [
                     'placeholder' => 'Pilih Tanggal',
                 ],
+            ],
+        ],
+        [
+            'class' => 'kartik\grid\ActionColumn',
+            'header' => 'Aksi',
+            'template' => '{view-slip}',
+            'buttons' => [
+                'view-slip' => function ($url, $model) {
+                    return Html::a(
+                        '<i class="fas fa-file-invoice-dollar me-1"></i> Slip Gaji',
+                        ['/profile/view-payroll', 'id' => $model->uuid],
+                        [
+                            'class' => 'btn btn-sm btn-outline-primary',
+                            'target' => '_blank',
+                            'data-pjax' => '0',
+                            'title' => 'Lihat Slip Gaji (PDF)',
+                        ]
+                    );
+                },
             ],
         ],
     ],

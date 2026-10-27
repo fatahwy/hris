@@ -59,17 +59,19 @@ class DBHelper
     public static function initMenu()
     {
         $dashboard = 1;
-        $report = 2;
-        $master = 3;
-        $presensi = 4;
-        $payroll = 5;
-        $izin = 6;
-        $setting = 7;
-        $log = 8;
+        $profile = 2;
+        $report = 3;
+        $master = 4;
+        $presensi = 5;
+        $payroll = 6;
+        $izin = 7;
+        $setting = 8;
+        $log = 9;
 
         $defIcon = 'bi-border-width';
         // name, parent, route, stat
-        $menu[$dashboard] = ['Dashboard', null, '/site/index', 1, 'bi-house'];
+        $menu[$dashboard] = ['Dashboard', null, '/dashboard/index', 1, 'bi-house'];
+        $menu[$profile] = ['Profile', null, '/profile/index', 1, 'bi-person'];
         $menu[$report] = ['Laporan', null, null, 1, 'bi-bar-chart'];
         $menu[$master] = ['Master', null, null, 1, 'bi-file-earmark-text'];
         $menu[$presensi] = ['Presensi', null, null, 1, 'bi-hr'];
@@ -98,7 +100,7 @@ class DBHelper
             ['Jadwal kerja', $presensi, '/trx/schedule/index', 1, $defIcon],
             ['Kehadiran', $presensi, '/trx/attendance/index', 1, $defIcon],
             // Setting
-            ['Umum', $setting, '/setting/general/index', 1, $defIcon],
+            // ['Umum', $setting, '/setting/general/index', 1, $defIcon],
             ['Hak Akses Menu', $setting, '/setting/access-rule/index', 1, $defIcon],
         ];
 
@@ -193,6 +195,7 @@ class DBHelper
                 "/json/*",
                 "/gridview/*",
                 "/site/*",
+                "/dashboard/*",
                 "/profile/*",
                 "/trx/clock/*",
             ],
@@ -246,7 +249,12 @@ class DBHelper
                     $m = new AuthItem();
                     $m->name = $child;
                     $m->type = 2;
-                    $m->save();
+                    $m->label = '-';
+                    if (!$m->save()) {
+                        echo '<pre>2';
+                        print_r($m);
+                        die;
+                    }
                 }
 
                 $model = new AuthItemChild();

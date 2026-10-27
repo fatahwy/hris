@@ -19,6 +19,17 @@ use app\models\trx\Schedule;
 class SiteController extends BaseController
 {
 
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        array_unshift($behaviors['access']['rules'], [
+            'actions' => ['index'],
+            'allow' => true,
+            'roles' => ['?', '@'],
+        ]);
+        return $behaviors;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -42,66 +53,9 @@ class SiteController extends BaseController
      */
     public function actionIndex()
     {
-        $id_company = $this->id_company;
+        $this->layout = false;
 
-        $dateRange = Yii::$app->request->get('date_range');
-        if ($dateRange) {
-            $dates = explode(' - ', $dateRange);
-            $startDate = $dates[0];
-            $endDate = $dates[1];
-        } else {
-            $startDate = date('Y-m-01');
-            $endDate = date('Y-m-t');
-            $dateRange = "$startDate - $endDate";
-        }
-
-        $user = $this->user;
-        $isAllUser = RoleHelper::allUser();
-        $isApprovalPayroll = RoleHelper::approvalPayroll();
-        $isApprovalLeave = RoleHelper::approvalLeave();
-
-        $totalEmployees = Account::find()->where(['id_company' => $id_company, 'status' => 1])->count();
-
-        $presentInPeriod = Schedule::find()
-            ->where(['id_company' => $id_company])
-            ->andWhere(['between', 'date', $startDate, $endDate])
-            ->andWhere(['not', ['checkin_datetime' => null]])
-            ->andFilterWhere(['id_user' => $isAllUser ? null: $user->id_user])
-            ->count();
-
-        $pendingApprovals = LeaveRequest::find()
-            ->innerJoinWith('user')
-            ->where(['user.id_company' => $id_company, 'leave_request.status' => LeaveRequest::STATUS_PENDING])
-            ->andFilterWhere(['leave_request.id_user' => $isApprovalLeave ? null: $user->id_user])
-            ->count();
-
-        $monthlyPayroll = Payroll::find()
-            ->where(['id_company' => $id_company, 'status' => Payroll::STATUS_APPROVE])
-            ->andWhere(['>=', 'period_start', $startDate])
-            ->andWhere(['<=', 'period_end', $endDate])
-            ->andFilterWhere(['id_user' => $isApprovalPayroll ? null: $user->id_user])
-            ->sum('net_salary') ?: 0;
-
-        $recentAttendances = Schedule::find()
-            ->with(['user'])
-            ->where(['id_company' => $id_company])
-            ->andWhere(['between', 'date', $startDate, $endDate])
-            ->andWhere(['<', 'checkin_start', DBHelper::now()])
-            ->andFilterWhere(['schedule.id_user' => $isAllUser ? null: $user->id_user])
-            ->orderBy(['date' => SORT_DESC, 'checkin_datetime' => SORT_DESC])
-            ->limit(10)
-            ->all();
-
-        return $this->render('index', [
-            'totalEmployees' => $totalEmployees,
-            'presentInPeriod' => $presentInPeriod,
-            'pendingApprovals' => $pendingApprovals,
-            'monthlyPayroll' => $monthlyPayroll,
-            'recentAttendances' => $recentAttendances,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
-            'dateRange' => $dateRange,
-        ]);
+        return $this->render('index');
     }
 
     /**
@@ -112,7 +66,7 @@ class SiteController extends BaseController
     public function actionLogin()
     {
         if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
+            return $this->redirect(['/dashboard']);
         }
 
         $this->layout = 'blank';
@@ -122,7 +76,7 @@ class SiteController extends BaseController
             $user = GeneralHelper::identity();
             GeneralHelper::session('id_client', $user->id_client);
             GeneralHelper::session('id_company', $user->id_company);
-            return $this->goBack();
+            return $this->goBack(['/dashboard']);
         }
 
         $model->password = '';
@@ -140,7 +94,7 @@ class SiteController extends BaseController
     {
         Yii::$app->user->logout();
 
-        return $this->goHome();
+        return $this->redirect(['/login']);
     }
 
     public function actionEnv()
@@ -186,7 +140,7 @@ class SiteController extends BaseController
     public function actionRegister()
     {
         if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
+            return $this->redirect(['/dashboard']);
         }
 
         $this->layout = 'blank';
@@ -214,7 +168,7 @@ class SiteController extends BaseController
     public function actionForgotPassword()
     {
         if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
+            return $this->redirect(['/dashboard']);
         }
         $this->layout = 'blank';
         if (Yii::$app->request->isPost) {
@@ -244,7 +198,7 @@ class SiteController extends BaseController
     public function actionNewPassword($token = null)
     {
         if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
+            return $this->redirect(['/dashboard']);
         }
         $this->layout = 'blank';
         if (!$token) {

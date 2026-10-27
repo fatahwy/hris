@@ -92,10 +92,10 @@ $this->registerCssFile('@web/css/register.css', ['depends' => [\app\assets\AppAs
 
             <div class="register-bottom">
                 <div class="register-login-link">
-                    Already have an account?
-                    <?= Html::a('Login Now', ['/site/login'], ['id' => 'register-login-link']) ?>
+                    Sudah punya akun?
+                    <?= Html::a('Login Sekarang', ['/site/login'], ['id' => 'register-login-link']) ?>
                 </div>
-                <?= Html::submitButton('Sign UP', [
+                <?= Html::submitButton('Daftar', [
                     'class' => 'btn-register',
                     'name' => 'register-button',
                     'id' => 'register-submit-btn',

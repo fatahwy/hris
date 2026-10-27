@@ -6,7 +6,7 @@
 use kartik\form\ActiveForm;
 use yii\bootstrap5\Html;
 
-$this->title = 'Forgot Password';
+$this->title = 'Lupa Password';
 
 // Register the custom CSS
 $this->registerCssFile('@web/css/login.css', ['depends' => [\app\assets\AppAsset::class]]);
@@ -24,8 +24,8 @@ $this->registerCssFile('@web/css/login.css', ['depends' => [\app\assets\AppAsset
     <!-- Right Panel: Form -->
     <div class="login-right">
         <div class="login-form-wrapper">
-            <h1 class="login-title">Forgot Password</h1>
-            <p class="login-subtitle">Enter your email to reset your password</p>
+            <h1 class="login-title">Lupa Password</h1>
+            <p class="login-subtitle">Masukkan email untuk reset pasword</p>
 
             <?php if (Yii::$app->session->hasFlash('success')): ?>
                 <div class="login-flash">
@@ -58,7 +58,7 @@ $this->registerCssFile('@web/css/login.css', ['depends' => [\app\assets\AppAsset
                 <?= Html::label('Email', 'email', ['class' => 'form-label']) ?>
                 <?= Html::textInput('email', '', [
                     'autofocus' => true,
-                    'placeholder' => 'Enter your email',
+                    'placeholder' => 'Masukkan email',
                     'id' => 'forgot-email',
                     'class' => 'form-control',
                     'type' => 'email',
@@ -67,7 +67,7 @@ $this->registerCssFile('@web/css/login.css', ['depends' => [\app\assets\AppAsset
             </div>
 
             <div class="login-btn-wrapper">
-                <?= Html::submitButton('Send Reset Link', [
+                <?= Html::submitButton('Kirim Reset Link', [
                     'class' => 'btn-login',
                     'name' => 'forgot-button',
                     'id' => 'forgot-submit-btn',
@@ -79,7 +79,7 @@ $this->registerCssFile('@web/css/login.css', ['depends' => [\app\assets\AppAsset
             <div class="login-bottom">
                 <div class="login-register-link">
                     Remember your password?
-                    <?= Html::a('Login here', ['/site/login'], ['id' => 'forgot-login-link']) ?>
+                    <?= Html::a('Login', ['/site/login'], ['id' => 'forgot-login-link']) ?>
                 </div>
             </div>
         </div>

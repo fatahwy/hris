@@ -554,10 +554,12 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
     <div class="sidebar-wrapper">
         <div class="sidebar-brand">
-            <i class="bi bi-triangle-half fs-4"></i>
-            <span>
-                <?= Yii::$app->name ?>
-            </span>
+            <a href="/dashboard" style="text-decoration: none;color: inherit;">
+                <i class="bi bi-triangle-half fs-4"></i>
+                <span>
+                    <?= Yii::$app->name ?>
+                </span>
+            </a>
         </div>
 
         <div class="sidebar-nav" id="main">

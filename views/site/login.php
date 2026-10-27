@@ -90,15 +90,15 @@ $this->registerCssFile('@web/css/login.css', ['depends' => [\app\assets\AppAsset
             </div>
 
             <div class="login-forgot">
-                <?= Html::a('Forgot Password?', ['/site/forgot-password'], ['id' => 'login-forgot-link']) ?>
+                <?= Html::a('Lupa Password?', ['/site/forgot-password'], ['id' => 'login-forgot-link']) ?>
             </div>
 
             <?php ActiveForm::end(); ?>
 
             <div class="login-bottom">
                 <div class="login-register-link">
-                    Don't have an account?
-                    <?= Html::a('Sign Up now', ['/site/register'], ['id' => 'login-register-link']) ?>
+                    Belum punya akun?
+                    <?= Html::a('Daftar sekarang', ['/site/register'], ['id' => 'login-register-link']) ?>
                 </div>
             </div>
         </div>
