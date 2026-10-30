@@ -22,9 +22,11 @@ class AppAsset extends AssetBundle
     public $baseUrl = '@web';
     public $css = [
         'css/site.css',
+        'css/pwa-install.css',
     ];
     public $js = [
         'js/custom.js?no-cache=03012026',
+        'js/pwa-install.js',
     ];
     public $depends = [
         'yii\web\YiiAsset',

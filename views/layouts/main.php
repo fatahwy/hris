@@ -220,7 +220,18 @@ $this->registerMetaTag(['charset' => Yii::$app->charset], 'charset');
 $this->registerMetaTag(['name' => 'viewport', 'content' => 'width=device-width, initial-scale=1, shrink-to-fit=no']);
 $this->registerMetaTag(['name' => 'description', 'content' => $this->params['meta_description'] ?? '']);
 $this->registerMetaTag(['name' => 'keywords', 'content' => $this->params['meta_keywords'] ?? '']);
+
+// PWA Meta Tags
+$this->registerMetaTag(['name' => 'theme-color', 'content' => '#2b5fe1']);
+$this->registerMetaTag(['name' => 'mobile-web-app-capable', 'content' => 'yes']);
+$this->registerMetaTag(['name' => 'apple-mobile-web-app-capable', 'content' => 'yes']);
+$this->registerMetaTag(['name' => 'apple-mobile-web-app-status-bar-style', 'content' => 'default']);
+$this->registerMetaTag(['name' => 'apple-mobile-web-app-title', 'content' => 'PRANATA HR']);
+
+// PWA Manifest and Icons
 $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii::getAlias('@web/favicon.ico')]);
+$this->registerLinkTag(['rel' => 'manifest', 'href' => Yii::getAlias('@web/manifest.json')]);
+$this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@web/images/icons/apple-touch-icon.png')]);
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
@@ -588,6 +599,13 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             <?= Menu::renderMenu('main') ?>
         </div>
 
+        <div class="px-2 py-1">
+            <a href="javascript:void(0)" class="pwa-sidebar-btn pwa-install-trigger text-decoration-none">
+                <i class="bi bi-download"></i>
+                <span>Download / Install App</span>
+            </a>
+        </div>
+
         <div class="sidebar-footer d-md-none border-top border-white-10 p-3">
             <div class="d-flex align-items-center justify-content-between">
                 <a href="<?= Url::to(['/profile']) ?>"
@@ -615,6 +633,11 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                 <div class="burger-menu">
                     <i class="bi bi-list fs-4"></i>
                 </div>
+
+                <button type="button" class="btn btn-sm btn-outline-primary pwa-install-trigger d-md-none d-inline-flex align-items-center gap-1 rounded-pill px-2 py-1 shadow-sm" style="font-size: 0.78rem;">
+                    <i class="bi bi-download"></i>
+                    <span>Install</span>
+                </button>
 
                 <div class="header-selectors">
                     <?php
@@ -715,6 +738,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     </div>
 
     <div class="sidebar-backdrop"></div>
+    <?= $this->render('_pwa') ?>
     <?php $this->endBody() ?>
 </body>
 
