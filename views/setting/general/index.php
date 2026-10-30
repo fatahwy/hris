@@ -73,10 +73,10 @@ $statusBadges = [
             <div class="col-12">
                 <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
                     <div
-                        class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-bottom">
-                        <div class="d-flex align-items-center gap-3">
+                        class="card-header bg-white py-3 px-3 px-sm-4 d-flex align-items-center justify-content-between border-bottom">
+                        <div class="d-flex align-items-center gap-2 gap-sm-3">
                             <span
-                                class="badge <?= $badgeInfo['bg'] ?> p-2.5 rounded-3 d-flex align-items-center justify-content-center"
+                                class="badge <?= $badgeInfo['bg'] ?> p-2 rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
                                 style="width: 38px; height: 38px;">
                                 <i class="bi <?= $badgeInfo['icon'] ?> fs-5"></i>
                             </span>
@@ -87,7 +87,7 @@ $statusBadges = [
                         </div>
                     </div>
 
-                    <div class="card-body p-4">
+                    <div class="card-body p-3 p-sm-4">
                         <div class="row g-3 align-items-end">
                             <div class="<?= $isAbsent ? 'col-md-6' : 'col-md-5' ?>">
                                 <label class="form-label fw-semibold small text-muted">Sumber Pemotongan</label>

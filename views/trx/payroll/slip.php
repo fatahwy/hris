@@ -113,18 +113,51 @@ if (count($companyWords) >= 2) {
 ?>
 
 <?php if (empty($isPdf)): ?>
+    <style>
+        .slip-box {
+            padding: 28px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            border-radius: 12px;
+        }
+        @media (max-width: 650px) {
+            .slip-box {
+                padding: 16px 12px !important;
+                border-radius: 8px;
+            }
+            .slip-header-table td {
+                padding: 4px 0 !important;
+            }
+            .slip-header-title {
+                text-align: left !important;
+                margin-top: 8px !important;
+            }
+            .slip-info-table td {
+                padding: 4px 2px !important;
+                font-size: 12.5px !important;
+            }
+            .slip-columns-table, .slip-columns-table > tbody, .slip-columns-table > tbody > tr, .slip-columns-table > tbody > tr > td {
+                display: block !important;
+                width: 100% !important;
+            }
+            .slip-spacer-td {
+                display: block !important;
+                height: 18px !important;
+                width: 100% !important;
+            }
+        }
+    </style>
     <div style="text-align: center; margin-bottom: 20px;">
         <button onclick="window.print()"
-            style="padding: 9px 20px; background-color: #1a5653; color: #ffffff; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            style="padding: 9px 20px; background-color: #1a5653; color: #ffffff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
             <i class="fa fa-print"></i> Cetak / Simpan PDF
         </button>
     </div>
 <?php endif; ?>
 
-<div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333333; max-width: 780px; margin: 0 auto; background-color: #ffffff;">
+<div class="slip-box" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333333; max-width: 780px; margin: 0 auto; background-color: #ffffff;">
     <!-- Header -->
     <div style="width: 100%; margin-bottom: 12px;">
-        <table style="width: 100%; border-collapse: collapse; border: none;">
+        <table class="slip-header-table" style="width: 100%; border-collapse: collapse; border: none;">
             <tr>
                 <td style="width: 50px; vertical-align: middle; padding: 0;">
                     <div style="width: 44px; height: 44px; background-color: #1a5653; color: #ffffff; font-size: 16px; font-weight: bold; text-align: center; line-height: 44px; border-radius: 6px;">
@@ -139,7 +172,7 @@ if (count($companyWords) >= 2) {
                         Slip gaji karyawan
                     </div>
                 </td>
-                <td style="text-align: right; vertical-align: middle; padding: 0;">
+                <td class="slip-header-title" style="text-align: right; vertical-align: middle; padding: 0;">
                     <div style="font-size: 20px; font-weight: 800; letter-spacing: 0.5px; color: #0f172a; line-height: 1.2; margin: 0 0 3px 0;">
                         SLIP GAJI
                     </div>
@@ -155,29 +188,29 @@ if (count($companyWords) >= 2) {
     <div style="height: 3px; background-color: #1a5653; margin: 15px 0 20px 0; width: 100%;"></div>
 
     <!-- Info Karyawan -->
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 13.5px; border: none;">
+    <table class="slip-info-table" style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 13.5px; border: none;">
         <tr>
             <td style="color: #64748b; width: 90px; padding: 5px 0; vertical-align: top;">Nama</td>
             <td style="font-weight: 600; color: #1e293b; padding: 5px 0; vertical-align: top; width: 260px;"><?= Html::encode($userName) ?></td>
-            <td style="color: #64748b; width: 150px; padding: 5px 0 5px 25px; vertical-align: top;">Tanggal bayar</td>
+            <td style="color: #64748b; width: 120px; padding: 5px 0 5px 15px; vertical-align: top;">Tanggal bayar</td>
             <td style="font-weight: 600; color: #1e293b; padding: 5px 0; vertical-align: top;"><?= Html::encode($payDate) ?></td>
         </tr>
         <tr>
             <td style="color: #64748b; width: 90px; padding: 5px 0; vertical-align: top;">NIK</td>
             <td style="font-weight: 600; color: #1e293b; padding: 5px 0; vertical-align: top;"><?= Html::encode($employeeCode) ?></td>
-            <td style="color: #64748b; width: 110px; padding: 5px 0 5px 25px; vertical-align: top;">Divisi</td>
+            <td style="color: #64748b; width: 110px; padding: 5px 0 5px 15px; vertical-align: top;">Divisi</td>
             <td style="font-weight: 600; color: #1e293b; padding: 5px 0; vertical-align: top;"><?= Html::encode($department) ?></td>
         </tr>
         <tr>
             <td style="color: #64748b; width: 90px; padding: 5px 0; vertical-align: top;">Jabatan</td>
             <td style="font-weight: 600; color: #1e293b; padding: 5px 0; vertical-align: top;"><?= Html::encode($position) ?></td>
-            <td style="padding: 5px 0 5px 25px; vertical-align: top;"></td>
+            <td style="padding: 5px 0 5px 15px; vertical-align: top;"></td>
             <td style="padding: 5px 0; vertical-align: top;"></td>
         </tr>
     </table>
 
     <!-- Pendapatan & Potongan -->
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; border: none;">
+    <table class="slip-columns-table" style="width: 100%; border-collapse: collapse; margin-bottom: 25px; border: none;">
         <tr>
             <!-- Kolom Pendapatan -->
             <td style="width: 48%; vertical-align: top; padding: 0;">
@@ -206,7 +239,7 @@ if (count($companyWords) >= 2) {
             </td>
 
             <!-- Spacer -->
-            <td style="width: 4%; padding: 0;"></td>
+            <td class="slip-spacer-td" style="width: 4%; padding: 0;"></td>
 
             <!-- Kolom Potongan -->
             <td style="width: 48%; vertical-align: top; padding: 0;">

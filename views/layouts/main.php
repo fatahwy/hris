@@ -244,14 +244,16 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
     <script>
         (function() {
             var isPwa = window.matchMedia('(display-mode: standalone)').matches ||
-                        window.matchMedia('(display-mode: fullscreen)').matches ||
-                        window.matchMedia('(display-mode: minimal-ui)').matches ||
-                        window.navigator.standalone === true ||
-                        document.referrer.includes('android-app://') ||
-                        location.search.indexOf('source=pwa') !== -1 ||
-                        sessionStorage.getItem('is_pwa_standalone') === '1';
+                window.matchMedia('(display-mode: fullscreen)').matches ||
+                window.matchMedia('(display-mode: minimal-ui)').matches ||
+                window.navigator.standalone === true ||
+                document.referrer.includes('android-app://') ||
+                location.search.indexOf('source=pwa') !== -1 ||
+                sessionStorage.getItem('is_pwa_standalone') === '1';
             if (isPwa) {
-                try { sessionStorage.setItem('is_pwa_standalone', '1'); } catch(e){}
+                try {
+                    sessionStorage.setItem('is_pwa_standalone', '1');
+                } catch (e) {}
                 document.documentElement.classList.add('is-pwa-standalone');
             }
         })();
@@ -503,7 +505,7 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
                 order: 3;
             }
 
-            .header-selectors > div {
+            .header-selectors>div {
                 flex: 1 1 120px;
                 max-width: 100% !important;
             }
@@ -613,6 +615,7 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
             .modern-form-card .card-body {
                 padding: 1rem !important;
             }
+
             .table-modern-detail th,
             .table-modern-detail td {
                 padding: 0.65rem 0.75rem;
@@ -767,7 +770,12 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
                 </div><!-- /.col -->
                 <div class="col-12 col-sm-6">
                     <div class="d-flex justify-content-start justify-content-sm-end">
-                        <?= Breadcrumbs::widget([
+                        <?php
+                        echo Breadcrumbs::widget([
+                            'homeLink' => [
+                                'label' => 'Dashboard',
+                                'url' => ['dashboard/index'],
+                            ],
                             'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
                             'options' => [
                                 'class' => 'breadcrumb mb-0 py-1'

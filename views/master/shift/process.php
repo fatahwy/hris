@@ -22,24 +22,35 @@ if ($isNewRecord) {
 ?>
 
 <div class="card modern-form-card">
-    <div class="card-body p-4">
+    <div class="card-body p-3 p-sm-4">
 
         <?php $form = ActiveForm::begin(); ?>
 
-        <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
+        <div class="row">
+            <div class="col-12 col-md-8">
+                <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
+            </div>
+            <div class="col-12 col-md-4">
+                <?= $form->field($model, 'color')->textInput(['type' => 'color', 'class' => 'form-control form-control-color w-100']) ?>
+            </div>
+        </div>
 
-        <?= $form->field($model, 'checkin_start')->textInput(['type' => 'time']) ?>
+        <div class="row">
+            <div class="col-12 col-md-4">
+                <?= $form->field($model, 'checkin_start')->textInput(['type' => 'time']) ?>
+            </div>
+            <div class="col-12 col-md-4">
+                <?= $form->field($model, 'workhour_start')->textInput(['type' => 'time']) ?>
+            </div>
+            <div class="col-12 col-md-4">
+                <?= $form->field($model, 'workhour_end')->textInput(['type' => 'time']) ?>
+            </div>
+        </div>
 
-        <?= $form->field($model, 'workhour_start')->textInput(['type' => 'time']) ?>
+        <?= $form->field($model, 'note')->textarea(['rows' => 4]) ?>
 
-        <?= $form->field($model, 'workhour_end')->textInput(['type' => 'time']) ?>
-
-        <?= $form->field($model, 'color')->textInput(['type' => 'color']) ?>
-
-        <?= $form->field($model, 'note')->textarea(['rows' => 6]) ?>
-
-        <div class="form-group text-end">
-            <?= Html::submitButton(GeneralHelper::faSave(), ['class' => 'btn btn-primary']) ?>
+        <div class="form-group d-flex justify-content-end mt-4">
+            <?= Html::submitButton(GeneralHelper::faSave(), ['class' => 'btn btn-primary px-4 shadow-sm w-100 w-sm-auto']) ?>
         </div>
 
         <?php ActiveForm::end(); ?>

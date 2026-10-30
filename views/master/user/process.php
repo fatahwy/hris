@@ -61,7 +61,17 @@ $this->registerCss("
         gap: 8px;
         border-bottom: 2px solid #e2e8f0;
         margin-bottom: 24px;
-        // overflow-x: auto;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+    }
+    .nav-tabs-custom::-webkit-scrollbar {
+        height: 4px;
+    }
+    .nav-tabs-custom::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
     }
     .nav-tabs-custom .nav-link-custom {
         border: none;
@@ -75,6 +85,7 @@ $this->registerCss("
         white-space: nowrap;
         transition: all 0.2s ease-in-out;
         text-decoration: none;
+        flex-shrink: 0;
     }
     .nav-tabs-custom .nav-link-custom:hover {
         color: #2563eb;
@@ -91,6 +102,16 @@ $this->registerCss("
         padding: 20px;
         margin-bottom: 20px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    @media (max-width: 576px) {
+        .section-card {
+            padding: 16px 12px;
+            margin-bottom: 16px;
+        }
+        .nav-tabs-custom .nav-link-custom {
+            padding: 10px 14px;
+            font-size: 0.88rem;
+        }
     }
     .section-title {
         font-size: 15px;
@@ -117,22 +138,6 @@ $this->registerCss("
         color: #64748b;
         display: block;
         font-size: 12px;
-    }
-    .action-bar {
-        align-items: right;
-        // position: sticky;
-        // bottom: 0;
-        // background: #ffffff;
-        // border-top: 1px solid #e2e8f0;
-        // padding: 14px 20px;
-        // margin: 20px -24px -24px -24px;
-        // border-bottom-left-radius: 12px;
-        // border-bottom-right-radius: 12px;
-        // display: flex;
-        // justify-content: flex-end;
-        // gap: 10px;
-        // z-index: 10;
-        // box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
     }
     .avatar-preview-box {
         width: 70px;
@@ -180,21 +185,21 @@ $this->registerCss("
                     <i class="fas fa-user-circle text-primary"></i> Akun
                 </div>
                 <div class="row g-3">
-                    <div class="col-xs-12 col-md-6">
+                    <div class="col-12 col-md-6">
                         <?= $form->field($model, 'name')->textInput(['maxlength' => true, 'placeholder' => 'Nama lengkap', 'disabled' => $isProfile]) ?>
                     </div>
-                    <div class="col-xs-12 col-md-6">
+                    <div class="col-12 col-md-6">
                         <?= $form->field($model, 'email')->textInput(['maxlength' => true, 'placeholder' => 'nama@perusahaan.com', 'type' => 'email', 'disabled' => $isProfile]) ?>
                     </div>
                     <?php if (!$isProfile): ?>
-                        <div class="col-xs-12 col-md-6">
+                        <div class="col-12 col-md-6">
                             <?= $form->field($model, 'password')->passwordInput(['placeholder' => $model->isNewRecord ? 'Masukkan Password' : 'Kosongkan jika tidak ingin mengubah password']) ?>
                         </div>
                     <?php endif; ?>
-                    <div class="col-xs-12 col-md-6">
+                    <div class="col-12 col-md-6">
                         <?= $form->field($model, 'phone')->textInput(['maxlength' => true, 'placeholder' => '08xxxxxxxxxx', 'disabled' => $isProfile]) ?>
                     </div>
-                    <div class="col-xs-12 col-md-6">
+                    <div class="col-12 col-md-6">
                         <?= $isProfile ?
                             $form->field($model, 'role')->textInput(['value' => $model->role->item_name ?? '-', 'disabled' => true])
                             : $form->field($modelAuthAssignment, 'item_name')->widget(Select2::classname(), [
@@ -213,28 +218,28 @@ $this->registerCss("
                     <i class="fas fa-id-card text-primary"></i> Identitas
                 </div>
                 <div class="row g-3">
-                    <div class="col-xs-12 col-md-6">
+                    <div class="col-12 col-md-6">
                         <?= $form->field($model, 'nik')->textInput(['maxlength' => 16, 'placeholder' => '16 digit NIK KTP', 'disabled' => $isProfile]) ?>
                     </div>
-                    <div class="col-xs-12 col-md-6">
+                    <div class="col-12 col-md-6">
                         <?= $form->field($model, 'gender')->dropDownList(Account::listGender(), ['prompt' => '- Pilih Jenis Kelamin -', 'disabled' => $isProfile]) ?>
                     </div>
-                    <div class="col-xs-12 col-md-6">
+                    <div class="col-12 col-md-6">
                         <?= $form->field($model, 'birth_place')->textInput(['maxlength' => true, 'placeholder' => 'Tempat lahir', 'disabled' => $isProfile]) ?>
                     </div>
-                    <div class="col-xs-12 col-md-6">
+                    <div class="col-12 col-md-6">
                         <?= $form->field($model, 'birth_date')->textInput(['type' => 'date', 'disabled' => $isProfile]) ?>
                     </div>
-                    <div class="col-xs-12 col-md-6">
+                    <div class="col-12 col-md-6">
                         <?= $form->field($model, 'marital_status')->dropDownList(Account::listMaritalStatus(), ['prompt' => '- Pilih Status Pernikahan -', 'disabled' => $isProfile]) ?>
                     </div>
-                    <div class="col-xs-12 col-md-6">
+                    <div class="col-12 col-md-6">
                         <?= $form->field($model, 'religion')->dropDownList(Account::listReligion(), ['prompt' => '- Pilih Agama -', 'disabled' => $isProfile]) ?>
                     </div>
-                    <div class="col-xs-12 col-md-6">
+                    <div class="col-12 col-md-6">
                         <?= $form->field($model, 'education')->dropDownList(Account::listEducation(), ['prompt' => '- Pilih Pendidikan Terakhir (Opsional) -', 'disabled' => $isProfile]) ?>
                     </div>
-                    <div class="col-xs-12 col-md-6">
+                    <div class="col-12 col-md-6">
                         <div class="d-flex align-items-center gap-3">
                             <?php if ($model->photo): ?>
                                 <img src="<?= Yii::getAlias('@web/' . $model->photo) ?>" alt="Foto"
@@ -288,10 +293,10 @@ $this->registerCss("
                     <i class="fas fa-phone-alt text-primary"></i> Kontak Darurat
                 </div>
                 <div class="row g-3">
-                    <div class="col-xs-12 col-md-6">
+                    <div class="col-12 col-md-6">
                         <?= $form->field($model, 'emergency_contact_name')->textInput(['maxlength' => true, 'placeholder' => 'Nama kontak darurat', 'disabled' => $isProfile]) ?>
                     </div>
-                    <div class="col-xs-12 col-md-6">
+                    <div class="col-12 col-md-6">
                         <?= $form->field($model, 'emergency_contact_relation')->textInput(['maxlength' => true, 'placeholder' => 'Suami/istri, orang tua, saudara, dll', 'disabled' => $isProfile]) ?>
                     </div>
                     <div class="col-12">
@@ -615,9 +620,9 @@ $this->registerCss("
 
         <?php if (!$isProfile): ?>
             <!-- ACTION BAR -->
-            <div class="text-end">
-                <?= Html::a('<i class="fas fa-times me-1"></i> Batal', ['index'], ['class' => 'btn btn-light px-4 border']) ?>
-                <?= Html::submitButton('<i class="fas fa-save me-1"></i> Simpan', ['class' => 'btn btn-primary px-5 shadow-sm']) ?>
+            <div class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 mt-4 pt-3 border-top">
+                <?= Html::a('<i class="fas fa-times me-1"></i> Batal', ['index'], ['class' => 'btn btn-light px-4 border text-center']) ?>
+                <?= Html::submitButton('<i class="fas fa-save me-1"></i> Simpan', ['class' => 'btn btn-primary px-5 shadow-sm text-center']) ?>
             </div>
         <?php endif; ?>
 

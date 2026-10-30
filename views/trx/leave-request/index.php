@@ -38,7 +38,7 @@ if ($currentUser) {
         }
     }
     if (!empty($remainingLeaves)) {
-        $remainingLeavesHtml = '<div class="d-flex align-items-center"><span class="me-2 text-secondary"><i class="bi bi-info-circle-fill text-info me-1"></i> <strong>Sisa Cuti Anda:</strong></span> ' . implode(' ', $remainingLeaves) . '</div>';
+        $remainingLeavesHtml = '<div class="d-flex align-items-center flex-wrap gap-2"><span class="text-secondary"><i class="bi bi-info-circle-fill text-info me-1"></i> <strong>Sisa Cuti Anda:</strong></span> ' . implode(' ', $remainingLeaves) . '</div>';
     } else {
         $remainingLeavesHtml = '<div class="text-secondary"><i class="bi bi-info-circle text-muted me-1"></i> Tidak ada kuota cuti tahunan yang didefinisikan.</div>';
     }
@@ -46,15 +46,18 @@ if ($currentUser) {
 ?>
 <div class="leave-request-index">
 
-    <p class="text-end">
+    <div class="d-flex justify-content-end mb-3">
         <?= Html::a(GeneralHelper::faAdd($this->title), ['process'], ['class' => 'btn btn-primary']) ?>
-    </p>
+    </div>
 
     <?php Pjax::begin(['id' => 'pjax-leave-request-grid']); ?>
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
+        'responsive' => true,
+        'responsiveWrap' => false,
+        'containerOptions' => ['style' => 'overflow-x: auto;'],
         'beforeHeader' => [
             [
                 'columns' => [

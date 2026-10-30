@@ -150,14 +150,14 @@ $enableButton = true;
 
             <?= $form->field($model, 'id_approver')->textInput(['disabled' => true, 'value' => $this->context->user->name]) ?>
 
-            <?= $form->field($model, 'status')->dropDownList($model->optsStatus(), ['class' => 'form-select w-50']) ?>
+            <?= $form->field($model, 'status')->dropDownList($model->optsStatus(), ['class' => 'form-select w-100 w-sm-50']) ?>
 
             <?= $form->field($model, 'approve_reason')->textarea(['rows' => 3]) ?>
         <?php endif; ?>
 
-        <div class="form-group text-end mt-5 pt-3 border-top">
-            <?= Html::a('<i class="fas fa-times me-1"></i> Batal', ['index'], ['class' => 'btn btn-light px-4 me-2 border']) ?>
-            <?= Html::submitButton('<i class="fas fa-save me-1"></i> Simpan', ['class' => 'btn btn-primary px-5 shadow-sm  ' . ($enableButton ? "" : "disabled")]) ?>
+        <div class="form-group d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 mt-5 pt-3 border-top">
+            <?= Html::a('<i class="fas fa-times me-1"></i> Batal', ['index'], ['class' => 'btn btn-light px-4 border text-center']) ?>
+            <?= Html::submitButton('<i class="fas fa-save me-1"></i> Simpan', ['class' => 'btn btn-primary px-5 shadow-sm text-center ' . ($enableButton ? "" : "disabled")]) ?>
         </div>
 
         <?php ActiveForm::end(); ?>

@@ -14,6 +14,9 @@ $this->params['breadcrumbs'][] = $this->title;
 echo GridView::widget([
     'dataProvider' => $dataProvider,
     'filterModel' => $searchModel,
+    'responsive' => true,
+    'responsiveWrap' => false,
+    'containerOptions' => ['style' => 'overflow-x: auto;'],
     // 'toolbar' => [
     //     'content' => ($availableSchedule ? Html::a('<i class="bi bi-clock"></i> Clock In', ['clock', 'id' => $availableSchedule->id_schedule, 'type' => 'in'], [
     //         'class' => 'btn btn-primary',

@@ -18,6 +18,9 @@ $this->registerCssFile('@web/css/register.css?v=' . filemtime(Yii::getAlias('@we
     <!-- Left Panel: Form -->
     <div class="register-left">
         <div class="register-form-wrapper">
+            <div class="d-block d-lg-none text-center mb-3">
+                <img src="<?= Yii::getAlias('@web/images/login-logo.png') ?>" alt="Pranata HR" style="max-width: 170px; height: auto; background: white; padding: 6px 12px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            </div>
             <h1 class="register-title">Daftar Akun Baru</h1>
             <p class="register-subtitle">Lengkapi data di bawah ini untuk mendaftarkan perusahaan Anda</p>
 

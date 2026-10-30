@@ -81,7 +81,7 @@ foreach ($authItems as $title => $arrAuthItems) {
     }
 
     foreach ($arrAuthItems as $authItem) {
-        $roleList .= Html::beginTag('div', ['class' => 'col-md-3 cb-group-' . $title . ($isSuperAccess ? "" : " cb-all")]);
+        $roleList .= Html::beginTag('div', ['class' => 'col-12 col-sm-6 col-md-3 cb-group-' . $title . ($isSuperAccess ? "" : " cb-all")]);
         $model->child = !empty($listRuleAccess[$authItem->name]);
         $roleList .= $form->field($model, "[{$authItem->name}]child", ['labelOptions' => ['style' => 'font-weight:unset !important']])->checkbox()->label($authItem->description);
         $roleList .= Html::endTag('div');
@@ -104,8 +104,8 @@ echo TabsX::widget([
 ]);
 ?>
 
-<div class="form-group text-end">
-    <?= Html::submitButton(GeneralHelper::faUpdate(), ['class' => 'btn btn-primary']) ?>
+<div class="form-group d-flex justify-content-end mt-4">
+    <?= Html::submitButton(GeneralHelper::faUpdate(), ['class' => 'btn btn-primary px-4 shadow-sm w-100 w-sm-auto text-center']) ?>
 </div>
 
 <?php ActiveForm::end(); ?>

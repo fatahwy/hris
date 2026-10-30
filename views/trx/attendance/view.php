@@ -22,23 +22,26 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="card-header bg-primary text-white">
             <h5 class="card-title mb-0">Informasi Jadwal</h5>
         </div>
-        <div class="card-body">
-            <?= DetailView::widget([
-                'model' => $model,
-                'attributes' => [
-                    'date:date',
-                    'shift_name',
-                    'checkin_start:datetime',
-                    'workhour_end:datetime',
-                    [
-                        'attribute' => 'status',
-                        'format' => 'raw',
-                        'value' => function ($model) {
-                            return Schedule::getLabelChip($model);
-                        },
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <?= DetailView::widget([
+                    'model' => $model,
+                    'options' => ['class' => 'table table-striped table-bordered detail-view mb-0'],
+                    'attributes' => [
+                        'date:date',
+                        'shift_name',
+                        'checkin_start:datetime',
+                        'workhour_end:datetime',
+                        [
+                            'attribute' => 'status',
+                            'format' => 'raw',
+                            'value' => function ($model) {
+                                return Schedule::getLabelChip($model);
+                            },
+                        ],
                     ],
-                ],
-            ]) ?>
+                ]) ?>
+            </div>
         </div>
     </div>
 

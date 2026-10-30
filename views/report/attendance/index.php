@@ -14,16 +14,18 @@ $this->title = 'Laporan Kehadiran Pegawai';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 
-<div class="card mb-4">
-    <div class="card-header">Filter</div>
-    <div class="card-body">
+<div class="card mb-4 shadow-sm border-0 rounded-3">
+    <div class="card-header bg-white py-3 border-bottom fw-bold text-dark">
+        <i class="bi bi-funnel me-1 text-primary"></i> Filter Periode
+    </div>
+    <div class="card-body p-3 p-sm-4">
         <?php $form = ActiveForm::begin([
             'method' => 'get',
-            'options' => ['class' => 'form-inline mb-3'],
+            'options' => ['class' => 'mb-0'],
         ]); ?>
 
-        <div class="row">
-            <div class="col-md-6">
+        <div class="row g-3">
+            <div class="col-12 col-md-6">
                 <?=
                 $form->field($searchModel, 'date_from')->widget(DatePicker::classname(), [
                     'type' => DatePicker::TYPE_COMPONENT_APPEND,
@@ -36,8 +38,8 @@ $this->params['breadcrumbs'][] = $this->title;
                 ?>
             </div>
 
-            <div class="col-md-6">
-                <div class="form-group">
+            <div class="col-12 col-md-6">
+                <div class="form-group mb-0">
                     <?=
                     $form->field($searchModel, 'date_to')->widget(DatePicker::classname(), [
                         'type' => DatePicker::TYPE_COMPONENT_APPEND,
@@ -51,9 +53,9 @@ $this->params['breadcrumbs'][] = $this->title;
                 </div>
             </div>
 
-            <div class="col-md-12 text-end">
-                <?= Html::submitButton('Filter', ['class' => 'btn btn-primary']) ?>
-                <?= Html::a('Reset', ['index'], ['class' => 'btn btn-default']) ?>
+            <div class="col-12 d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 mt-3">
+                <?= Html::a('Reset', ['index'], ['class' => 'btn btn-outline-secondary px-4 text-center']) ?>
+                <?= Html::submitButton('Filter', ['class' => 'btn btn-primary px-4 shadow-sm text-center']) ?>
             </div>
         </div>
 
@@ -64,9 +66,12 @@ $this->params['breadcrumbs'][] = $this->title;
 <?= GridView::widget([
     'dataProvider' => $dataProvider,
     'filterModel' => $searchModel,
+    'responsive' => true,
+    'responsiveWrap' => false,
+    'containerOptions' => ['style' => 'overflow-x: auto;'],
     'panel' => [
-        'heading' => '<h3 class="panel-title"><i class="bi bi-people"></i> ' . Html::encode($this->title) . '</h3>',
-        'type' => 'default',
+        'heading' => '<h3 class="panel-title mb-0 fs-6 fw-bold"><i class="bi bi-people me-1"></i> ' . Html::encode($this->title) . '</h3>',
+        'type' => 'primary',
         'before' => false,
         'after' => false,
     ],

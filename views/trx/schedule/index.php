@@ -24,49 +24,81 @@ $shifts = Shift::getList();
 
 <div class="schedule-index">
 
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Pegawai</label>
+    <div class="card shadow-sm border-0 mb-4 rounded-3">
+        <div class="card-body p-3 p-sm-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-bold small text-muted">Pegawai</label>
                     <?= Select2::widget([
                         'name' => 'user_id',
                         'id' => 'select-user',
                         'data' => $userList,
-                        'options' => ['placeholder' => 'Pilih'],
+                        'options' => ['placeholder' => 'Pilih Pegawai...'],
                         'pluginOptions' => [
                             'allowClear' => true
                         ],
                     ]) ?>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Shift</label>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-bold small text-muted">Shift</label>
                     <?= Select2::widget([
                         'name' => 'shift_id',
                         'id' => 'select-shift',
                         'data' => $shifts,
-                        'options' => ['placeholder' => 'Pilih'],
+                        'options' => ['placeholder' => 'Pilih Shift...'],
                         'pluginOptions' => [
                             'allowClear' => true
                         ],
                     ]) ?>
                 </div>
-                <div class="col-md-4 text-end">
-                    <?= Html::a(GeneralHelper::faAdd('Lembur'), ['overtime'], ['class' => 'btn btn-primary']) ?>
+                <div class="col-12 col-md-4 d-flex justify-content-start justify-content-md-end">
+                    <?= Html::a(GeneralHelper::faAdd('Lembur'), ['overtime'], ['class' => 'btn btn-primary px-4 shadow-sm w-100 w-md-auto text-center']) ?>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body">
-            <div id="calendar" style="min-height: 600px;"></div>
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-2 p-sm-4">
+            <div id="calendar" style="min-height: 550px;"></div>
         </div>
     </div>
 
 </div>
 
 <style>
+    /* FullCalendar Responsive Header */
+    @media (max-width: 767px) {
+        .fc-header-toolbar {
+            flex-direction: column !important;
+            gap: 10px !important;
+            margin-bottom: 1.25rem !important;
+        }
+        .fc-toolbar-title {
+            font-size: 1.15rem !important;
+            text-align: center;
+        }
+        .fc-toolbar-chunk {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .fc-button {
+            padding: 0.35rem 0.65rem !important;
+            font-size: 0.8rem !important;
+        }
+        .fc-col-header-cell-cushion {
+            font-size: 0.75rem !important;
+        }
+        .fc-daygrid-day-number {
+            font-size: 0.75rem !important;
+            padding: 2px 4px !important;
+        }
+        #calendar {
+            min-height: 480px !important;
+        }
+    }
     /* Match the design in the image */
     .fc-header-toolbar {
         margin-bottom: 2rem !important;

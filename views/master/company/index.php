@@ -15,15 +15,18 @@ $this->title = 'Perusahaan';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 
-<p class="text-end">
+<div class="d-flex justify-content-end mb-3">
     <?= Html::a(GeneralHelper::faAdd($this->title), ['process'], ['class' => 'btn btn-primary']) ?>
-</p>
+</div>
 
 <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
 <?= GridView::widget([
     'dataProvider' => $dataProvider,
     'filterModel' => $searchModel,
+    'responsive' => true,
+    'responsiveWrap' => false,
+    'containerOptions' => ['style' => 'overflow-x: auto;'],
     'columns' => [
         ['class' => 'yii\grid\SerialColumn'],
 

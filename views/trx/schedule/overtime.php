@@ -83,11 +83,9 @@ $userList = ArrayHelper::map($users, 'id_user', 'name');
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-md-12 text-end">
-                <?= Html::submitButton('Save', ['class' => 'btn btn-primary']) ?>
-                <?= Html::a('Cancel', ['index'], ['class' => 'btn btn-secondary ms-2']) ?>
-            </div>
+        <div class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 mt-4 pt-3 border-top">
+            <?= Html::a('Cancel', ['index'], ['class' => 'btn btn-secondary px-4 text-center']) ?>
+            <?= Html::submitButton('Save', ['class' => 'btn btn-primary px-5 shadow-sm text-center']) ?>
         </div>
 
         <?php ActiveForm::end(); ?>

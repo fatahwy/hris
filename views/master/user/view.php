@@ -159,8 +159,9 @@ $leavePercent = $annualQuota > 0 ? min(100, max(0, round(($remainingLeave / $ann
         background: #f8fafc;
         border: 1px solid #e2e8f0;
         border-radius: 12px;
-        padding: 12px 18px;
-        min-width: 130px;
+        padding: 12px 14px;
+        min-width: 120px;
+        flex: 1 1 120px;
         text-align: center;
     }
     .stat-box-label {
@@ -182,6 +183,19 @@ $leavePercent = $annualQuota > 0 ? min(100, max(0, round(($remainingLeave / $ann
         gap: 6px;
         padding: 0 16px;
         background: #ffffff;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .nav-tabs-modern::-webkit-scrollbar {
+        height: 4px;
+    }
+    .nav-tabs-modern::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+    .nav-tabs-modern .nav-item {
+        flex-shrink: 0;
     }
     .nav-tabs-modern .nav-link {
         border: none;
@@ -196,6 +210,7 @@ $leavePercent = $annualQuota > 0 ? min(100, max(0, round(($remainingLeave / $ann
         transition: all 0.2s ease;
         display: inline-flex;
         align-items: center;
+        white-space: nowrap;
     }
     .nav-tabs-modern .nav-link:hover {
         color: #2563eb;
@@ -345,7 +360,7 @@ $leavePercent = $annualQuota > 0 ? min(100, max(0, round(($remainingLeave / $ann
             <h4 class="fw-bold mb-1 text-dark">Detail Karyawan</h4>
             <div class="text-muted small">Kelola informasi data diri, jabatan, payroll, dan jaminan sosial.</div>
         </div>
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex flex-wrap align-items-center gap-2 w-100 w-sm-auto justify-content-start justify-content-sm-end">
             <?= Html::a('<i class="fas fa-arrow-left me-1"></i> Kembali', ['index'], [
                 'class' => 'btn btn-outline-secondary px-3 shadow-sm',
                 'title' => 'Kembali ke daftar karyawan'
@@ -370,7 +385,7 @@ $leavePercent = $annualQuota > 0 ? min(100, max(0, round(($remainingLeave / $ann
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
             
             <!-- Left: Avatar & Main Identity -->
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start text-center text-sm-start gap-3">
                 <div class="avatar-wrapper">
                     <?php if (!empty($model->photo)): ?>
                         <img src="<?= Yii::getAlias('@web/' . $model->photo) ?>" alt="<?= Html::encode($model->name) ?>" class="avatar-img">
@@ -456,7 +471,7 @@ $leavePercent = $annualQuota > 0 ? min(100, max(0, round(($remainingLeave / $ann
             </div>
 
             <!-- Right: Highlight Metrics -->
-            <div class="d-flex align-items-center gap-2 align-self-start align-self-md-center flex-wrap">
+            <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2 align-self-stretch align-self-md-center flex-wrap">
                 <div class="stat-box">
                     <div class="stat-box-label"><i class="fas fa-calendar-day me-1"></i> Masa Kerja</div>
                     <div class="stat-box-value"><?= $tenureText ?: '-' ?></div>

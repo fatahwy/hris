@@ -3,13 +3,13 @@
 /** @var yii\web\View $this */
 /** @var yii\bootstrap5\ActiveForm $form */
 
-use kartik\form\ActiveForm;
+use yii\bootstrap5\ActiveForm;
 use yii\bootstrap5\Html;
 
 $this->title = 'New Password';
 
-// Register the custom CSS
-$this->registerCssFile('@web/css/login.css', ['depends' => [\app\assets\AppAsset::class]]);
+// Register the custom CSS with cache-busting
+$this->registerCssFile('@web/css/login.css?v=' . filemtime(Yii::getAlias('@webroot/css/login.css')), ['depends' => [\app\assets\AppAsset::class]]);
 ?>
 
 <div class="login-container">
@@ -24,6 +24,9 @@ $this->registerCssFile('@web/css/login.css', ['depends' => [\app\assets\AppAsset
     <!-- Right Panel: Form -->
     <div class="login-right">
         <div class="login-form-wrapper">
+            <div class="d-flex justify-content-center d-lg-none mb-4">
+                <img src="<?= Yii::getAlias('@web/images/login-logo.png') ?>" alt="Pranata HR" style="max-width: 170px; height: auto; background: white; padding: 6px 14px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            </div>
             <h1 class="login-title">New Password</h1>
             <p class="login-subtitle">Create a new password for your account</p>
 
@@ -40,7 +43,7 @@ $this->registerCssFile('@web/css/login.css', ['depends' => [\app\assets\AppAsset
                 'options' => ['class' => 'login-form'],
                 'fieldConfig' => [
                     'template' => "{label}\n{input}\n{error}",
-                    'labelOptions' => ['class' => ''],
+                    'labelOptions' => ['class' => 'form-label text-white fw-semibold mb-2'],
                     'inputOptions' => ['class' => 'form-control'],
                     'errorOptions' => ['class' => 'invalid-feedback d-block'],
                 ],

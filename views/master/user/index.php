@@ -154,7 +154,7 @@ $progressColor = $percentage >= 100 ? 'bg-danger' : ($percentage >= 80 ? 'bg-war
                     <div class="progress-bar <?= $progressColor ?>" role="progressbar" style="width: <?= $percentage ?>%;" aria-valuenow="<?= $percentage ?>" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
-            <div class="col-md-5 col-12 text-md-end text-start mt-2 mt-md-0">
+            <div class="col-md-5 col-12 d-flex justify-content-start justify-content-md-end mt-2 mt-md-0">
                 <?php if ($canAddUser): ?>
                     <?= Html::a(GeneralHelper::faAdd('User'), ['process'], ['class' => 'btn btn-primary']) ?>
                 <?php else: ?>
@@ -180,5 +180,8 @@ $progressColor = $percentage >= 100 ? 'bg-danger' : ($percentage >= 80 ? 'bg-war
     'dataProvider' => $dataProvider,
     'filterModel' => $searchModel,
     'columns' => $gridColumns,
+    'responsive' => true,
+    'responsiveWrap' => false,
+    'containerOptions' => ['style' => 'overflow-x: auto;'],
 ]);
 ?>

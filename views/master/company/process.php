@@ -30,12 +30,12 @@ if ($isNewRecord) {
 
         <?= $form->field($model, 'address')->textInput(['maxlength' => true]) ?>
 
-        <?= $form->field($model, 'status')->dropDownList([1 => 'Active', 0 => 'Inactive'], ['class' => 'form-select w-50']) ?>
+        <?= $form->field($model, 'status')->dropDownList([1 => 'Active', 0 => 'Inactive'], ['class' => 'form-select w-100 w-sm-50']) ?>
 
         <?= $form->field($model, 'max_user')->textInput(['type' => 'number']) ?>
 
-        <div class="form-group text-end">
-            <?= Html::submitButton(GeneralHelper::faSave(), ['class' => 'btn btn-primary']) ?>
+        <div class="form-group d-flex justify-content-end mt-4">
+            <?= Html::submitButton(GeneralHelper::faSave(), ['class' => 'btn btn-primary px-4 shadow-sm']) ?>
         </div>
 
         <?php ActiveForm::end(); ?>

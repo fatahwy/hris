@@ -265,13 +265,10 @@ $gridColumns[] = [
     <div class="card mb-4 shadow-sm border-0">
         <div class="card-body">
             <?php Pjax::begin(['id' => 'pjax-payroll-grid', 'enablePushState' => true, 'timeout' => 10000]); ?>
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="card-title mb-0">
-                    <!-- <?= Html::encode($this->title) ?> -->
-                </h4>
-                <div class="d-flex gap-2">
-                    <form id="form-payroll-filter" action="<?= Url::to(['index']) ?>" method="get" class="d-flex gap-2 align-items-center">
-                        <div style="min-width: 150px;">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3 mb-4">
+                <div class="d-flex flex-column flex-sm-row gap-2 align-items-stretch align-items-sm-center flex-grow-1">
+                    <form id="form-payroll-filter" action="<?= Url::to(['index']) ?>" method="get" class="d-flex flex-grow-1 gap-2 align-items-center">
+                        <div class="flex-grow-1" style="min-width: 130px;">
                             <?= Select2::widget([
                                 'id' => 'payroll-month',
                                 'name' => 'month',
@@ -286,7 +283,7 @@ $gridColumns[] = [
                                 ],
                             ]) ?>
                         </div>
-                        <div style="min-width: 110px;">
+                        <div style="min-width: 100px; max-width: 140px;" class="flex-grow-1">
                             <?php
                             $years = [];
                             for ($y = date('Y') - 2; $y <= date('Y') + 1; $y++) {
@@ -313,8 +310,8 @@ $gridColumns[] = [
                     </form>
                     <?php if (empty($models)): ?>
                         <a href="<?= Url::to(['generate', 'month' => $month, 'year' => $year]) ?>"
-                            class="btn btn-success btn-sm" data-confirm="Apakah anda yakin akan generate payroll?" data-pjax="0">
-                            Generate Payroll
+                            class="btn btn-success btn-sm text-nowrap py-2" data-confirm="Apakah anda yakin akan generate payroll?" data-pjax="0">
+                            <i class="bi bi-gear-fill me-1"></i> Generate Payroll
                         </a>
                     <?php endif; ?>
                 </div>
@@ -338,6 +335,8 @@ $gridColumns[] = [
                     'toolbar' => '',
                     'columns' => $gridColumns,
                     'responsive' => true,
+                    'responsiveWrap' => false,
+                    'containerOptions' => ['style' => 'overflow-x: auto;'],
                     'hover' => true,
                     'bordered' => true,
                     'striped' => false,

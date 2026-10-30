@@ -14,15 +14,18 @@ $this->title = 'Tunjangan';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 
-<p class="text-end">
+<div class="d-flex justify-content-end mb-3">
     <?= Html::a(GeneralHelper::faAdd($this->title), ['process'], ['class' => 'btn btn-primary']) ?>
-</p>
+</div>
 
 <?= GridView::widget([
     'dataProvider' => new \yii\data\ArrayDataProvider([
         'allModels' => $allowances,
         'pagination' => false,
     ]),
+    'responsive' => true,
+    'responsiveWrap' => false,
+    'containerOptions' => ['style' => 'overflow-x: auto;'],
     'columns' => [
         ['class' => 'yii\grid\SerialColumn'],
         'name:text:Nama',

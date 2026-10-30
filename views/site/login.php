@@ -4,13 +4,13 @@
 /** @var yii\bootstrap5\ActiveForm $form */
 /** @var app\models\LoginForm $model */
 
-use kartik\form\ActiveForm;
+use yii\bootstrap5\ActiveForm;
 use yii\bootstrap5\Html;
 
 $this->title = 'Login - Pranata HR';
 
-// Register the custom CSS
-$this->registerCssFile('@web/css/login.css', ['depends' => [\app\assets\AppAsset::class]]);
+// Register the custom CSS with cache-busting
+$this->registerCssFile('@web/css/login.css?v=' . filemtime(Yii::getAlias('@webroot/css/login.css')), ['depends' => [\app\assets\AppAsset::class]]);
 ?>
 
 <div class="login-container">
@@ -29,6 +29,9 @@ $this->registerCssFile('@web/css/login.css', ['depends' => [\app\assets\AppAsset
     <!-- Right Panel: Form -->
     <div class="login-right">
         <div class="login-form-wrapper">
+            <div class="d-flex justify-content-center d-lg-none mb-4">
+                <img src="<?= Yii::getAlias('@web/images/login-logo.png') ?>" alt="Pranata HR" style="max-width: 170px; height: auto; background: white; padding: 6px 14px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            </div>
             <h1 class="login-title">Masuk ke Akun Anda</h1>
             <p class="login-subtitle">Silakan masukkan email dan kata sandi Anda</p>
 
@@ -53,7 +56,7 @@ $this->registerCssFile('@web/css/login.css', ['depends' => [\app\assets\AppAsset
                 'options' => ['class' => 'login-form'],
                 'fieldConfig' => [
                     'template' => "{label}\n{input}\n{error}",
-                    'labelOptions' => ['class' => ''],
+                    'labelOptions' => ['class' => 'form-label text-white fw-semibold mb-2'],
                     'inputOptions' => ['class' => 'form-control'],
                     'errorOptions' => ['class' => 'invalid-feedback d-block'],
                 ],
@@ -70,7 +73,7 @@ $this->registerCssFile('@web/css/login.css', ['depends' => [\app\assets\AppAsset
 
             <div class="login-form-group">
                 <?= $form->field($model, 'password', [
-                    'template' => "{label}\n<div class=\"position-relative p-0 \">\n{input}\n<span class=\"toggle-password position-absolute\" style=\"right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #b0aec8; z-index: 10;\">" .
+                    'template' => "{label}\n<div class=\"position-relative\">\n{input}\n<span class=\"toggle-password position-absolute\" style=\"right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #b0aec8; z-index: 10;\">" .
                         '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="eye-icon" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>' .
                         '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="eye-slash-icon d-none" viewBox="0 0 16 16"><path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/><path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12-.708.708z"/></svg>' .
                         "</span>\n</div>\n{error}",

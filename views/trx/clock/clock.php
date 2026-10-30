@@ -20,27 +20,27 @@ $indexUrl = Url::to(['index']);
 
 <div class="attendance-clock content-dashboard">
     <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow-sm border-0">
+        <div class="col-12 col-md-8 col-lg-5">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
                 <div class="card-header bg-primary text-white text-center py-3">
-                    <h4 class="mb-0"><i class="fas fa-camera"></i> <?= Html::encode($typeName) ?></h4>
-                    <small>Shift: <?= Html::encode($model->shift_name) ?></small>
+                    <h4 class="mb-0 fw-bold"><i class="fas fa-camera me-1"></i> <?= Html::encode($typeName) ?></h4>
+                    <small class="opacity-75">Shift: <?= Html::encode($model->shift_name) ?></small>
                 </div>
-                <div class="card-body p-4 text-center">
+                <div class="card-body p-3 p-sm-4 text-center">
                     
-                    <div id="camera-container" class="position-relative mb-3 bg-light rounded" style="overflow: hidden; height: 320px; display: flex; align-items: center; justify-content: center;">
+                    <div id="camera-container" class="position-relative mb-3 bg-light rounded-3" style="overflow: hidden; height: 300px; max-height: 48vh; display: flex; align-items: center; justify-content: center;">
                         <video id="videoElement" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
                         <canvas id="canvasElement" class="d-none" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; z-index: 10;"></canvas>
                         
                         <div id="camera-loader" class="position-absolute d-flex flex-column align-items-center justify-content-center" style="z-index: 5;">
                             <div class="spinner-border text-primary" role="status"></div>
-                            <span class="mt-2 text-muted">Akses Kamera...</span>
+                            <span class="mt-2 text-muted small">Akses Kamera...</span>
                         </div>
                     </div>
 
-                    <div class="location-status mb-3 text-start bg-light p-2 rounded">
-                        <small class="d-block text-muted mb-1"><i class="fas fa-map-marker-alt text-danger"></i> Lokasi Saat Ini:</small>
-                        <div id="location-text" class="text-sm fw-bold placeholder-glow">
+                    <div class="location-status mb-3 text-start bg-light p-2.5 rounded-3 border">
+                        <small class="d-block text-muted mb-1"><i class="fas fa-map-marker-alt text-danger me-1"></i> Lokasi Saat Ini:</small>
+                        <div id="location-text" class="small fw-bold placeholder-glow">
                             <span class="placeholder col-8"></span>
                         </div>
                         <input type="hidden" id="lat" name="lat" value="">
@@ -48,14 +48,14 @@ $indexUrl = Url::to(['index']);
                     </div>
 
                     <div class="d-grid gap-2">
-                        <button type="button" id="btn-capture" class="btn btn-outline-primary btn-lg">
-                            <i class="fas fa-camera"></i> Ambil Foto
+                        <button type="button" id="btn-capture" class="btn btn-primary btn-lg rounded-3 py-2.5 fw-semibold shadow-sm">
+                            <i class="fas fa-camera me-1"></i> Ambil Foto
                         </button>
-                        <button type="button" id="btn-retake" class="btn btn-outline-secondary btn-lg d-none">
-                            <i class="fas fa-undo"></i> Ulangi Foto
+                        <button type="button" id="btn-retake" class="btn btn-outline-secondary btn-lg rounded-3 py-2.5 fw-semibold d-none">
+                            <i class="fas fa-undo me-1"></i> Ulangi Foto
                         </button>
-                        <button type="button" id="btn-submit" class="btn btn-success btn-lg d-none" disabled>
-                            <i class="fas fa-check-circle"></i> Konfirmasi <?= $typeName ?>
+                        <button type="button" id="btn-submit" class="btn btn-success btn-lg rounded-3 py-2.5 fw-semibold d-none shadow-sm" disabled>
+                            <i class="fas fa-check-circle me-1"></i> Konfirmasi <?= $typeName ?>
                         </button>
                     </div>
 

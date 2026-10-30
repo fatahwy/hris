@@ -12,6 +12,28 @@ $this->title = 'Profil Saya';
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 
+$this->registerCss("
+    .profile-tabs .nav-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+        border-bottom: 2px solid #e2e8f0;
+        gap: 4px;
+        padding-bottom: 2px;
+    }
+    .profile-tabs .nav-tabs .nav-item {
+        flex-shrink: 0;
+    }
+    .profile-tabs .nav-tabs::-webkit-scrollbar {
+        height: 4px;
+    }
+    .profile-tabs .nav-tabs::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+");
+
 $items = [
     [
         'type' => 'profile',
@@ -30,6 +52,7 @@ $items = [
     ],
 ];
 
+echo '<div class="profile-tabs">';
 echo TabsX::widget([
     'items' => array_map(function ($num) use ($type, $data) {
         $isActive = $type == $num['type'];
@@ -43,4 +66,5 @@ echo TabsX::widget([
     'position' => TabsX::POS_ABOVE,
     'encodeLabels' => false
 ]);
+echo '</div>';
 ?>

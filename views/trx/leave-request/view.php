@@ -19,7 +19,7 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="leave-request-view">
 
-    <p class="text-end">
+    <div class="d-flex flex-wrap justify-content-end gap-2 mb-3">
         <?php if ($model->isStatusPending() && Account::isUserSubmit($model)): ?>
             <?= Html::a(GeneralHelper::faUpdate(), ['process', 'id_leave_request' => $model->id_leave_request], ['class' => 'btn btn-primary']) ?>
             <?= Html::a(GeneralHelper::faDelete(), ['delete', 'id_leave_request' => $model->id_leave_request], [
@@ -36,15 +36,17 @@ $this->params['breadcrumbs'][] = $this->title;
                 'data-confirm' => 'Are you sure you want to process this leave request?',
             ]) ?>
         <?php endif; ?>
-    </p>
+    </div>
 
     <div class="card modern-form-card shadow-sm">
         <div class="card-header bg-white border-bottom pb-2 pt-3">
             <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-calendar-alt text-primary me-2"></i> Detail Pengajuan <?= $leaveType ?></h5>
         </div>
         <div class="card-body p-0">
-            <?= DetailView::widget([
-                'model' => $model,
+            <div class="table-responsive">
+                <?= DetailView::widget([
+                    'model' => $model,
+                    'options' => ['class' => 'table table-striped table-bordered detail-view mb-0'],
                 'attributes' => [
                     [
                         'attribute' => 'id_user',
@@ -119,6 +121,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     'created_at:datetime',
                 ],
             ]) ?>
+            </div>
         </div>
     </div>
 </div>

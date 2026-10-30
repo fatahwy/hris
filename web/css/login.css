@@ -16,6 +16,7 @@
     display: flex;
     min-height: 100vh;
     width: 100%;
+    overflow-x: hidden;
 }
 
 /* ===== Left Panel (Logo & Branding) ===== */
@@ -71,6 +72,9 @@
     padding: 40px 60px;
     position: relative;
     overflow: hidden;
+    overflow-x: clip;
+    box-sizing: border-box;
+    min-width: 0;
 }
 
 .login-right::before {
@@ -82,6 +86,7 @@
     height: 120%;
     background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
     animation: subtleGlow 15s ease-in-out infinite;
+    pointer-events: none;
 }
 
 .login-right::after {
@@ -93,6 +98,7 @@
     height: 80%;
     background: radial-gradient(circle, rgba(232, 160, 32, 0.06) 0%, transparent 60%);
     animation: subtleGlow 20s ease-in-out infinite reverse;
+    pointer-events: none;
 }
 
 @keyframes subtleGlow {
@@ -105,6 +111,7 @@
     max-width: 420px;
     position: relative;
     z-index: 1;
+    box-sizing: border-box;
     animation: formSlideIn 0.6s ease-out;
 }
 
@@ -116,6 +123,17 @@
     to {
         opacity: 1;
         transform: translateX(0);
+    }
+}
+
+@keyframes formSlideInMobile {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
@@ -293,6 +311,7 @@
 @media (max-width: 991px) {
     .login-container {
         flex-direction: column;
+        overflow-x: hidden;
     }
 
     .login-left {
@@ -302,33 +321,74 @@
     .login-right {
         padding: 40px 24px;
         min-height: 100vh;
+        overflow-x: clip;
+    }
+
+    .login-form-wrapper {
+        animation-name: formSlideInMobile;
+        width: 100%;
+        max-width: 440px;
+        margin: 0 auto;
+        box-sizing: border-box;
     }
 
     .auth-body {
         overflow-y: auto;
+        overflow-x: hidden;
     }
 }
 
 @media (max-width: 576px) {
     .login-right {
-        padding: 30px 20px;
+        padding: 32px 20px;
+        overflow-x: clip;
     }
 
     .login-title {
-        font-size: 1.8rem;
+        font-size: 1.75rem;
     }
 
     .login-subtitle {
         font-size: 0.95rem;
-        margin-bottom: 28px;
+        margin-bottom: 24px;
+    }
+
+    .login-form-wrapper {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        box-sizing: border-box;
+    }
+
+    .login-form-group {
+        margin-bottom: 18px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .login-form-group .form-control {
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .btn-login {
         width: 100%;
-        padding: 14px 24px;
+        display: block;
+        padding: 14px 20px;
+        box-sizing: border-box;
+    }
+}
+
+@media (max-width: 380px) {
+    .login-right {
+        padding: 24px 16px;
     }
 
-    .login-form-wrapper {
-        max-width: 100%;
+    .login-title {
+        font-size: 1.55rem;
+    }
+
+    .login-subtitle {
+        font-size: 0.88rem;
     }
 }
