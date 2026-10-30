@@ -1,7 +1,7 @@
 /**
  * PRANATA HR - Progressive Web App (PWA) Controller
  * Handles Service Worker registration, install prompts,
- * and automatic hiding of install buttons when running in installed PWA mode.
+ * and restricts install buttons/banners exclusively to Mobile and Tablet view.
  */
 
 (function () {
@@ -30,6 +30,15 @@
             document.referrer.includes('android-app://') ||
             isStored
         );
+    }
+
+    // Mobile & Tablet Detection Helper (<= 1024px or Mobile/Tablet UA / iPad Touch)
+    function checkIsMobileOrTablet() {
+        const ua = navigator.userAgent || '';
+        const isMobileOrTabletUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Tablet|PlayBook|Silk|(Kindle)|(Tablet;)|(Nexus 7)|(Nexus 10)|(Touch)/i.test(ua) ||
+            (Boolean(navigator.maxTouchPoints) && navigator.maxTouchPoints > 2);
+        const isMobileOrTabletWidth = window.innerWidth <= 1024;
+        return isMobileOrTabletUA || isMobileOrTabletWidth;
     }
 
     const isStandalone = checkIsStandalone();
@@ -64,11 +73,6 @@
     const isIOS = (
         /iPad|iPhone|iPod/.test(navigator.userAgent) &&
         !window.MSStream
-    );
-
-    const isMobile = (
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        window.innerWidth <= 768
     );
 
     // 1. Register Service Worker
@@ -110,40 +114,22 @@
             return;
         }
 
-        const banner = document.getElementById('pwaInstallBanner');
-        const iosModal = document.getElementById('pwaIosModal');
-        const androidModal = document.getElementById('pwaAndroidModal');
-        const sidebarWrapper = document.querySelector('.pwa-sidebar-wrapper');
-        const sidebarBtn = document.querySelector('.pwa-sidebar-btn');
-        const headerBtn = document.querySelector('.pwa-header-install-btn');
+        updateDeviceVisibility();
 
-        // Check if banner was recently dismissed
+        const banner = document.getElementById('pwaInstallBanner');
         let isDismissed = false;
         try {
             const dismissedUntil = localStorage.getItem(DISMISS_KEY);
             isDismissed = dismissedUntil && (Date.now() < parseInt(dismissedUntil, 10));
         } catch (e) {}
 
-        // Show buttons on mobile browser only
-        if (isMobile) {
-            if (headerBtn) {
-                headerBtn.classList.add('is-active');
-            }
-            if (sidebarWrapper) {
-                sidebarWrapper.style.display = 'block';
-            }
-            if (sidebarBtn) {
-                sidebarBtn.style.display = 'flex';
-            }
-
-            // Show floating bottom banner after 1.2s on mobile if not dismissed
-            if (banner && !isDismissed) {
-                setTimeout(() => {
-                    if (!checkIsStandalone() && banner) {
-                        banner.style.display = 'flex';
-                    }
-                }, 1200);
-            }
+        // Show floating bottom banner after 1.2s on mobile & tablet if not dismissed
+        if (checkIsMobileOrTablet() && banner && !isDismissed) {
+            setTimeout(() => {
+                if (!checkIsStandalone() && checkIsMobileOrTablet() && banner) {
+                    banner.style.display = 'flex';
+                }
+            }, 1200);
         }
 
         // Global click listener for PWA buttons
@@ -165,34 +151,64 @@
             const closeIosBtn = e.target.closest('.pwa-close-ios');
             if (closeIosBtn) {
                 e.preventDefault();
-                closeModal(iosModal);
+                closeModal(document.getElementById('pwaIosModal'));
                 return;
             }
 
             const closeAndroidBtn = e.target.closest('.pwa-close-android');
             if (closeAndroidBtn) {
                 e.preventDefault();
-                closeModal(androidModal);
+                closeModal(document.getElementById('pwaAndroidModal'));
                 return;
             }
         });
 
         // Close modals on backdrop click
+        const iosModal = document.getElementById('pwaIosModal');
+        const androidModal = document.getElementById('pwaAndroidModal');
         if (iosModal) {
             iosModal.addEventListener('click', (e) => {
-                if (e.target === iosModal) {
-                    closeModal(iosModal);
-                }
+                if (e.target === iosModal) closeModal(iosModal);
             });
         }
         if (androidModal) {
             androidModal.addEventListener('click', (e) => {
-                if (e.target === androidModal) {
-                    closeModal(androidModal);
-                }
+                if (e.target === androidModal) closeModal(androidModal);
             });
         }
     }
+
+    function updateDeviceVisibility() {
+        const isMobileOrTablet = checkIsMobileOrTablet();
+        const headerBtn = document.querySelector('.pwa-header-install-btn');
+        const sidebarWrapper = document.querySelector('.pwa-sidebar-wrapper');
+        const sidebarBtn = document.querySelector('.pwa-sidebar-btn');
+        const banner = document.getElementById('pwaInstallBanner');
+
+        if (isMobileOrTablet) {
+            if (headerBtn) headerBtn.classList.add('is-active');
+            if (sidebarWrapper) {
+                sidebarWrapper.classList.add('is-active');
+                sidebarWrapper.style.display = 'block';
+            }
+            if (sidebarBtn) sidebarBtn.style.display = 'flex';
+        } else {
+            if (headerBtn) headerBtn.classList.remove('is-active');
+            if (sidebarWrapper) {
+                sidebarWrapper.classList.remove('is-active');
+                sidebarWrapper.style.display = 'none';
+            }
+            if (sidebarBtn) sidebarBtn.style.display = 'none';
+            if (banner) banner.style.display = 'none';
+        }
+    }
+
+    // Window resize handler to adapt dynamically between desktop and mobile/tablet
+    window.addEventListener('resize', () => {
+        if (!checkIsStandalone()) {
+            updateDeviceVisibility();
+        }
+    });
 
     // 3. Listen to beforeinstallprompt (Fired on Android / Chrome HTTPS / localhost)
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -204,18 +220,20 @@
         deferredPrompt = e;
         window.deferredPWAInstallPrompt = e;
 
-        const headerBtn = document.querySelector('.pwa-header-install-btn');
-        if (headerBtn) {
-            headerBtn.classList.add('is-active');
+        if (!checkIsMobileOrTablet()) {
+            return;
         }
+
+        const headerBtn = document.querySelector('.pwa-header-install-btn');
+        if (headerBtn) headerBtn.classList.add('is-active');
+
         const sidebarWrapper = document.querySelector('.pwa-sidebar-wrapper');
         if (sidebarWrapper) {
+            sidebarWrapper.classList.add('is-active');
             sidebarWrapper.style.display = 'block';
         }
         const sidebarBtn = document.querySelector('.pwa-sidebar-btn');
-        if (sidebarBtn) {
-            sidebarBtn.style.display = 'flex';
-        }
+        if (sidebarBtn) sidebarBtn.style.display = 'flex';
 
         const banner = document.getElementById('pwaInstallBanner');
         let isDismissed = false;

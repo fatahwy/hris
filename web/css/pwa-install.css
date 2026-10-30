@@ -2,7 +2,7 @@
    PRANATA HR - PWA Install Banner & Modal Styles
    ========================================================================== */
 
-/* Strict Hiding When in Standalone / Installed PWA Mode */
+/* 1. Strict Hiding When in Standalone / Installed PWA Mode */
 @media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui) {
     .pwa-install-trigger,
     .pwa-install-banner,
@@ -42,16 +42,41 @@ body.is-pwa-standalone #pwaAndroidModal {
     pointer-events: none !important;
 }
 
-/* Header Install Button (hidden by default, shown via JS on mobile browser) */
+/* 2. Strict Hiding on Desktop Screens (> 1024px) */
+@media (min-width: 1025px) {
+    .pwa-header-install-btn,
+    .pwa-sidebar-wrapper,
+    .pwa-sidebar-btn,
+    .pwa-install-banner,
+    .pwa-install-trigger,
+    #pwaInstallBanner,
+    #pwaIosModal,
+    #pwaAndroidModal {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+}
+
+/* 3. Mobile & Tablet (<= 1024px) Display Rules */
+@media (max-width: 1024px) {
+    body:not(.is-pwa-standalone) .pwa-header-install-btn.is-active {
+        display: inline-flex !important;
+    }
+    body:not(.is-pwa-standalone) .pwa-sidebar-wrapper.is-active {
+        display: block !important;
+    }
+    body:not(.is-pwa-standalone) .pwa-sidebar-wrapper.is-active .pwa-sidebar-btn {
+        display: flex !important;
+    }
+}
+
+/* Header Install Button (hidden by default) */
 .pwa-header-install-btn {
     display: none;
 }
 
-.pwa-header-install-btn.is-active {
-    display: inline-flex !important;
-}
-
-/* PWA Bottom Install Banner (Mobile Prominent) */
+/* PWA Bottom Install Banner (Mobile & Tablet Prominent) */
 .pwa-install-banner {
     position: fixed;
     bottom: 20px;
@@ -185,7 +210,11 @@ body.is-pwa-standalone #pwaAndroidModal {
     background-color: #f1f5f9;
 }
 
-/* Sidebar / Nav item for PWA */
+/* Sidebar item for PWA */
+.pwa-sidebar-wrapper {
+    display: none;
+}
+
 .pwa-sidebar-btn {
     display: none;
     background: rgba(255, 255, 255, 0.12);

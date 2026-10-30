@@ -692,11 +692,6 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
                     <i class="bi bi-list fs-4"></i>
                 </div>
 
-                <button type="button" class="btn btn-sm btn-outline-primary pwa-install-trigger pwa-header-install-btn d-md-none align-items-center gap-1 rounded-pill px-2 py-1 shadow-sm flex-shrink-0" style="font-size: 0.78rem; display: none;">
-                    <i class="bi bi-download"></i>
-                    <span>Install</span>
-                </button>
-
                 <div class="header-selectors flex-grow-1">
                     <?php
                     if (RoleHelper::isSuper()): ?>
