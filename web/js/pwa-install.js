@@ -1,7 +1,7 @@
 /**
  * PRANATA HR - Progressive Web App (PWA) Controller
- * Handles Service Worker registration, install prompts (Android/Chromium & iOS),
- * and dynamic install banner UI.
+ * Handles Service Worker registration, install prompts,
+ * and automatic hiding of install buttons when running in installed PWA mode.
  */
 
 (function () {
@@ -12,12 +12,54 @@
     const DISMISS_KEY = 'pranata_pwa_dismissed_until';
     const DISMISS_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
-    // Checks
-    const isStandalone = (
-        window.matchMedia('(display-mode: standalone)').matches ||
-        window.navigator.standalone === true ||
-        document.referrer.includes('android-app://')
-    );
+    // Standalone Detection Helper
+    function checkIsStandalone() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('source') === 'pwa' || urlParams.get('mode') === 'standalone') {
+            try { sessionStorage.setItem('is_pwa_standalone', '1'); } catch (e) {}
+        }
+
+        let isStored = false;
+        try { isStored = (sessionStorage.getItem('is_pwa_standalone') === '1'); } catch (e) {}
+
+        return (
+            window.matchMedia('(display-mode: standalone)').matches ||
+            window.matchMedia('(display-mode: fullscreen)').matches ||
+            window.matchMedia('(display-mode: minimal-ui)').matches ||
+            window.navigator.standalone === true ||
+            document.referrer.includes('android-app://') ||
+            isStored
+        );
+    }
+
+    const isStandalone = checkIsStandalone();
+
+    // If running inside installed PWA, strictly hide/remove all install UI and exit
+    if (isStandalone) {
+        document.documentElement.classList.add('is-pwa-standalone');
+        if (document.body) document.body.classList.add('is-pwa-standalone');
+
+        function purgeInstallElements() {
+            const selectors = [
+                '.pwa-install-trigger',
+                '.pwa-install-banner',
+                '.pwa-sidebar-btn',
+                '.pwa-sidebar-wrapper',
+                '.pwa-header-install-btn',
+                '#pwaInstallBanner',
+                '#pwaIosModal',
+                '#pwaAndroidModal'
+            ];
+            document.querySelectorAll(selectors.join(',')).forEach(el => el.remove());
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', purgeInstallElements);
+        } else {
+            purgeInstallElements();
+        }
+        return;
+    }
 
     const isIOS = (
         /iPad|iPhone|iPod/.test(navigator.userAgent) &&
@@ -29,13 +71,7 @@
         window.innerWidth <= 768
     );
 
-    // If already running as installed app, no need for install prompt
-    if (isStandalone) {
-        document.documentElement.classList.add('is-pwa-standalone');
-        return;
-    }
-
-    // 1. Register Service Worker (requires HTTPS or localhost in modern browsers)
+    // 1. Register Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             let swPath = '/sw.js';
@@ -59,31 +95,43 @@
                     };
                 })
                 .catch((err) => {
-                    console.warn('PWA: ServiceWorker note (Requires HTTPS or localhost):', err);
+                    console.warn('PWA: ServiceWorker note:', err);
                 });
         });
     }
 
-    // 2. Initialize UI on DOM Ready
+    // 2. Initialize UI on DOM Ready (Only when NOT standalone)
     document.addEventListener('DOMContentLoaded', () => {
         setupInstallUI();
     });
 
     function setupInstallUI() {
+        if (checkIsStandalone()) {
+            return;
+        }
+
         const banner = document.getElementById('pwaInstallBanner');
         const iosModal = document.getElementById('pwaIosModal');
         const androidModal = document.getElementById('pwaAndroidModal');
+        const sidebarWrapper = document.querySelector('.pwa-sidebar-wrapper');
         const sidebarBtn = document.querySelector('.pwa-sidebar-btn');
+        const headerBtn = document.querySelector('.pwa-header-install-btn');
 
         // Check if banner was recently dismissed
-        const dismissedUntil = localStorage.getItem(DISMISS_KEY);
-        const isDismissed = dismissedUntil && (Date.now() < parseInt(dismissedUntil, 10));
+        let isDismissed = false;
+        try {
+            const dismissedUntil = localStorage.getItem(DISMISS_KEY);
+            isDismissed = dismissedUntil && (Date.now() < parseInt(dismissedUntil, 10));
+        } catch (e) {}
 
-        // Always show install triggers on mobile
+        // Show buttons on mobile browser only
         if (isMobile) {
-            document.querySelectorAll('.pwa-install-trigger').forEach(el => {
-                el.style.display = '';
-            });
+            if (headerBtn) {
+                headerBtn.classList.add('is-active');
+            }
+            if (sidebarWrapper) {
+                sidebarWrapper.style.display = 'block';
+            }
             if (sidebarBtn) {
                 sidebarBtn.style.display = 'flex';
             }
@@ -91,7 +139,9 @@
             // Show floating bottom banner after 1.2s on mobile if not dismissed
             if (banner && !isDismissed) {
                 setTimeout(() => {
-                    banner.style.display = 'flex';
+                    if (!checkIsStandalone() && banner) {
+                        banner.style.display = 'flex';
+                    }
                 }, 1200);
             }
         }
@@ -146,23 +196,33 @@
 
     // 3. Listen to beforeinstallprompt (Fired on Android / Chrome HTTPS / localhost)
     window.addEventListener('beforeinstallprompt', (e) => {
-        // Prevent Chrome mini-infobar
+        if (checkIsStandalone()) {
+            return;
+        }
+
         e.preventDefault();
         deferredPrompt = e;
         window.deferredPWAInstallPrompt = e;
 
-        // Show install button & banner
-        document.querySelectorAll('.pwa-install-trigger').forEach(el => {
-            el.style.display = '';
-        });
+        const headerBtn = document.querySelector('.pwa-header-install-btn');
+        if (headerBtn) {
+            headerBtn.classList.add('is-active');
+        }
+        const sidebarWrapper = document.querySelector('.pwa-sidebar-wrapper');
+        if (sidebarWrapper) {
+            sidebarWrapper.style.display = 'block';
+        }
         const sidebarBtn = document.querySelector('.pwa-sidebar-btn');
         if (sidebarBtn) {
             sidebarBtn.style.display = 'flex';
         }
 
         const banner = document.getElementById('pwaInstallBanner');
-        const dismissedUntil = localStorage.getItem(DISMISS_KEY);
-        const isDismissed = dismissedUntil && (Date.now() < parseInt(dismissedUntil, 10));
+        let isDismissed = false;
+        try {
+            const dismissedUntil = localStorage.getItem(DISMISS_KEY);
+            isDismissed = dismissedUntil && (Date.now() < parseInt(dismissedUntil, 10));
+        } catch (err) {}
 
         if (banner && !isDismissed) {
             banner.style.display = 'flex';
@@ -173,7 +233,6 @@
     window.triggerPWAInstall = triggerInstall;
     function triggerInstall() {
         if (deferredPrompt) {
-            // Native Android / Chromium prompt
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === 'accepted') {
@@ -186,10 +245,8 @@
                 window.deferredPWAInstallPrompt = null;
             });
         } else if (isIOS) {
-            // Show iOS guide modal
             openModal(document.getElementById('pwaIosModal'));
         } else {
-            // Chrome on HTTP / fallback guide modal
             openModal(document.getElementById('pwaAndroidModal'));
         }
     }
@@ -203,7 +260,9 @@
                 banner.classList.remove('pwa-closing');
             }, 250);
         }
-        localStorage.setItem(DISMISS_KEY, Date.now() + DISMISS_DURATION);
+        try {
+            localStorage.setItem(DISMISS_KEY, Date.now() + DISMISS_DURATION);
+        } catch (e) {}
     }
 
     function hideBanner() {
@@ -225,17 +284,29 @@
         }
     }
 
-    // 5. Listen to appinstalled event
+    // 5. Listen to dynamic display-mode changes
+    try {
+        const standaloneMedia = window.matchMedia('(display-mode: standalone)');
+        standaloneMedia.addEventListener('change', (evt) => {
+            if (evt.matches) {
+                try { sessionStorage.setItem('is_pwa_standalone', '1'); } catch (e) {}
+                document.documentElement.classList.add('is-pwa-standalone');
+                if (document.body) document.body.classList.add('is-pwa-standalone');
+                document.querySelectorAll('.pwa-install-trigger, .pwa-install-banner, .pwa-sidebar-wrapper, .pwa-header-install-btn, #pwaInstallBanner, #pwaIosModal, #pwaAndroidModal').forEach(el => el.remove());
+            }
+        });
+    } catch (e) {}
+
+    // 6. Listen to appinstalled event
     window.addEventListener('appinstalled', () => {
         console.log('PWA: Aplikasi berhasil diinstal.');
         deferredPrompt = null;
         window.deferredPWAInstallPrompt = null;
-        hideBanner();
+        try { sessionStorage.setItem('is_pwa_standalone', '1'); } catch (e) {}
+        document.documentElement.classList.add('is-pwa-standalone');
+        if (document.body) document.body.classList.add('is-pwa-standalone');
 
-        const sidebarBtn = document.querySelector('.pwa-sidebar-btn');
-        if (sidebarBtn) {
-            sidebarBtn.style.display = 'none';
-        }
+        document.querySelectorAll('.pwa-install-trigger, .pwa-install-banner, .pwa-sidebar-wrapper, .pwa-header-install-btn, #pwaInstallBanner, #pwaIosModal, #pwaAndroidModal').forEach(el => el.remove());
 
         showInstalledToast();
     });
@@ -243,7 +314,7 @@
     function showInstalledToast() {
         const toast = document.createElement('div');
         toast.className = 'pwa-installed-toast';
-        toast.innerHTML = '<i class="bi bi-check-circle-fill"></i> Aplikasi PRANATA HR berhasil di-install!';
+        toast.innerHTML = '<i class="bi bi-check-circle-fill"></i> Aplikasi PRANATA HR berhasil dipasang!';
         document.body.appendChild(toast);
         setTimeout(() => {
             toast.style.opacity = '0';

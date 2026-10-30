@@ -30,6 +30,21 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
 
 <head>
     <title><?= Html::encode($this->title) ?></title>
+    <script>
+        (function() {
+            var isPwa = window.matchMedia('(display-mode: standalone)').matches ||
+                        window.matchMedia('(display-mode: fullscreen)').matches ||
+                        window.matchMedia('(display-mode: minimal-ui)').matches ||
+                        window.navigator.standalone === true ||
+                        document.referrer.includes('android-app://') ||
+                        location.search.indexOf('source=pwa') !== -1 ||
+                        sessionStorage.getItem('is_pwa_standalone') === '1';
+            if (isPwa) {
+                try { sessionStorage.setItem('is_pwa_standalone', '1'); } catch(e){}
+                document.documentElement.classList.add('is-pwa-standalone');
+            }
+        })();
+    </script>
     <?php $this->head() ?>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">

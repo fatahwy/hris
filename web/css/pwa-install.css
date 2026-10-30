@@ -2,6 +2,55 @@
    PRANATA HR - PWA Install Banner & Modal Styles
    ========================================================================== */
 
+/* Strict Hiding When in Standalone / Installed PWA Mode */
+@media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui) {
+    .pwa-install-trigger,
+    .pwa-install-banner,
+    .pwa-sidebar-btn,
+    .pwa-sidebar-wrapper,
+    .pwa-header-install-btn,
+    .pwa-ios-overlay,
+    #pwaInstallBanner,
+    #pwaIosModal,
+    #pwaAndroidModal {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+}
+
+html.is-pwa-standalone .pwa-install-trigger,
+html.is-pwa-standalone .pwa-install-banner,
+html.is-pwa-standalone .pwa-sidebar-btn,
+html.is-pwa-standalone .pwa-sidebar-wrapper,
+html.is-pwa-standalone .pwa-header-install-btn,
+html.is-pwa-standalone .pwa-ios-overlay,
+html.is-pwa-standalone #pwaInstallBanner,
+html.is-pwa-standalone #pwaIosModal,
+html.is-pwa-standalone #pwaAndroidModal,
+body.is-pwa-standalone .pwa-install-trigger,
+body.is-pwa-standalone .pwa-install-banner,
+body.is-pwa-standalone .pwa-sidebar-btn,
+body.is-pwa-standalone .pwa-sidebar-wrapper,
+body.is-pwa-standalone .pwa-header-install-btn,
+body.is-pwa-standalone .pwa-ios-overlay,
+body.is-pwa-standalone #pwaInstallBanner,
+body.is-pwa-standalone #pwaIosModal,
+body.is-pwa-standalone #pwaAndroidModal {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* Header Install Button (hidden by default, shown via JS on mobile browser) */
+.pwa-header-install-btn {
+    display: none;
+}
+
+.pwa-header-install-btn.is-active {
+    display: inline-flex !important;
+}
+
 /* PWA Bottom Install Banner (Mobile Prominent) */
 .pwa-install-banner {
     position: fixed;
@@ -163,7 +212,7 @@
     color: #ffde59;
 }
 
-/* iOS Safari Instruction Modal */
+/* iOS Safari / Universal Instruction Modal */
 .pwa-ios-overlay {
     position: fixed;
     top: 0;

@@ -241,6 +241,21 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
     <title>
         <?= Html::encode($this->title ?? 'Dashboard') ?>
     </title>
+    <script>
+        (function() {
+            var isPwa = window.matchMedia('(display-mode: standalone)').matches ||
+                        window.matchMedia('(display-mode: fullscreen)').matches ||
+                        window.matchMedia('(display-mode: minimal-ui)').matches ||
+                        window.navigator.standalone === true ||
+                        document.referrer.includes('android-app://') ||
+                        location.search.indexOf('source=pwa') !== -1 ||
+                        sessionStorage.getItem('is_pwa_standalone') === '1';
+            if (isPwa) {
+                try { sessionStorage.setItem('is_pwa_standalone', '1'); } catch(e){}
+                document.documentElement.classList.add('is-pwa-standalone');
+            }
+        })();
+    </script>
     <?php $this->head() ?>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -399,12 +414,15 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
             display: flex;
             flex-direction: column;
             height: 100vh;
+            min-width: 0;
+            width: 100%;
             transition: margin-left 0.3s ease;
         }
 
         @media (min-width: 768px) {
             .main-wrapper {
                 margin-left: 250px;
+                width: calc(100% - 250px);
             }
         }
 
@@ -412,19 +430,23 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 20px;
+            padding: 10px 14px;
             /* Reduced padding on mobile */
             background: #fff;
             border-bottom: 1px solid #f1f3f4;
             position: sticky;
             top: 0;
             z-index: 99;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         @media (min-width: 768px) {
             .top-header {
                 padding: 20px 40px;
                 background: transparent;
+                flex-wrap: nowrap;
+                gap: 0;
             }
         }
 
@@ -459,6 +481,10 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
             backdrop-filter: blur(2px);
         }
 
+        body.sidebar-open {
+            overflow: hidden !important;
+        }
+
         body.sidebar-open .sidebar-backdrop {
             display: block;
         }
@@ -472,15 +498,29 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
 
         @media (max-width: 767px) {
             .header-selectors {
-                gap: 5px;
+                gap: 6px;
+                width: 100%;
+                order: 3;
+            }
+
+            .header-selectors > div {
+                flex: 1 1 120px;
+                max-width: 100% !important;
             }
 
             .header-selectors .select2-container {
-                width: 140px !important;
+                width: 100% !important;
             }
 
             .header-selectors label {
-                font-size: 0.75rem;
+                font-size: 0.72rem;
+            }
+
+            .breadcrumb {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
+                font-size: 0.82rem;
             }
         }
 
@@ -552,13 +592,31 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
 
         .content-area {
             flex-grow: 1;
-            padding: 15px 20px 20px 20px;
+            padding: 12px 14px 24px 14px;
             overflow-y: auto;
+            overflow-x: hidden;
+            min-width: 0;
+            -webkit-overflow-scrolling: touch;
         }
 
         @media (min-width: 768px) {
             .content-area {
                 padding: 10px 40px 40px 40px;
+            }
+        }
+
+        .table-responsive {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (max-width: 576px) {
+            .modern-form-card .card-body {
+                padding: 1rem !important;
+            }
+            .table-modern-detail th,
+            .table-modern-detail td {
+                padding: 0.65rem 0.75rem;
+                font-size: 0.85rem;
             }
         }
 
@@ -599,7 +657,7 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
             <?= Menu::renderMenu('main') ?>
         </div>
 
-        <div class="px-2 py-1">
+        <div class="px-2 py-1 pwa-sidebar-wrapper" style="display: none;">
             <a href="javascript:void(0)" class="pwa-sidebar-btn pwa-install-trigger text-decoration-none">
                 <i class="bi bi-download"></i>
                 <span>Download / Install App</span>
@@ -629,17 +687,17 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
 
     <div class="main-wrapper">
         <header class="top-header">
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2 gap-sm-3 flex-grow-1 min-w-0">
                 <div class="burger-menu">
                     <i class="bi bi-list fs-4"></i>
                 </div>
 
-                <button type="button" class="btn btn-sm btn-outline-primary pwa-install-trigger d-md-none d-inline-flex align-items-center gap-1 rounded-pill px-2 py-1 shadow-sm" style="font-size: 0.78rem;">
+                <button type="button" class="btn btn-sm btn-outline-primary pwa-install-trigger pwa-header-install-btn d-md-none align-items-center gap-1 rounded-pill px-2 py-1 shadow-sm flex-shrink-0" style="font-size: 0.78rem; display: none;">
                     <i class="bi bi-download"></i>
                     <span>Install</span>
                 </button>
 
-                <div class="header-selectors">
+                <div class="header-selectors flex-grow-1">
                     <?php
                     if (RoleHelper::isSuper()): ?>
                         <div class="d-flex flex-column" style="max-width: 250px;">
@@ -650,7 +708,7 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
                                 'data' => Client::getList(),
                                 'options' => ['id' => 'id_client_env'],
                                 'pluginOptions' => [
-                                    'width' => '250px'
+                                    'width' => '100%'
                                 ]
                             ]); ?>
                         </div>
@@ -667,12 +725,21 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
                                 'data' => $listCompany ?? Company::getList($user->id_client),
                                 'options' => ['id' => 'id_company_env'],
                                 'pluginOptions' => [
-                                    'width' => '250px'
+                                    'width' => '100%'
                                 ]
                             ]); ?>
                         </div>
                     <?php endif; ?>
                 </div>
+            </div>
+
+            <!-- Mobile Profile Avatar -->
+            <div class="d-flex align-items-center d-md-none ms-auto flex-shrink-0">
+                <a href="<?= Url::to(['/profile']) ?>" class="user-block m-0" title="<?= Html::encode($user->name ?? 'Profile') ?>">
+                    <div class="user-avatar shadow-sm" style="width: 34px; height: 34px; font-size: 0.85rem;">
+                        <?= strtoupper(substr($user->name ?? '', 0, 1)) ?>
+                    </div>
+                </a>
             </div>
 
             <div class="header-icons d-none d-md-flex">
@@ -697,18 +764,18 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
 
         <main class="content-area">
             <!-- Content Header (Page header) -->
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h2 class="h4 mt-2 text-primary fw-bold d-flex align-items-center">
+            <div class="row mb-3 align-items-center gy-1">
+                <div class="col-12 col-sm-6">
+                    <h2 class="h4 mb-0 text-primary fw-bold d-flex align-items-center">
                         <?= Html::encode($this->title) ?>
                     </h2>
                 </div><!-- /.col -->
-                <div class="col-sm-6">
-                    <div class="d-flex justify-content-end">
+                <div class="col-12 col-sm-6">
+                    <div class="d-flex justify-content-start justify-content-sm-end">
                         <?= Breadcrumbs::widget([
                             'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
                             'options' => [
-                                'class' => 'breadcrumb'
+                                'class' => 'breadcrumb mb-0 py-1'
                             ]
                         ]);
                         ?>

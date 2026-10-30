@@ -1,9 +1,9 @@
 {
-  "id": "/",
+  "id": "/?source=pwa",
   "name": "PRANATA HR",
   "short_name": "PRANATA HR",
   "description": "Sistem Informasi Manajemen SDM, Kehadiran, dan Karyawan PRANATA HR",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
