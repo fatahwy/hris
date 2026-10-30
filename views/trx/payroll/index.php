@@ -313,9 +313,23 @@ $gridColumns[] = [
                             class="btn btn-success btn-sm text-nowrap py-2" data-confirm="Apakah anda yakin akan generate payroll?" data-pjax="0">
                             <i class="bi bi-gear-fill me-1"></i> Generate Payroll
                         </a>
+                    <?php else: ?>
+                        <a href="<?= Url::to(['regenerate', 'month' => $month, 'year' => $year]) ?>"
+                            class="btn btn-warning text-dark btn-sm text-nowrap py-2" data-confirm="Apakah anda yakin akan generate ulang payroll?" data-pjax="0">
+                            <i class="bi bi-arrow-repeat me-1"></i> Generate Ulang
+                        </a>
                     <?php endif; ?>
                 </div>
             </div>
+
+            <?php if (!empty($models)): ?>
+                <div class="alert alert-light border d-flex align-items-start gap-2 mb-3 py-2 px-3 rounded-2" role="alert">
+                    <i class="bi bi-info-circle-fill text-warning fs-6 mt-1 flex-shrink-0"></i>
+                    <div class="small text-secondary">
+                        <strong class="text-dark">Catatan:</strong> Tombol <strong>Generate Ulang</strong> digunakan untuk me-reset / menghitung ulang payroll pegawai yang masih berstatus <span class="badge bg-secondary">PENDING</span> (menyesuaikan perubahan kehadiran, lembur, tunjangan, atau master gaji) serta otomatis menambahkan pegawai baru yang payroll-nya belum digenerate pada periode ini. Data payroll berstatus <span class="badge bg-info">DRAFT</span> dan <span class="badge bg-success">APPROVE</span> aman dan tidak akan diubah.
+                    </div>
+                </div>
+            <?php endif; ?>
 
             <div class="position-relative">
                 <div id="payroll-grid-loader" class="position-absolute top-0 start-0 w-100 h-100 d-none flex-column align-items-center justify-content-center bg-white bg-opacity-75" style="z-index: 1050; min-height: 250px; backdrop-filter: blur(2px);">

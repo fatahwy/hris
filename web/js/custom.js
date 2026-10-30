@@ -1,5 +1,6 @@
 $(document).on('click', '[data-confirm]', function (e) {
     e.preventDefault();
+    e.stopImmediatePropagation();
 
     var $this = $(this);
     var message = $this.data('confirm');

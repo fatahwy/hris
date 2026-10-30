@@ -196,23 +196,29 @@ $this->registerCssFile(
 $this->registerCssFile('https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/sweetalert2@11', ['position' => \yii\web\View::POS_END, 'depends' => [\yii\web\JqueryAsset::class, \yii\web\YiiAsset::class]]);
 $this->registerJs("
-    yii.confirm = function (message, ok, cancel) {
-        Swal.fire({
-            title: 'Konfirmasi',
-            text: message,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Ya',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                ok && ok();
-            } else {
-                cancel && cancel();
-            }
-        });
-        return false;
-    };
+    function initYiiConfirm() {
+        yii.confirm = function (message, ok, cancel) {
+            Swal.fire({
+                title: 'Konfirmasi',
+                text: message,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    ok && ok();
+                } else {
+                    cancel && cancel();
+                }
+            });
+            return false;
+        };
+    }
+    initYiiConfirm();
+    $(document).on('pjax:end pjax:complete', function() {
+        initYiiConfirm();
+    });
 ", \yii\web\View::POS_READY);
 
 $this->registerCsrfMetaTags();

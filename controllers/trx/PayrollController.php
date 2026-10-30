@@ -97,58 +97,11 @@ class PayrollController extends BaseController
 
                 if (!$exists) {
                     $payroll = new Payroll();
-                    $payroll->id_company = $this->id_company;
-                    $payroll->id_user = $user->id_user;
-                    $payroll->period_start = $periodStart;
-                    $payroll->period_end = $periodEnd;
-                    $payroll->basic_salary = $user->basic_salary ?? 0;
-                    $payroll->ptkp = $user->ptkp;
-                    $payroll->hourly_rate = $user->hourly_rate ?: 0;
-
-                    // Calculate total allowance from user's allowance data
-                    $allowanceData = [];
-                    $totalAllowance = 0;
-                    if (!empty($user->allowance) && is_array($user->allowance)) {
-                        $userAllowance = ArrayHelper::index($user->allowance, 'uuid');
-                        foreach ($companyAllowances as $companyAllowance) {
-                            $uuid = $companyAllowance['uuid'];
-                            $value = $userAllowance[$uuid]['value'] ?? 0;
-                            $allowanceData[] = [
-                                'uuid' => $uuid,
-                                'name' => $companyAllowance['name'],
-                                'is_fixed' => $companyAllowance['is_fixed'],
-                                'value' => $value,
-                            ];
-                            $totalAllowance += $value;
-                        }
-                    }
-                    $payroll->allowance = $allowanceData;
-
-                    $payroll->overtime = $payroll->calculateOvertimePay($overtimeList[$user->id_user] ?? []);
-
-                    $userSchedules = $scheduleList[$user->id_user] ?? [];
-                    $deductionResult = Payroll::calculateDeductionDetails($userSchedules, $deductionSettings);
-                    $payroll->dedection = (int) round($deductionResult['total']);
-                    if ($payroll->dedection > 0) {
-                        $payroll->dedection_description = 'Potongan Kehadiran / Terlambat';
-                    }
-
-                    // Set BPJS percentages jika diaktifkan di data user
-                    $payroll->bpjs_kesehatan = !empty($user->bpjs_kesehatan) ? Payroll::BPJS_KESEHATAN_PERCENT : 0;
-                    $payroll->bpjs_jht = !empty($user->bpjs_jht) ? Payroll::BPJS_JHT_PERCENT : 0;
-                    $payroll->bpjs_jp = !empty($user->bpjs_jp) ? Payroll::BPJS_JP_PERCENT : 0;
-
-                    $payroll->gross_salary = $payroll->basic_salary + $totalAllowance + $payroll->overtime;
-                    $payroll->ter = Payroll::getTER(Account::listPtkp()[$payroll->ptkp] ?? null, $payroll->gross_salary);
-                    $payroll->tax = $payroll->gross_salary * $payroll->ter;
-
-                    $totalBpjs = $payroll->getTotalBpjsAmount();
-                    $payroll->net_salary = max(0, $payroll->gross_salary - $payroll->tax - $payroll->dedection - $totalBpjs);
-                    $payroll->status = Payroll::STATUS_PENDING;
-                    $payroll->id_user_generate = $this->user->id_user;
+                    $this->populatePayrollData($payroll, $user, $periodStart, $periodEnd, $companyAllowances, $overtimeList, $scheduleList, $deductionSettings);
                     if (!$payroll->save()) {
-                        $flag = $flag && false;
+                        $flag = false;
                         GeneralHelper::flashFailed(Html::errorSummary($payroll));
+                        break;
                     }
                 }
             }
@@ -156,12 +109,189 @@ class PayrollController extends BaseController
             if ($flag) {
                 GeneralHelper::flashSucceed('Proses generate berhasil.');
                 $transaction->commit();
+            } else {
+                $transaction->rollBack();
             }
         } catch (\Throwable $th) {
+            $transaction->rollBack();
             throw $th;
         }
 
         return $this->redirect(['index', 'month' => $month, 'year' => $year]);
+    }
+
+    public function actionRegenerate($month, $year)
+    {
+        $periodStart = "$year-$month-01";
+        $periodEnd = date('Y-m-t', strtotime($periodStart));
+
+        $users = Account::find()->where(['id_company' => $this->id_company, 'status' => 1])->all();
+        $company = Company::findOne($this->id_company);
+        $companyAllowances = $company ? ($company->allowance ?? []) : [];
+
+        $modelOvertime = Schedule::find()
+            ->andWhere(['id_company' => $this->id_company, 'is_overtime' => true])
+            ->andWhere(['>', 'total_workhour', 0])
+            ->andWhere(['>=', 'date', $periodStart])
+            ->andWhere(['<=', 'date', $periodEnd])
+            ->andWhere(['!=', 'checkin_datetime', null])
+            ->andWhere(['!=', 'checkout_datetime', null])
+            ->all();
+
+        $overtimeList = [];
+        foreach ($modelOvertime as $m) {
+            $overtimeList[$m->id_user][] = $m;
+        }
+
+        $companySettings = $company ? $company->getSetting() : [];
+        $deductionSettings = $companySettings['deductions'] ?? [];
+
+        $modelSchedules = Schedule::find()
+            ->andWhere(['id_company' => $this->id_company])
+            ->andWhere(['>=', 'date', $periodStart])
+            ->andWhere(['<=', 'date', $periodEnd])
+            ->all();
+
+        $scheduleList = [];
+        foreach ($modelSchedules as $m) {
+            $scheduleList[$m->id_user][] = $m;
+        }
+
+        $existingPayrolls = Payroll::find()->where([
+            'id_company' => $this->id_company,
+            'period_start' => $periodStart,
+            'period_end' => $periodEnd,
+        ])->indexBy('id_user')->all();
+
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            $flag = true;
+            $resetCount = 0;
+            $addedCount = 0;
+            $skippedCount = 0;
+
+            foreach ($users as $user) {
+                if (isset($existingPayrolls[$user->id_user])) {
+                    $payroll = $existingPayrolls[$user->id_user];
+                    // Reset payroll jika status masih PENDING
+                    if ($payroll->status === Payroll::STATUS_PENDING) {
+                        $this->populatePayrollData($payroll, $user, $periodStart, $periodEnd, $companyAllowances, $overtimeList, $scheduleList, $deductionSettings);
+                        if (!$payroll->save()) {
+                            $flag = false;
+                            GeneralHelper::flashFailed(Html::errorSummary($payroll));
+                            break;
+                        }
+                        $resetCount++;
+                    } else {
+                        // Status DRAFT atau APPROVE tidak diubah
+                        $skippedCount++;
+                    }
+                } else {
+                    // Pegawai baru yang payroll belum digenerate
+                    $payroll = new Payroll();
+                    $this->populatePayrollData($payroll, $user, $periodStart, $periodEnd, $companyAllowances, $overtimeList, $scheduleList, $deductionSettings);
+                    if (!$payroll->save()) {
+                        $flag = false;
+                        GeneralHelper::flashFailed(Html::errorSummary($payroll));
+                        break;
+                    }
+                    $addedCount++;
+                }
+            }
+
+            if ($flag) {
+                $transaction->commit();
+                $msg = 'Proses generate ulang berhasil.';
+                $details = [];
+                if ($resetCount > 0) {
+                    $details[] = "$resetCount payroll pending di-reset";
+                }
+                if ($addedCount > 0) {
+                    $details[] = "$addedCount pegawai baru ditambahkan";
+                }
+                if ($skippedCount > 0) {
+                    $details[] = "$skippedCount pegawai dilewati (sudah Draft/Approve)";
+                }
+                if (!empty($details)) {
+                    $msg .= ' (' . implode(', ', $details) . ')';
+                }
+                GeneralHelper::flashSucceed($msg);
+            } else {
+                $transaction->rollBack();
+            }
+        } catch (\Throwable $th) {
+            $transaction->rollBack();
+            throw $th;
+        }
+
+        return $this->redirect(['index', 'month' => $month, 'year' => $year]);
+    }
+
+    protected function populatePayrollData(
+        Payroll $payroll,
+        Account $user,
+        string $periodStart,
+        string $periodEnd,
+        array $companyAllowances,
+        array $overtimeList,
+        array $scheduleList,
+        array $deductionSettings
+    ): void {
+        $payroll->id_company = $this->id_company;
+        $payroll->id_user = $user->id_user;
+        $payroll->period_start = $periodStart;
+        $payroll->period_end = $periodEnd;
+        $payroll->basic_salary = $user->basic_salary ?? 0;
+        $payroll->ptkp = $user->ptkp;
+        $payroll->hourly_rate = $user->hourly_rate ?: 0;
+
+        // Calculate total allowance from user's allowance data
+        $allowanceData = [];
+        $totalAllowance = 0;
+        if (!empty($user->allowance) && is_array($user->allowance)) {
+            $userAllowance = ArrayHelper::index($user->allowance, 'uuid');
+            foreach ($companyAllowances as $companyAllowance) {
+                $uuid = $companyAllowance['uuid'];
+                $value = $userAllowance[$uuid]['value'] ?? 0;
+                $allowanceData[] = [
+                    'uuid' => $uuid,
+                    'name' => $companyAllowance['name'],
+                    'is_fixed' => $companyAllowance['is_fixed'],
+                    'value' => $value,
+                ];
+                $totalAllowance += $value;
+            }
+        }
+        $payroll->allowance = $allowanceData;
+
+        $payroll->overtime = $payroll->calculateOvertimePay($overtimeList[$user->id_user] ?? []);
+
+        $userSchedules = $scheduleList[$user->id_user] ?? [];
+        $deductionResult = Payroll::calculateDeductionDetails($userSchedules, $deductionSettings);
+        $payroll->dedection = (int) round($deductionResult['total']);
+        if ($payroll->dedection > 0) {
+            $payroll->dedection_description = 'Potongan Kehadiran / Terlambat';
+        } else {
+            $payroll->dedection_description = null;
+        }
+
+        // Set BPJS percentages jika diaktifkan di data user
+        $payroll->bpjs_kesehatan = !empty($user->bpjs_kesehatan) ? Payroll::BPJS_KESEHATAN_PERCENT : 0;
+        $payroll->bpjs_jht = !empty($user->bpjs_jht) ? Payroll::BPJS_JHT_PERCENT : 0;
+        $payroll->bpjs_jp = !empty($user->bpjs_jp) ? Payroll::BPJS_JP_PERCENT : 0;
+
+        $payroll->gross_salary = $payroll->basic_salary + $totalAllowance + $payroll->overtime;
+        $payroll->ter = Payroll::getTER(Account::listPtkp()[$payroll->ptkp] ?? null, $payroll->gross_salary);
+        $payroll->tax = (int) round($payroll->gross_salary * $payroll->ter);
+
+        $totalBpjs = $payroll->getTotalBpjsAmount();
+        $payroll->net_salary = max(0, (int) round($payroll->gross_salary - $payroll->tax - $payroll->dedection - $totalBpjs));
+        $payroll->status = Payroll::STATUS_PENDING;
+        $payroll->id_user_generate = $this->user->id_user;
+        $payroll->id_user_verify = null;
+        $payroll->user_verify_at = null;
+        $payroll->id_user_approve = null;
+        $payroll->user_approve_at = null;
     }
 
     public function actionVerify($id)
