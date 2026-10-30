@@ -597,7 +597,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                         <?= strtoupper(substr($user->name ?? '', 0, 1)) ?>
                     </div>
                     <div class="d-flex flex-column" style="max-width: 120px;">
-                        <span class="small fw-medium text-truncate"><?= $user->name ?? '' ?></span>
+                        <span class="small fw-medium text-truncate"><?= Html::encode($user->name ?? '') ?></span>
                         <span class="small text-white-50" style="font-size: 0.7rem;">Logged in</span>
                     </div>
                 </a>
@@ -659,7 +659,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
                 <a href="<?= Url::to(['/profile']) ?>" class="user-block">
                     <span class="text-dark fw-medium small">
-                        <?= $user->name ?? '' ?>
+                        <?= Html::encode($user->name ?? '') ?>
                     </span>
                     <div class="user-avatar shadow-sm">
                         <?= strtoupper(substr($user->name ?? '', 0, 1)) ?>
@@ -677,7 +677,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             <div class="row mb-2">
                 <div class="col-sm-6">
                     <h2 class="h4 mt-2 text-primary fw-bold d-flex align-items-center">
-                        <?= $this->title ?>
+                        <?= Html::encode($this->title) ?>
                     </h2>
                 </div><!-- /.col -->
                 <div class="col-sm-6">

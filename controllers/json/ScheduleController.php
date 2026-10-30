@@ -25,7 +25,7 @@ class ScheduleController extends BaseController
         Yii::$app->response->format = Response::FORMAT_JSON;
 
         if ($id !== null) {
-            $schedule = Schedule::findOne($id);
+            $schedule = Schedule::findOne(['id_schedule' => $id, 'id_user' => $this->user->id_user]);
             if ($schedule) {
                 $workStart = date('H:i', strtotime($schedule->workhour_start));
                 $workEnd = date('H:i', strtotime($schedule->workhour_end));

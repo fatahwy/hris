@@ -68,7 +68,14 @@ class ProfileController extends BaseController
 
     public function actionView($id)
     {
-        if (($model = Schedule::findOne(['id_schedule' => $id])) !== null) {
+        $condition = ['id_schedule' => $id];
+        if (!RoleHelper::allUser()) {
+            $condition['id_user'] = $this->user->id_user;
+        } else {
+            $condition['id_company'] = $this->id_company;
+        }
+
+        if (($model = Schedule::findOne($condition)) !== null) {
             return $this->render('@app/views/trx/attendance/view', [
                 'model' => $model,
             ]);
@@ -97,8 +104,11 @@ class ProfileController extends BaseController
             throw new NotFoundHttpException('Data payroll tidak ditemukan.');
         }
 
-        // Pastikan hanya payroll milik user yang login yang dapat diakses (kecuali admin/company)
-        if ($payroll->id_user !== $this->user->id_user && $payroll->id_company !== $this->id_company) {
+        // Pastikan hanya payroll milik user yang login yang dapat diakses (kecuali role berwenang)
+        if (!RoleHelper::allUser() && $payroll->id_user !== $this->user->id_user) {
+            throw new ForbiddenHttpException('Anda tidak memiliki akses ke slip gaji ini.');
+        }
+        if (!RoleHelper::allCompany() && $payroll->id_company !== $this->id_company) {
             throw new ForbiddenHttpException('Anda tidak memiliki akses ke slip gaji ini.');
         }
 

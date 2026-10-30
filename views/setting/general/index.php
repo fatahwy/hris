@@ -41,6 +41,19 @@ $statusBadges = [
 
     <?php ob_start(); ?>
     <div class="row g-4 pt-3">
+        <div class="col-12 mb-2">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h4 class="fw-bold m-0 text-dark">
+                        <i class="bi bi-sliders me-2 text-primary"></i><?= Html::encode($this->title) ?>
+                    </h4>
+                    <p class="text-muted small mb-0 mt-1">
+                        Atur formula pemotongan gaji &amp; tunjangan karyawan berdasarkan status kehadiran.
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <?php foreach ($statuses as $statusKey => $statusLabel):
             $badgeInfo = $statusBadges[$statusKey] ?? ['bg' => 'bg-info text-white', 'icon' => 'bi-info-circle', 'desc' => ''];
 
@@ -56,16 +69,6 @@ $statusBadges = [
             $currentAmount = $rule['amount'] ?? 0;
             $isAbsent = ($statusKey === \app\models\trx\Schedule::STATUS_PRESENT_ABSENT);
             ?>
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <div>
-                    <h4 class="fw-bold m-0 text-dark">
-                        <i class="bi bi-sliders me-2 text-primary"></i><?= Html::encode($this->title) ?>
-                    </h4>
-                    <p class="text-muted small mb-0 mt-1">
-                        Atur formula pemotongan gaji & tunjangan karyawan berdasarkan status kehadiran.
-                    </p>
-                </div>
-            </div>
 
             <div class="col-12">
                 <div class="card border-0 shadow-sm rounded-3 overflow-hidden">

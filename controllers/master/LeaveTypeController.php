@@ -76,7 +76,7 @@ class LeaveTypeController extends BaseController
     protected function findModel($id)
     {
         $model = LeaveType::find()
-            ->andWhere(['uuid' => $id])
+            ->andWhere(['uuid' => $id, 'id_company' => $this->id_company])
             ->andWhere(['category' => LeaveType::CATEGORY_LEAVE])
             ->andWhere(['not', ['id_leave_type' => LeaveType::RES_ID]])
             ->one();

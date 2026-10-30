@@ -47,7 +47,7 @@ class ScheduleController extends BaseController
 
             $events[] = [
                 'id' => $schedule->id_schedule,
-                'title' => $labelOvertime . $schedule->shift_name . ($id_user ? "" : " - " . $schedule->user->name),
+                'title' => $labelOvertime . $schedule->shift_name . ($id_user ? "" : " - " . ($schedule->user->name ?? '')),
                 'start' => $schedule->date,
                 'backgroundColor' => $shiftColor,
                 'borderColor' => $shiftColor,
@@ -82,7 +82,15 @@ class ScheduleController extends BaseController
             return ['success' => false, 'message' => 'Pegawai sudah memiliki jadwal pada tanggal ini'];
         }
 
-        $shift = Shift::findOne($id_shift);
+        $userExists = Account::find()->where(['id_user' => $id_user, 'id_company' => $this->id_company])->exists();
+        if (!$userExists) {
+            return ['success' => false, 'message' => 'Pegawai tidak ditemukan dalam perusahaan Anda'];
+        }
+
+        $shift = Shift::find()
+            ->where(['id_shift' => $id_shift])
+            ->andWhere(['or', ['id_company' => $this->id_company], ['id_company' => null]])
+            ->one();
         if (!$shift) {
             return ['success' => false, 'message' => 'Jadwal kerja tidak ditemukan'];
         }
@@ -120,9 +128,9 @@ class ScheduleController extends BaseController
     public function actionDelete()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
-        $id = $_POST['id'] ?? null;
+        $id = Yii::$app->request->post('id');
         if ($id) {
-            $model = Schedule::findOne($id);
+            $model = Schedule::findOne(['id_schedule' => $id, 'id_company' => $this->id_company]);
             if ($model) {
                 if ($model->checkin_datetime != null || $model->checkout_datetime != null) {
                     return ['success' => false, 'message' => 'Pegawai sudah melakukan absensi'];
@@ -156,9 +164,10 @@ class ScheduleController extends BaseController
 
             if ($isPerHour) { // is per hour
                 $mShift = Shift::findOne(GeneralHelper::ID_OVERTIME);
+                $durationHours = max(1, (int) ($post['workhour_end'] ?? 1));
 
                 $model->workhour_start = date('Y-m-d H:i:s', strtotime($model->date . ' ' . $post['workhour_start']));
-                $model->workhour_end = date('Y-m-d H:i:s', strtotime($model->workhour_start) . " +" . $post['workhour_end'] . " hours");
+                $model->workhour_end = date('Y-m-d H:i:s', strtotime($model->workhour_start . " +" . $durationHours . " hours"));
                 $model->checkin_start = date('Y-m-d 00:00:00', strtotime($model->workhour_start));
             } else { // is long shift
                 $mShift = Shift::getQueryByCompany()

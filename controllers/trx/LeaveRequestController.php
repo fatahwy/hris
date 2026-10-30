@@ -110,6 +110,9 @@ class LeaveRequestController extends BaseController
         $model = null;
         if ($id_leave_request) {
             $model = $this->findModel($id_leave_request);
+            if (!$model->isStatusPending() || $model->id_user !== $this->user->id_user) {
+                throw new ForbiddenHttpException('Permohonan cuti/izin ini tidak dapat diubah.');
+            }
         }
         if (!$model) {
             $model = new LeaveRequest();
@@ -140,6 +143,33 @@ class LeaveRequestController extends BaseController
             $model->id_approver = null;
             $model->approve_reason = null;
             $model->approve_at = null;
+
+            // Handle file attachment
+            $oldAttachment = $id_leave_request ? $this->findModel($id_leave_request)->attachment : null;
+            $attachmentFile = \yii\web\UploadedFile::getInstance($model, 'attachment');
+            if ($attachmentFile) {
+                $ext = strtolower($attachmentFile->extension);
+                $allowedExts = ['png', 'jpg', 'jpeg', 'pdf'];
+                if (!in_array($ext, $allowedExts)) {
+                    GeneralHelper::flashFailed('Format lampiran tidak valid. Hanya png, jpg, jpeg, pdf yang diizinkan.');
+                    return $this->render('process', compact('model', 'permissionOnDuty'));
+                }
+                if ($attachmentFile->size > 5 * 1024 * 1024) {
+                    GeneralHelper::flashFailed('Ukuran lampiran maksimal 5MB.');
+                    return $this->render('process', compact('model', 'permissionOnDuty'));
+                }
+                $uploadDir = Yii::getAlias('@webroot/uploads/leave_request');
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                $fileName = 'leave_' . time() . '_' . uniqid() . '.' . $ext;
+                $filePath = $uploadDir . '/' . $fileName;
+                if ($attachmentFile->saveAs($filePath)) {
+                    $model->attachment = 'uploads/leave_request/' . $fileName;
+                }
+            } elseif ($oldAttachment) {
+                $model->attachment = $oldAttachment;
+            }
 
             if ($model->save()) {
                 GeneralHelper::flashSucceed();
@@ -172,14 +202,28 @@ class LeaveRequestController extends BaseController
      */
     public function actionDelete($id_leave_request)
     {
-        $this->findModel($id_leave_request)->delete();
+        $model = $this->findModel($id_leave_request);
+        if (!$model->isStatusPending() || $model->id_user !== $this->user->id_user) {
+            throw new ForbiddenHttpException('Permohonan cuti/izin ini tidak dapat dihapus.');
+        }
+
+        $model->delete();
+        GeneralHelper::flashSucceed('Permohonan berhasil dihapus.');
 
         return $this->redirect(['index']);
     }
 
     protected function findModel($id_leave_request)
     {
-        if (($model = LeaveRequest::findOne(['id_leave_request' => $id_leave_request])) !== null) {
+        $query = LeaveRequest::find()
+            ->innerJoinWith(['user'])
+            ->where(['leave_request.id_leave_request' => $id_leave_request, 'user.id_company' => $this->id_company]);
+
+        if (!RoleHelper::approvalLeave()) {
+            $query->andWhere(['leave_request.id_user' => $this->user->id_user]);
+        }
+
+        if (($model = $query->one()) !== null) {
             return $model;
         }
 

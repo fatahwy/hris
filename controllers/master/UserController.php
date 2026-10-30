@@ -143,11 +143,23 @@ class UserController extends BaseController
                 // Handle photo file upload
                 $photoFile = UploadedFile::getInstance($model, 'photo_file');
                 if ($photoFile) {
+                    $ext = strtolower($photoFile->extension);
+                    $allowedExts = ['png', 'jpg', 'jpeg', 'webp'];
+                    if (!in_array($ext, $allowedExts)) {
+                        GeneralHelper::flashFailed('Format foto profil tidak valid. Hanya png, jpg, jpeg, webp yang diizinkan.');
+                        $transaction->rollBack();
+                        return $this->redirect($id ? ['process', 'id' => $id] : ['process']);
+                    }
+                    if ($photoFile->size > 5 * 1024 * 1024) {
+                        GeneralHelper::flashFailed('Ukuran foto profil maksimal 5MB.');
+                        $transaction->rollBack();
+                        return $this->redirect($id ? ['process', 'id' => $id] : ['process']);
+                    }
                     $uploadDir = Yii::getAlias('@webroot/uploads/user');
                     if (!is_dir($uploadDir)) {
                         mkdir($uploadDir, 0755, true);
                     }
-                    $fileName = 'user_' . time() . '_' . uniqid() . '.' . $photoFile->extension;
+                    $fileName = 'user_' . time() . '_' . uniqid() . '.' . $ext;
                     $filePath = $uploadDir . '/' . $fileName;
                     if ($photoFile->saveAs($filePath)) {
                         $model->photo = 'uploads/user/' . $fileName;

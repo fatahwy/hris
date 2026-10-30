@@ -1,18 +1,18 @@
 <?php
 
-use app\components\Helper;
-use app\helpers\Role;
+use app\helpers\GeneralHelper;
+use app\helpers\RoleHelper;
 use app\models\AuthItem;
-use app\models\TrsLog;
+use app\models\trx\Log;
 use yii\web\View;
 use yii\widgets\DetailView;
 
 /* @var $this View */
-/* @var $model TrsLog */
+/* @var $model Log */
 
-$this->title = 'Logs';
+$this->title = 'Log Detail';
 $this->params['breadcrumbs'][] = ['label' => 'Logs', 'url' => ['index']];
-//$this->params['breadcrumbs'][] = $this->title;
+$this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="log-view">
 
@@ -21,26 +21,25 @@ $this->params['breadcrumbs'][] = ['label' => 'Logs', 'url' => ['index']];
             'model' => $model,
             'attributes' => [
                 [
-                    'label' => 'Cabang',
-                    'attribute' => 'id_branch',
-                    'value' => $model->user->branch->name,
-                    'visible' => Role::allBranch(),
+                    'label' => 'Perusahaan',
+                    'value' => $model->user->company->name ?? '-',
+                    'visible' => RoleHelper::allCompany(),
                 ],
                 'user.username',
                 [
                     'label' => 'Role',
-                    'value' => AuthItem::getList($model->user->role->item_name),
+                    'value' => !empty($model->user->role) ? AuthItem::getList($model->user->role->item_name) : '-',
                 ],
                 'created_at:datetime',
-                //            'action',
+                'action',
                 'url:url',
-                // 'ip',
+                'ip',
                 [
                     'label' => 'Data',
-                    'format' => 'html',
+                    'format' => 'raw',
                     'value' => function ($row) {
-                            return Helper::printr(json_decode($row->data));
-                        }
+                        return GeneralHelper::printr(json_decode($row->data, true) ?: $row->data);
+                    }
                 ],
             ],
         ])

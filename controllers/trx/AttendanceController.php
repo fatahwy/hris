@@ -39,7 +39,12 @@ class AttendanceController extends BaseController
 
     protected function findModel($id)
     {
-        if (($model = Schedule::findOne(['id_schedule' => $id])) !== null) {
+        $condition = ['id_schedule' => $id, 'id_company' => $this->id_company];
+        if (!RoleHelper::allUser()) {
+            $condition['id_user'] = $this->user->id_user;
+        }
+
+        if (($model = Schedule::findOne($condition)) !== null) {
             return $model;
         }
 

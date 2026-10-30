@@ -72,7 +72,7 @@ class ShiftController extends BaseController
      */
     protected function findModel($id)
     {
-        if (($model = Shift::findOne(['uuid' => $id])) !== null) {
+        if (($model = Shift::findOne(['uuid' => $id, 'id_company' => $this->id_company])) !== null) {
             return $model;
         }
 

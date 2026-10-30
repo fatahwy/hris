@@ -445,7 +445,8 @@ class Account extends BaseModel
 
     public static function isUserSubmit($model)
     {
-        return GeneralHelper::identity()->id_user == $model->id_user;
+        $identity = GeneralHelper::identity();
+        return $identity && !empty($model) && $identity->id_user == $model->id_user;
     }
 
     public static function getList()

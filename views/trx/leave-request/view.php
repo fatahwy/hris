@@ -79,7 +79,16 @@ $this->params['breadcrumbs'][] = $this->title;
                     ],
                     'total_day',
                     'reason:ntext',
-                    'attachment:ntext',
+                    [
+                        'attribute' => 'attachment',
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            if (!empty($model->attachment)) {
+                                return Html::a('<i class="fas fa-file-download me-1"></i> Lihat Dokumen Lampiran', Yii::getAlias('@web/' . $model->attachment), ['target' => '_blank', 'class' => 'btn btn-sm btn-outline-primary']);
+                            }
+                            return '-';
+                        }
+                    ],
                     [
                         'attribute' => 'status',
                         'format' => 'raw',

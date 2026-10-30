@@ -93,8 +93,7 @@ class GeneralHelper extends \mdm\admin\components\Helper
 
     public static function encode($string)
     {
-        // return mb_convert_encoding(trim($string), 'UTF-8', 'ISO-8859-1');
-        return filter_var($string, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);
+        return htmlspecialchars((string)$string, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
     public static function labelChip($title, $severity = 'success')
     {
@@ -544,11 +543,14 @@ class GeneralHelper extends \mdm\admin\components\Helper
 
     public static function saveImgDataUrl($data_url, $path)
     {
-        list($type, $data) = explode(';', $data_url);
-        list(, $data) = explode(',', $data);
-        $data = base64_decode($data);
-
-        file_put_contents($path, $data);
+        if (is_string($data_url) && strpos($data_url, ',') !== false) {
+            $parts = explode(',', $data_url, 2);
+            $data = base64_decode($parts[1], true);
+            if ($data !== false) {
+                return file_put_contents($path, $data) !== false;
+            }
+        }
+        return false;
     }
 
     public static function setDelimiter($number, $force = false)

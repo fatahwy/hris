@@ -83,7 +83,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'label' => 'Jml Shift',
             'format' => 'raw',
             'value' => function ($m) use ($searchModel) {
-                return Html::a(Yii::$app->formatter->asInteger($m['jml_shift']), ['/trx/attendance/index', 'ScheduleSearch[id_user]' => $m['uuid'], 'ScheduleSearch[date]' => $searchModel['date_from'] . ' - ' . $searchModel['date_to']], ['target' => '_blank', 'data-pjax' => 0]);
+                return Html::a(Yii::$app->formatter->asInteger($m['jml_shift']), ['/trx/attendance/index', 'ScheduleSearch[id_user]' => $m['uuid'], 'ScheduleSearch[date]' => $searchModel->date_from . ' - ' . $searchModel->date_to], ['target' => '_blank', 'data-pjax' => 0]);
             }
         ],
         [
@@ -105,7 +105,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'vAlign' => 'middle',
             'format' => 'raw',
             'value' => function ($m) use ($searchModel) {
-                return Html::a(Yii::$app->formatter->asInteger($m['jml_shift']), ['/trx/attendance/index', 'ScheduleSearch[id_user]' => $m['uuid'], 'ScheduleSearch[status]' => Schedule::STATUS_ABSENT, 'ScheduleSearch[date]' => $searchModel['date_from'] . ' - ' . $searchModel['date_to']], ['class' => $m['jml_absen'] > 0 ? 'text-danger fw-bold' : '', 'target' => '_blank', 'data-pjax' => 0]);
+                return Html::a(Yii::$app->formatter->asInteger($m['jml_absen']), ['/trx/attendance/index', 'ScheduleSearch[id_user]' => $m['uuid'], 'ScheduleSearch[status]' => Schedule::STATUS_ABSENT, 'ScheduleSearch[date]' => $searchModel->date_from . ' - ' . $searchModel->date_to], ['class' => $m['jml_absen'] > 0 ? 'text-danger fw-bold' : '', 'target' => '_blank', 'data-pjax' => 0]);
             },
         ],
         [

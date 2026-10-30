@@ -175,7 +175,7 @@ class BaseController extends Controller
     public function test($object = [])
     {
         $user = Yii::$app->user->identity;
-        if ($user->user_id == 1) {
+        if ($user && $user->id_user == 1) {
             echo '<pre>';
             print_r($object);
             die;
@@ -185,9 +185,14 @@ class BaseController extends Controller
     public function retBack($url)
     {
         $req = Yii::$app->request;
+        $referrer = $req->referrer;
 
-        if ($req->referrer) {
-            return $this->redirect($req->referrer);
+        if (!empty($referrer)) {
+            $refHost = parse_url($referrer, PHP_URL_HOST);
+            $currentHost = $req->hostName;
+            if (!$refHost || strcasecmp($refHost, $currentHost) === 0) {
+                return $this->redirect($referrer);
+            }
         }
         return $this->redirect($url);
     }

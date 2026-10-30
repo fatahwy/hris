@@ -23,11 +23,17 @@ class DashboardController extends BaseController
         $id_company = $this->id_company;
 
         $dateRange = Yii::$app->request->get('date_range');
-        if ($dateRange) {
+        $startDate = null;
+        $endDate = null;
+        if ($dateRange && is_string($dateRange) && strpos($dateRange, ' - ') !== false) {
             $dates = explode(' - ', $dateRange);
-            $startDate = $dates[0];
-            $endDate = $dates[1];
-        } else {
+            if (isset($dates[0], $dates[1]) && strtotime(trim($dates[0])) && strtotime(trim($dates[1]))) {
+                $startDate = trim($dates[0]);
+                $endDate = trim($dates[1]);
+            }
+        }
+
+        if (!$startDate || !$endDate) {
             $startDate = date('Y-m-01');
             $endDate = date('Y-m-t');
             $dateRange = "$startDate - $endDate";

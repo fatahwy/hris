@@ -131,7 +131,7 @@ class User extends Account implements IdentityInterface
      */
     public function getAuthKey()
     {
-        return $this->authKey;
+        return md5($this->id_user . '_' . $this->password . '_' . $this->email);
     }
 
     /**
@@ -139,7 +139,7 @@ class User extends Account implements IdentityInterface
      */
     public function validateAuthKey($authKey)
     {
-        return $this->authKey === $authKey;
+        return !empty($authKey) && hash_equals($this->getAuthKey(), (string) $authKey);
     }
 
     /**

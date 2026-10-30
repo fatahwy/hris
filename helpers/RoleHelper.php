@@ -15,10 +15,10 @@ class RoleHelper
     public static function isRole($role)
     {
         $user = GeneralHelper::identity();
-        if (empty($user)) {
+        if (empty($user) || empty($user->role)) {
             return false;
         }
-        $roleName = strtolower($user->role->item_name);
+        $roleName = strtolower($user->role->item_name ?? '');
 
         return $role == $roleName;
     }

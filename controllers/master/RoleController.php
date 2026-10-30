@@ -72,6 +72,10 @@ class RoleController extends BaseController
     public function actionDelete($id)
     {
         $model = $this->findModel($id);
+        if (in_array(strtolower(trim($model->name)), ['super', 'owner'])) {
+            GeneralHelper::flashFailed('Role sistem tidak dapat dihapus.');
+            return $this->redirect(['index']);
+        }
         $model->delete();
         GeneralHelper::flashSucceed();
 

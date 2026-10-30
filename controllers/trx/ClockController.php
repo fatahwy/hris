@@ -77,9 +77,35 @@ class ClockController extends BaseController
         $lat = Yii::$app->request->post('lat');
         $lng = Yii::$app->request->post('lng');
 
+        if (!is_numeric($lat) || !is_numeric($lng) || $lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
+            return ['success' => false, 'message' => 'Koordinat lokasi tidak valid.'];
+        }
+        $lat = (string) (float) $lat;
+        $lng = (string) (float) $lng;
+
+        $nowStr = DBHelper::now();
+        if ($type === 'in') {
+            if ($nowStr < $model->checkin_start || $nowStr > $model->workhour_end) {
+                return ['success' => false, 'message' => 'Anda tidak bisa clock in saat ini.'];
+            }
+            if ($model->checkin_datetime !== null) {
+                return ['success' => false, 'message' => 'Anda sudah clock in pada jadwal ini.'];
+            }
+        } else {
+            if ($model->checkin_datetime === null) {
+                return ['success' => false, 'message' => 'Anda belum clock in.'];
+            }
+            if ($model->checkout_datetime !== null) {
+                return ['success' => false, 'message' => 'Anda sudah clock out pada jadwal ini.'];
+            }
+        }
+
         if ($photoData) {
             $base64Data = preg_replace('#^data:image/\w+;base64,#i', '', $photoData);
-            $img = base64_decode($base64Data);
+            $img = base64_decode($base64Data, true);
+            if ($img === false || strlen($img) < 100) {
+                return ['success' => false, 'message' => 'Data foto tidak valid.'];
+            }
 
             $dirPath = Yii::getAlias('@webroot/uploads/attendance');
             if (!is_dir($dirPath)) {

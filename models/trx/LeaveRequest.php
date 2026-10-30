@@ -72,7 +72,8 @@ class LeaveRequest extends BaseModel
             [['id_approver', 'approve_reason'], 'required', 'on' => 'approval'],
             [['id_user', 'id_leave_type', 'id_schedule', 'total_day', 'id_approver'], 'integer'],
             [['start_date', 'end_date', 'approve_at', 'created_at', 'updated_at'], 'safe'],
-            [['reason', 'attachment', 'status', 'approve_reason'], 'string'],
+            [['reason', 'status', 'approve_reason'], 'string'],
+            [['attachment'], 'safe'],
             ['status', 'in', 'range' => array_keys(self::optsStatus())],
             [['id_leave_type'], 'exist', 'skipOnError' => true, 'targetClass' => LeaveType::class, 'targetAttribute' => ['id_leave_type' => 'id_leave_type']],
             [['id_schedule'], 'exist', 'skipOnError' => true, 'targetClass' => Schedule::class, 'targetAttribute' => ['id_schedule' => 'id_schedule']],
@@ -84,10 +85,12 @@ class LeaveRequest extends BaseModel
 
     public function beforeValidate()
     {
-        $this->status = self::STATUS_PENDING;
-        $this->total_day = 0;
+        if ($this->isNewRecord) {
+            $this->status = self::STATUS_PENDING;
+            $this->total_day = 0;
+        }
 
-        return true;
+        return parent::beforeValidate();
     }
 
     public function beforeSave($insert)

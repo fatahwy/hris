@@ -76,15 +76,26 @@ class Log extends \yii\db\ActiveRecord
 
     public static function doLog($route, $req, $user)
     {
-        if (empty($user->user_id)) {
-            $user = Account::findOne(['email' => $req->post('LoginForm')['email']]);
+        $loginForm = $req->post('LoginForm');
+        if (empty($user->id_user) && !empty($loginForm) && !empty($loginForm['email'])) {
+            $user = Account::findOne(['email' => $loginForm['email']]);
         }
         $log = new Log();
         $log->action = $route;
         $log->url = $req->getAbsoluteUrl();
         $log->ip = $req->getUserIP();
-        $log->id_user = $user->user_id ?? null;
-        $log->data = json_encode([$req->post(), $req->get(), $_FILES]);
+        $log->id_user = $user->id_user ?? null;
+
+        $postData = $req->post();
+        if (is_array($postData)) {
+            array_walk_recursive($postData, function (&$value, $key) {
+                if (preg_match('/(password|token|secret|pin|auth_key)/i', $key)) {
+                    $value = '********';
+                }
+            });
+        }
+
+        $log->data = json_encode([$postData, $req->get(), $_FILES]);
         $log->save(false);
     }
 }

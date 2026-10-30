@@ -237,8 +237,7 @@ class SiteController extends BaseController
             $user = Account::findOne(['email' => $email]);
             if ($user) {
                 if ($user->client && $user->client->is_active == 1) {
-                    // buat token dengan gabungan email dan datetime now
-                    $user->token = md5($email . date('Y-m-d H:i:s'));
+                    $user->token = Yii::$app->security->generateRandomString(32);
                     if ($user->save(false)) {
                         $this->sendPasswordResetEmail($user);
                         GeneralHelper::flashSucceed('Email reset password telah dikirim ke ' . \yii\bootstrap5\Html::encode($email));
@@ -262,12 +261,12 @@ class SiteController extends BaseController
             return $this->redirect(['/dashboard']);
         }
         $this->layout = 'blank';
-        if (!$token) {
+        if (empty($token) || !is_string($token) || strlen(trim($token)) < 16) {
             Yii::$app->session->setFlash('error', 'Token invalid');
             return $this->redirect(['login']);
         }
 
-        $user = Account::findOne(['token' => $token]);
+        $user = Account::findOne(['token' => trim($token)]);
         if (!$user) {
             Yii::$app->session->setFlash('error', 'Token invalid');
             return $this->redirect(['login']);
@@ -368,28 +367,32 @@ class SiteController extends BaseController
 
     public function actionInit($id = null, $id_branch = null)
     {
+        if (!RoleHelper::isSuper()) {
+            throw new \yii\web\ForbiddenHttpException('Akses ditolak.');
+        }
+
         ini_set('max_execution_time', 60);
         switch ($id) {
             case "menu":
                 DBHelper::initMenu();
-                die($id);
+                die('Menu reinitialized.');
             case "view":
                 DBHelper::initView();
-                die($id);
+                die('Views reinitialized.');
             case "flush":
                 GeneralHelper::cacheFlush();
                 $auth = Yii::$app->authManager;
                 if ($auth instanceof \yii\rbac\DbManager) {
                     $auth->invalidateCache();
-                    die('clear');
+                    die('Cache cleared.');
                 }
-                die($id);
+                die('Cache flushed.');
             case "opcache":
                 if (function_exists('opcache_get_status')) {
                     $status = opcache_get_status();
                     if ($status && $status['opcache_enabled']) {
                         echo "OPcache aktif<br>";
-                        echo "Memory used: " . $status['memory_usage']['used_memory'] . " bytes";
+                        echo "Memory used: " . (int)$status['memory_usage']['used_memory'] . " bytes";
                     } else {
                         echo "OPcache tidak aktif";
                     }
@@ -398,7 +401,7 @@ class SiteController extends BaseController
                 }
                 die;
             default:
-                die('id salah');
+                die('Parameter id tidak valid.');
         }
     }
 }

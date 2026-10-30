@@ -34,7 +34,10 @@ if ($model->id_schedule && $model->schedule) {
 <div class="card modern-form-card">
     <div class="card-body p-4">
 
-        <?php $form = ActiveForm::begin(['id' => 'leave-request-form']); ?>
+        <?php $form = ActiveForm::begin([
+            'id' => 'leave-request-form',
+            'options' => ['enctype' => 'multipart/form-data'],
+        ]); ?>
 
         <div class="mb-4 text-muted border-bottom pb-2">
             <i class="fas fa-info-circle me-1"></i> Form Leave Request

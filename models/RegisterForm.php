@@ -37,6 +37,7 @@ class RegisterForm extends Model
             [['nama_lengkap', 'nama_instansi', 'no_wa', 'email', 'password', 'confirm_password', 'id_paket'], 'required'],
             ['email', 'email'],
             ['email', 'unique', 'targetClass' => '\app\models\master\Client', 'message' => 'Email sudah terdaftar di sistem.'],
+            ['email', 'unique', 'targetClass' => '\app\models\master\Account', 'targetAttribute' => 'email', 'message' => 'Email sudah digunakan oleh akun lain.'],
             ['no_wa', 'string', 'min' => 10, 'max' => 15],
             ['password', 'string', 'min' => 6],
             ['confirm_password', 'compare', 'compareAttribute' => 'password', 'message' => 'Password tidak cocok.'],

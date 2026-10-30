@@ -66,7 +66,7 @@ class LogController extends BaseController
         $model = Log::find()
             ->innerJoinWith(['user'])
             ->where(['id_log' => $id])
-            ->andFilterWhere(['id_company' => RoleHelper::allCompany() ? NULL : $this->user->id_company])
+            ->andFilterWhere(['user.id_company' => RoleHelper::allCompany() ? NULL : $this->user->id_company])
             ->one();
 
         if ($model) {

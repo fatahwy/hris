@@ -57,11 +57,11 @@ $this->params['breadcrumbs'][] = $this->title;
                         </div>
                         <div class="mb-3">
                             <strong>Waktu:</strong> <?= Yii::$app->formatter->asDatetime($model->checkin_datetime) ?><br>
-                            <strong>Lokasi:</strong> <?= $model->checkin_lat ?>, <?= $model->checkin_long ?>
+                            <strong>Lokasi:</strong> <?= Html::encode($model->checkin_lat) ?>, <?= Html::encode($model->checkin_long) ?>
                         </div>
                         <div class="ratio ratio-16x9">
                             <iframe
-                                src="https://maps.google.com/maps?q=<?= $model->checkin_lat ?>,<?= $model->checkin_long ?>&z=15&output=embed"
+                                src="https://maps.google.com/maps?q=<?= rawurlencode($model->checkin_lat) ?>,<?= rawurlencode($model->checkin_long) ?>&z=15&output=embed"
                                 frameborder="0" style="border:0;" allowfullscreen>
                             </iframe>
                         </div>
@@ -86,11 +86,11 @@ $this->params['breadcrumbs'][] = $this->title;
                         </div>
                         <div class="mb-3">
                             <strong>Waktu:</strong> <?= Yii::$app->formatter->asDatetime($model->checkout_datetime) ?><br>
-                            <strong>Lokasi:</strong> <?= $model->checkout_lat ?>, <?= $model->checkout_long ?>
+                            <strong>Lokasi:</strong> <?= Html::encode($model->checkout_lat) ?>, <?= Html::encode($model->checkout_long) ?>
                         </div>
                         <div class="ratio ratio-16x9">
                             <iframe
-                                src="https://maps.google.com/maps?q=<?= $model->checkout_lat ?>,<?= $model->checkout_long ?>&z=15&output=embed"
+                                src="https://maps.google.com/maps?q=<?= rawurlencode($model->checkout_lat) ?>,<?= rawurlencode($model->checkout_long) ?>&z=15&output=embed"
                                 frameborder="0" style="border:0;" allowfullscreen>
                             </iframe>
                         </div>

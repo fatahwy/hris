@@ -74,7 +74,7 @@ class DepartmentController extends BaseController
      */
     protected function findModel($id)
     {
-        if (($model = Department::findOne(['uuid' => $id])) !== null) {
+        if (($model = Department::findOne(['uuid' => $id, 'id_company' => $this->id_company])) !== null) {
             return $model;
         }
 

@@ -328,6 +328,10 @@ class PayrollController extends BaseController
             throw new ForbiddenHttpException('Slip gaji hanya dapat diakses jika status payroll sudah APPROVE.');
         }
 
+        if (!RoleHelper::allUser() && $model->id_user !== $this->user->id_user) {
+            throw new ForbiddenHttpException('Anda tidak memiliki akses ke slip gaji ini.');
+        }
+
         $content = $this->renderPartial('slip', [
             'model' => $model,
             'isPdf' => true,

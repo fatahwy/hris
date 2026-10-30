@@ -74,7 +74,7 @@ class PositionController extends BaseController
      */
     protected function findModel($id)
     {
-        if (($model = Position::findOne(['uuid' => $id])) !== null) {
+        if (($model = Position::findOne(['uuid' => $id, 'id_company' => $this->id_company])) !== null) {
             return $model;
         }
 
