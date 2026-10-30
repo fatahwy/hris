@@ -11,6 +11,7 @@ use app\models\BaseModel;
  *
  * @property int $id_client
  * @property string $name
+ * @property string|null $referensi
  * @property string|null $expired_at
  * @property string $email
  * @property int $is_active
@@ -46,7 +47,7 @@ class Client extends BaseModel
             [['token'], 'string'],
             [['is_active'], 'integer'],
             [['confirmation_sent_at', 'confirm_at', 'expired_at', 'created_at', 'updated_at'], 'safe'],
-            [['name', 'email'], 'string', 'max' => 255],
+            [['name', 'email', 'referensi'], 'string', 'max' => 255],
         ];
     }
 
@@ -58,6 +59,7 @@ class Client extends BaseModel
         return [
             'id_client' => 'Id Client',
             'name' => 'Nama',
+            'referensi' => 'Referensi (Marketing)',
             'expired_at' => 'Tgl Berakhir',
             'email' => 'Email',
             'created_at' => 'Tgl Buat',
@@ -73,6 +75,16 @@ class Client extends BaseModel
     public function getCompanies()
     {
         return $this->hasMany(Company::class, ['id_client' => 'id_client']);
+    }
+
+    /**
+     * Gets query for [[Subscriptions]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getSubscriptions()
+    {
+        return $this->hasMany(\app\models\trx\Subscription::class, ['id_client' => 'id_client'])->orderBy(['id_subscription' => SORT_DESC]);
     }
 
     public static function getList()

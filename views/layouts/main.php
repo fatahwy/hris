@@ -20,6 +20,15 @@ use app\helpers\DBHelper;
 use app\models\trx\Schedule;
 
 $user = Yii::$app->user->identity;
+if (!Yii::$app->user->isGuest) {
+    $userCompany = $user->company ?? ($user->id_company ? Company::findOne($user->id_company) : null);
+    if ($userCompany && $userCompany->isExpired()) {
+        Yii::$app->user->logout();
+        Yii::$app->session->setFlash('error', 'Akun perusahaan Anda telah berakhir. Silakan hubungi admin untuk perpanjangan.');
+        Yii::$app->response->redirect(['/site/login'])->send();
+        exit;
+    }
+}
 $checkoutAlertSchedule = null;
 if (!Yii::$app->user->isGuest && !Yii::$app->request->isAjax) {
     $currentRoute = Yii::$app->controller ? Yii::$app->controller->route : '';
@@ -53,6 +62,19 @@ $js = JSRegister::begin();
             location.reload();
         });
     });
+
+    // Cek masa berlaku akun company secara berkala
+    setInterval(function() {
+        $.getJSON('<?= Url::toRoute("/site/check-session") ?>', function(res) {
+            if (res && res.status === 'expired') {
+                window.location.href = res.redirect || '<?= Url::to(["/site/login"]) ?>';
+            }
+        }).fail(function(xhr) {
+            if (xhr.status === 401) {
+                window.location.href = '<?= Url::to(["/site/login"]) ?>';
+            }
+        });
+    }, 30000);
 
     // Sidebar Toggle Logic
     $('.burger-menu, .sidebar-backdrop, .sidebar-nav .nav-link:not([data-bs-toggle])').on('click', function() {

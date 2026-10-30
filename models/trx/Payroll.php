@@ -21,6 +21,7 @@ use Yii;
  * @property string|null $allowance
  * @property int $overtime
  * @property int $dedection
+ * @property string|null $dedection_description
  * @property int $tax
  * @property int $gross_salary
  * @property int $net_salary
@@ -33,15 +34,26 @@ use Yii;
  * @property string|null $user_approve_at
  * @property string|null $created_at
  * @property string|null $updated_at
- *1
+ * @property string|null $ptkp
+ * @property float|null $ter
+ * @property float|null $bpjs_kesehatan
+ * @property float|null $bpjs_jht
+ * @property float|null $bpjs_jp
+ *
  * @property Account $approver
  * @property Company $company
  * @property Account $user
  */
 class Payroll extends BaseModel
 {
-
-    public $ter;
+    // BPJS Constants
+    const BPJS_KESEHATAN_PERCENT = GeneralHelper::BPJS_KESEHATAN_PERCENT;
+    const BPJS_JHT_PERCENT = GeneralHelper::BPJS_JHT_PERCENT;
+    const BPJS_JP_PERCENT = GeneralHelper::BPJS_JP_PERCENT;
+    const BPJS_KESEHATAN_MAX_SALARY = GeneralHelper::BPJS_KESEHATAN_MAX_SALARY;
+    const BPJS_KESEHATAN_RATE = GeneralHelper::BPJS_KESEHATAN_RATE;
+    const BPJS_JHT_RATE = GeneralHelper::BPJS_JHT_RATE;
+    const BPJS_JP_RATE = GeneralHelper::BPJS_JP_RATE;
 
     /**
      * ENUM field values
@@ -67,6 +79,10 @@ class Payroll extends BaseModel
             [['net_salary'], 'default', 'value' => 0],
             [['id_company', 'id_user', 'period_start', 'period_end', 'status', 'hourly_rate'], 'required'],
             [['id_company', 'id_user', 'basic_salary', 'overtime', 'dedection', 'tax', 'gross_salary', 'net_salary', 'id_user_generate', 'id_user_verify', 'id_user_approve'], 'integer'],
+            [['ter', 'bpjs_kesehatan', 'bpjs_jht', 'bpjs_jp'], 'number'],
+            [['ptkp'], 'string', 'max' => 50],
+            [['dedection_description'], 'string', 'max' => 255],
+            [['dedection_description'], 'trim'],
             [['period_start', 'period_end', 'user_verify_at', 'user_approve_at', 'created_at', 'updated_at'], 'safe'],
             [['status'], 'string'],
             [['allowance'], 'safe'],
@@ -94,10 +110,14 @@ class Payroll extends BaseModel
             'allowance' => 'Tunjangan',
             'overtime' => 'Lembur',
             'dedection' => 'Potongan',
+            'dedection_description' => 'Keterangan Potongan',
             'tax' => 'Pajak',
             'gross_salary' => 'Gaji Kotor',
             'net_salary' => 'Gaji Bersih',
             'status' => 'Status',
+            'bpjs_kesehatan' => 'BPJS Kesehatan (%)',
+            'bpjs_jht' => 'BPJS JHT (%)',
+            'bpjs_jp' => 'BPJS JP (%)',
             'id_user_approve' => 'User Approval',
             'created_at' => 'Tgl Buat',
             'updated_at' => 'Tgl Update',
@@ -154,6 +174,19 @@ class Payroll extends BaseModel
     public function displayStatus()
     {
         return self::optsStatus()[$this->status];
+    }
+
+    /**
+     * @return bool
+     */
+    public function isStatusPending()
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    public function setStatusToPending()
+    {
+        $this->status = self::STATUS_PENDING;
     }
 
     /**
@@ -471,6 +504,162 @@ class Payroll extends BaseModel
             'total' => $totalDeduction,
             'details' => $details,
         ];
+    }
+
+    /**
+     * Menghitung total tunjangan tetap dari array data allowance.
+     * @return float
+     */
+    public function getFixedAllowanceTotal(): float
+    {
+        $items = $this->allowance;
+        if (is_string($items)) {
+            $items = json_decode($items, true) ?? [];
+        }
+        $total = 0;
+        if (is_array($items)) {
+            foreach ($items as $item) {
+                if (!empty($item['is_fixed']) && ($item['is_fixed'] == 1 || $item['is_fixed'] === true || $item['is_fixed'] === '1')) {
+                    $total += (float) ($item['value'] ?? 0);
+                }
+            }
+        }
+        return (float) $total;
+    }
+
+    /**
+     * Mendapatkan dasar perhitungan gaji (Gaji Pokok + Total Tunjangan Tetap).
+     * @return float
+     */
+    public function getBaseSalaryForBpjs(): float
+    {
+        return (float) ($this->basic_salary ?? 0) + $this->getFixedAllowanceTotal();
+    }
+
+    /**
+     * Mendapatkan dasar perhitungan gaji BPJS Kesehatan (maksimal Rp12.000.000).
+     * @return float
+     */
+    public function getBpjsKesehatanBaseSalary(): float
+    {
+        return min($this->getBaseSalaryForBpjs(), self::BPJS_KESEHATAN_MAX_SALARY);
+    }
+
+    /**
+     * Mendapatkan rate BPJS Kesehatan (dalam desimal, cth: 0.01).
+     * @return float
+     */
+    public function getBpjsKesehatanRate(): float
+    {
+        $val = (float) ($this->bpjs_kesehatan ?? 0);
+        return $val > 0.05 ? $val / 100 : $val;
+    }
+
+    /**
+     * Mendapatkan rate BPJS JHT (dalam desimal, cth: 0.02).
+     * @return float
+     */
+    public function getBpjsJhtRate(): float
+    {
+        $val = (float) ($this->bpjs_jht ?? 0);
+        return $val > 0.05 ? $val / 100 : $val;
+    }
+
+    /**
+     * Mendapatkan rate BPJS JP (dalam desimal, cth: 0.01).
+     * @return float
+     */
+    public function getBpjsJpRate(): float
+    {
+        $val = (float) ($this->bpjs_jp ?? 0);
+        return $val > 0.05 ? $val / 100 : $val;
+    }
+
+    /**
+     * Mendapatkan persentase BPJS Kesehatan untuk tampilan (cth: 1 atau 1%).
+     * @return float
+     */
+    public function getBpjsKesehatanPercent(): float
+    {
+        $val = (float) ($this->bpjs_kesehatan ?? 0);
+        return $val > 0.05 ? $val : $val * 100;
+    }
+
+    /**
+     * Mendapatkan persentase BPJS JHT untuk tampilan (cth: 2 atau 2%).
+     * @return float
+     */
+    public function getBpjsJhtPercent(): float
+    {
+        $val = (float) ($this->bpjs_jht ?? 0);
+        return $val > 0.05 ? $val : $val * 100;
+    }
+
+    /**
+     * Mendapatkan persentase BPJS JP untuk tampilan (cth: 1 atau 1%).
+     * @return float
+     */
+    public function getBpjsJpPercent(): float
+    {
+        $val = (float) ($this->bpjs_jp ?? 0);
+        return $val > 0.05 ? $val : $val * 100;
+    }
+
+    /**
+     * Menghitung nilai riil potongan BPJS Kesehatan on-the-fly (max dasar Rp12jt).
+     * @return float
+     */
+    public function getBpjsKesehatanAmount(): float
+    {
+        $rate = $this->getBpjsKesehatanRate();
+        if ($rate <= 0) {
+            return 0;
+        }
+        return round($this->getBpjsKesehatanBaseSalary() * $rate);
+    }
+
+    /**
+     * Menghitung nilai riil potongan BPJS Ketenagakerjaan JHT on-the-fly (2%).
+     * @return float
+     */
+    public function getBpjsJhtAmount(): float
+    {
+        $rate = $this->getBpjsJhtRate();
+        if ($rate <= 0) {
+            return 0;
+        }
+        return round($this->getBaseSalaryForBpjs() * $rate);
+    }
+
+    /**
+     * Menghitung nilai riil potongan BPJS Ketenagakerjaan JP on-the-fly (1%).
+     * @return float
+     */
+    public function getBpjsJpAmount(): float
+    {
+        $rate = $this->getBpjsJpRate();
+        if ($rate <= 0) {
+            return 0;
+        }
+        return round($this->getBaseSalaryForBpjs() * $rate);
+    }
+
+    /**
+     * Menghitung total seluruh potongan BPJS on-the-fly.
+     * @return float
+     */
+    public function getTotalBpjsAmount(): float
+    {
+        return $this->getBpjsKesehatanAmount() + $this->getBpjsJhtAmount() + $this->getBpjsJpAmount();
+    }
+
+    /**
+     * Menghitung ulang gaji bersih (net_salary).
+     */
+    public function recalculateNetSalary(): void
+    {
+        $totalBpjs = $this->getTotalBpjsAmount();
+        $this->net_salary = (int) max(0, round((float) $this->gross_salary - (float) $this->tax - (float) $this->dedection - $totalBpjs));
     }
 
 }

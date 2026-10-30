@@ -56,12 +56,12 @@ class LoginForm extends Model
                 return;
             }
 
-            $client = $user->client ?? null;
+            $company = $user->company ?? null;
             // check company activity
-            if ($client) {
-                if (!$client->is_active) {
+            if ($company) {
+                if (!$company->status) {
                     $this->addError($attribute, 'Akun perusahaan Anda belum aktif. Silakan cek email untuk aktivasi.');
-                } else if ($client->expired_at < DBHelper::now()) {
+                } else if ($company && $company->isExpired()) {
                     $this->addError($attribute, 'Akun perusahaan Anda telah berakhir. Silakan hubungi admin untuk perpanjangan.');
                 }
             }

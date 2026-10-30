@@ -71,6 +71,35 @@ class BaseController extends Controller
         $user = Yii::$app->user->identity;
         $this->user = $user;
         if (!Yii::$app->user->isGuest) {
+            $company = $user->company ?? null;
+            if (!$company && !empty($user->id_company)) {
+                $company = Company::findOne($user->id_company);
+            }
+
+            if ($company && $company->isExpired()) {
+                if ($this->id === 'site' && $action->id === 'logout') {
+                    // Biarkan proses logout manual berjalan
+                } elseif ($this->id === 'site' && $action->id === 'login') {
+                    Yii::$app->user->logout();
+                    Yii::$app->session->setFlash('error', 'Akun perusahaan Anda telah berakhir. Silakan hubungi admin untuk perpanjangan.');
+                } elseif (!($this->id === 'site' && in_array($action->id, ['error', 'captcha']))) {
+                    Yii::$app->user->logout();
+                    Yii::$app->session->setFlash('error', 'Akun perusahaan Anda telah berakhir. Silakan hubungi admin untuk perpanjangan.');
+                    if (Yii::$app->request->isAjax) {
+                        Yii::$app->response->statusCode = 401;
+                        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+                        Yii::$app->response->data = [
+                            'status' => 'expired',
+                            'message' => 'Akun perusahaan Anda telah berakhir. Silakan hubungi admin untuk perpanjangan.',
+                            'redirect' => \yii\helpers\Url::to(['/site/login']),
+                        ];
+                        return false;
+                    }
+
+                    $this->redirect(['/site/login']);
+                    return false;
+                }
+            }
             $id_client = GeneralHelper::session('id_client') ?? $user->id_client;
             $id_company = GeneralHelper::session('id_company') ?? $user->id_company;
 

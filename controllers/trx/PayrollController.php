@@ -10,6 +10,7 @@ use app\models\master\Account;
 use app\models\master\Company;
 use app\models\trx\Payroll;
 use app\models\trx\Schedule;
+use kartik\mpdf\Pdf;
 use Yii;
 use yii\bootstrap5\Html;
 use yii\helpers\ArrayHelper;
@@ -124,16 +125,25 @@ class PayrollController extends BaseController
                     $payroll->allowance = $allowanceData;
 
                     $payroll->overtime = $payroll->calculateOvertimePay($overtimeList[$user->id_user] ?? []);
-                    
+
                     $userSchedules = $scheduleList[$user->id_user] ?? [];
                     $deductionResult = Payroll::calculateDeductionDetails($userSchedules, $deductionSettings);
-                    $payroll->dedection = (int)round($deductionResult['total']);
+                    $payroll->dedection = (int) round($deductionResult['total']);
+                    if ($payroll->dedection > 0) {
+                        $payroll->dedection_description = 'Potongan Kehadiran / Terlambat';
+                    }
+
+                    // Set BPJS percentages jika diaktifkan di data user
+                    $payroll->bpjs_kesehatan = !empty($user->bpjs_kesehatan) ? Payroll::BPJS_KESEHATAN_PERCENT : 0;
+                    $payroll->bpjs_jht = !empty($user->bpjs_jht) ? Payroll::BPJS_JHT_PERCENT : 0;
+                    $payroll->bpjs_jp = !empty($user->bpjs_jp) ? Payroll::BPJS_JP_PERCENT : 0;
 
                     $payroll->gross_salary = $payroll->basic_salary + $totalAllowance + $payroll->overtime;
                     $payroll->ter = Payroll::getTER(Account::listPtkp()[$payroll->ptkp] ?? null, $payroll->gross_salary);
                     $payroll->tax = $payroll->gross_salary * $payroll->ter;
 
-                    $payroll->net_salary = max(0, $payroll->gross_salary - $payroll->tax - $payroll->dedection);
+                    $totalBpjs = $payroll->getTotalBpjsAmount();
+                    $payroll->net_salary = max(0, $payroll->gross_salary - $payroll->tax - $payroll->dedection - $totalBpjs);
                     $payroll->status = Payroll::STATUS_PENDING;
                     $payroll->id_user_generate = $this->user->id_user;
                     if (!$payroll->save()) {
@@ -164,10 +174,34 @@ class PayrollController extends BaseController
                 $model->id_user_verify = $this->user->id_user;
                 $model->user_verify_at = DBHelper::now();
                 if ($model->save()) {
-                    $strtotime = strtotime($model->period_start);
                     GeneralHelper::flashSucceed('Payroll telah diverifikasi');
-                    return $this->redirect(['index', 'month' => date('n', $strtotime), 'year' => date('Y', $strtotime)]);
+                } else {
+                    GeneralHelper::flashFailed(Html::errorSummary($model));
                 }
+                $strtotime = strtotime($model->period_start);
+                return $this->redirect(['index', 'month' => date('n', $strtotime), 'year' => date('Y', $strtotime)]);
+            }
+        }
+
+        return $this->redirect(['index']);
+    }
+
+    public function actionCancelVerify($id)
+    {
+        if ($this->request->isPost) {
+            $model = $this->findModel($id);
+
+            if ($model->status === Payroll::STATUS_DRAFT) {
+                $model->status = Payroll::STATUS_PENDING;
+                $model->id_user_verify = null;
+                $model->user_verify_at = null;
+                if ($model->save()) {
+                    GeneralHelper::flashSucceed('Verifikasi payroll telah dibatalkan, status kembali ke PENDING');
+                } else {
+                    GeneralHelper::flashFailed(Html::errorSummary($model));
+                }
+                $strtotime = strtotime($model->period_start);
+                return $this->redirect(['index', 'month' => date('n', $strtotime), 'year' => date('Y', $strtotime)]);
             }
         }
 
@@ -188,19 +222,145 @@ class PayrollController extends BaseController
                 $model->id_user_approve = $this->user->id_user;
                 $model->user_approve_at = DBHelper::now();
                 if ($model->save()) {
-                    $strtotime = strtotime($model->period_start);
                     GeneralHelper::flashSucceed('Payroll telah disetujui');
-                    return $this->redirect(['index', 'month' => date('n', $strtotime), 'year' => date('Y', $strtotime)]);
+                } else {
+                    GeneralHelper::flashFailed(Html::errorSummary($model));
                 }
+                $strtotime = strtotime($model->period_start);
+                return $this->redirect(['index', 'month' => date('n', $strtotime), 'year' => date('Y', $strtotime)]);
             }
         }
 
         return $this->redirect(['index']);
     }
 
+    public function actionCancelApprove($id)
+    {
+        if ($this->request->isPost) {
+            if (!RoleHelper::approvalPayroll()) {
+                throw new ForbiddenHttpException('You do not have permission to cancel payroll approval.');
+            }
+
+            $model = $this->findModel($id);
+
+            if ($model->status === Payroll::STATUS_APPROVE) {
+                $model->status = Payroll::STATUS_DRAFT;
+                $model->id_user_approve = null;
+                $model->user_approve_at = null;
+                if ($model->save()) {
+                    GeneralHelper::flashSucceed('Persetujuan payroll telah dibatalkan, status kembali ke DRAFT');
+                } else {
+                    GeneralHelper::flashFailed(Html::errorSummary($model));
+                }
+                $strtotime = strtotime($model->period_start);
+                return $this->redirect(['index', 'month' => date('n', $strtotime), 'year' => date('Y', $strtotime)]);
+            }
+        }
+
+        return $this->redirect(['index']);
+    }
+
+    public function actionUpdateDeduction($id)
+    {
+        $model = $this->findModel($id);
+
+        if ($model->status !== Payroll::STATUS_PENDING) {
+            if ($this->request->isAjax) {
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return [
+                    'success' => false,
+                    'message' => 'Potongan gaji hanya dapat diubah saat status Pending.',
+                ];
+            }
+            GeneralHelper::flashFailed('Potongan gaji hanya dapat diubah saat status Pending.');
+            $month = date('n', strtotime($model->period_start));
+            $year = date('Y', strtotime($model->period_start));
+            return $this->redirect(['index', 'month' => $month, 'year' => $year]);
+        }
+
+        if ($this->request->isPost) {
+            $dedection = $this->request->post('dedection', $model->dedection);
+            if (is_string($dedection)) {
+                $dedection = preg_replace('/[^0-9]/', '', $dedection);
+            }
+            $model->dedection = max(0, (int) $dedection);
+            $description = $this->request->post('dedection_description');
+            $model->dedection_description = !empty(trim((string) $description)) ? trim((string) $description) : null;
+
+            $model->recalculateNetSalary();
+
+            if ($model->save()) {
+                if ($this->request->isAjax) {
+                    Yii::$app->response->format = Response::FORMAT_JSON;
+                    return [
+                        'success' => true,
+                        'message' => 'Potongan gaji berhasil diperbarui.',
+                        'dedection' => $model->dedection,
+                        'dedection_formatted' => Yii::$app->formatter->asInteger($model->dedection),
+                        'dedection_description' => $model->dedection_description,
+                        'net_salary' => $model->net_salary,
+                        'net_salary_formatted' => Yii::$app->formatter->asInteger($model->net_salary),
+                    ];
+                }
+                GeneralHelper::flashSucceed('Potongan gaji berhasil diperbarui.');
+            } else {
+                if ($this->request->isAjax) {
+                    Yii::$app->response->format = Response::FORMAT_JSON;
+                    return [
+                        'success' => false,
+                        'message' => Html::errorSummary($model),
+                    ];
+                }
+                GeneralHelper::flashFailed(Html::errorSummary($model));
+            }
+        }
+
+        $month = date('n', strtotime($model->period_start));
+        $year = date('Y', strtotime($model->period_start));
+        return $this->redirect(['index', 'month' => $month, 'year' => $year]);
+    }
+
+    public function actionSlip($id)
+    {
+        $model = $this->findModel($id);
+
+        if ($model->status !== Payroll::STATUS_APPROVE) {
+            throw new ForbiddenHttpException('Slip gaji hanya dapat diakses jika status payroll sudah APPROVE.');
+        }
+
+        $content = $this->renderPartial('slip', [
+            'model' => $model,
+            'isPdf' => true,
+        ]);
+
+        $pdf = new Pdf([
+            'mode' => Pdf::MODE_UTF8,
+            'format' => Pdf::FORMAT_A4,
+            'orientation' => Pdf::ORIENT_PORTRAIT,
+            'destination' => Pdf::DEST_BROWSER,
+            'content' => $content,
+            'cssInline' => 'body { font-family: Helvetica, Arial, sans-serif; }',
+            'options' => [
+                'title' => 'Slip Gaji - ' . ($model->user ? $model->user->name : ''),
+            ],
+            'methods' => [
+                'SetHeader' => ['Slip Gaji||Dicetak pada: ' . date('d/m/Y H:i')],
+                'SetFooter' => ['|Halaman {PAGENO}|'],
+            ]
+        ]);
+
+        return $pdf->render();
+    }
+
     protected function findModel($id)
     {
-        if (($model = Payroll::findOne(['id_payroll' => $id, 'id_company' => $this->id_company])) !== null) {
+        if (is_numeric($id)) {
+            $model = Payroll::findOne(['id_payroll' => $id, 'id_company' => $this->id_company]);
+        } else {
+            $model = Payroll::findOne(['uuid' => $id, 'id_company' => $this->id_company]);
+        }
+
+        if ($model !== null) {
             return $model;
         }
 

@@ -30,7 +30,6 @@ $leaveTypes = \app\models\master\LeaveType::find()
     ->andWhere(['is not', 'max_day', null])
     ->all();
 
-
 $gridColumns = [
     ['class' => 'yii\grid\SerialColumn'],
 
@@ -38,8 +37,46 @@ $gridColumns = [
         'attribute' => 'name',
         'format' => 'raw',
         'value' => function ($model) {
-            return Html::tag('strong', $model->name) . '<br>' . Html::tag('span', '<i class="fas fa-envelope text-muted"></i> ' . $model->email, ['class' => 'small text-muted']);
+            $avatar = '';
+            if (!empty($model->photo)) {
+                $avatar = Html::img(Yii::getAlias('@web/' . $model->photo), [
+                    'class' => 'rounded-circle me-2 border',
+                    'style' => 'width: 36px; height: 36px; object-fit: cover; flex-shrink: 0;',
+                ]);
+            } else {
+                $avatar = '<div class="rounded-circle bg-light border d-flex align-items-center justify-content-center text-muted me-2" style="width: 36px; height: 36px; flex-shrink: 0;"><i class="fas fa-user small"></i></div>';
+            }
+
+            $info = Html::tag('strong', Html::encode($model->name)) . '<br>' . 
+                    Html::tag('span', '<i class="fas fa-envelope text-muted"></i> ' . Html::encode($model->email), ['class' => 'small text-muted']);
+            
+            if (!empty($model->employee_code)) {
+                $info .= ' &bull; ' . Html::tag('span', Html::encode($model->employee_code), ['class' => 'small text-muted']);
+            }
+
+            return '<div class="d-flex align-items-center">' . $avatar . '<div>' . $info . '</div></div>';
         }
+    ],
+    [
+        'attribute' => 'employment_status',
+        'filter' => Account::listEmploymentStatus(),
+        'label' => 'Status Pegawai',
+        'format' => 'raw',
+        'value' => function ($m) {
+            if (empty($m->employment_status)) {
+                return '-';
+            }
+            $bg = match($m->employment_status) {
+                'Tetap' => 'bg-success',
+                'Kontrak' => 'bg-primary',
+                'Probation' => 'bg-warning text-dark',
+                'Magang' => 'bg-info text-dark',
+                default => 'bg-secondary',
+            };
+            return Html::tag('span', Html::encode($m->employment_status), ['class' => 'badge ' . $bg]);
+        },
+        'contentOptions' => ['class' => 'text-center'],
+        'headerOptions' => ['class' => 'text-center'],
     ],
     [
         'attribute' => 'id_department',
@@ -67,6 +104,8 @@ $gridColumns = [
         'label' => 'Cuti',
         'format' => 'raw',
         'value' => function ($m) use ($leaveTypes) {
+            return Html::tag('span', Html::tag('strong', $m->remaining_leave . ' Hari'), ['class' => 'badge bg-info text-dark me-2']);
+
             $remainingLeaves = [];
             foreach ($leaveTypes as $lt) {
                 $rem = LeaveRequest::getRemainingDays($m, $lt->id_leave_type);
@@ -90,41 +129,56 @@ $gridColumns = [
     ],
 ];
 ?>
-<p class="text-end">
-    <?= Html::a(GeneralHelper::faAdd('User'), ['process'], ['class' => 'btn btn-primary']) ?>
-</p>
+<?php
+$company = Company::findOne($controllerIdCompany);
+$currentUserCount = $company ? $company->getUserCount() : 0;
+$maxUser = $company ? $company->getMaxUser() : 10;
+$canAddUser = $company ? $company->canAddUser() : true;
+$paket = $company ? $company->getSubscriptionPaket() : null;
+$paketName = $paket ? $paket->nama_paket : ($company && $company->getActiveSubscription() ? 'Paket Kustom' : 'Standar');
+$percentage = $maxUser > 0 ? min(100, round(($currentUserCount / $maxUser) * 100)) : 0;
+$progressColor = $percentage >= 100 ? 'bg-danger' : ($percentage >= 80 ? 'bg-warning text-dark' : 'bg-primary');
+?>
+
+<div class="card mb-3 border-0 shadow-sm">
+    <div class="card-body py-2 px-3">
+        <div class="row align-items-center">
+            <div class="col-md-7 col-12 d-flex flex-wrap align-items-center gap-2">
+                <span class="badge bg-secondary px-2 py-1">
+                    <i class="fas fa-box-open me-1"></i> Paket: <strong><?= Html::encode($paketName) ?></strong>
+                </span>
+                <span class="badge <?= $canAddUser ? 'bg-info text-dark' : 'bg-danger' ?> px-2 py-1">
+                    <i class="fas fa-users me-1"></i> Penggunaan Kuota: <strong><?= $currentUserCount ?> / <?= $maxUser ?> User</strong>
+                </span>
+                <div class="progress flex-grow-1" style="height: 8px; min-width: 120px; max-width: 180px;" title="<?= $percentage ?>% terpakai">
+                    <div class="progress-bar <?= $progressColor ?>" role="progressbar" style="width: <?= $percentage ?>%;" aria-valuenow="<?= $percentage ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+            <div class="col-md-5 col-12 text-md-end text-start mt-2 mt-md-0">
+                <?php if ($canAddUser): ?>
+                    <?= Html::a(GeneralHelper::faAdd('User'), ['process'], ['class' => 'btn btn-primary']) ?>
+                <?php else: ?>
+                    <button type="button" class="btn btn-secondary disabled" title="Kuota user telah mencapai batas maksimal paket">
+                        <i class="fas fa-ban me-1"></i> Batas Kuota Tercapai (<?= $currentUserCount ?>/<?= $maxUser ?>)
+                    </button>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php if (!$canAddUser): ?>
+    <div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
+        <i class="fas fa-exclamation-triangle flex-shrink-0 me-2 fs-5"></i>
+        <div>
+            <strong>Batas Kuota Tercapai:</strong> Perusahaan Anda telah menggunakan seluruh kuota maksimal (<strong><?= $currentUserCount ?> dari <?= $maxUser ?> user</strong>) untuk paket <strong><?= Html::encode($paketName) ?></strong>. Silakan upgrade paket langganan Anda untuk dapat menambahkan user baru.
+        </div>
+    </div>
+<?php endif; ?>
 
 <?= GridView::widget([
     'dataProvider' => $dataProvider,
     'filterModel' => $searchModel,
     'columns' => $gridColumns,
-    // 'responsive' => true,
-    // 'hover' => true,
-    // 'striped' => false, // Removing striped for a cleaner minimal look
-    // 'bordered' => false,
-    // 'tableOptions' => [
-    //     'class' => 'table table-hover table-modern mb-0',
-    // ],
-    // 'panel' => [
-    //     'type' => '',
-    //     'heading' => false, // We'll put our own nice toolbar in 'before'
-    //     'before' => '<div class="d-flex justify-content-between align-items-center w-100">' .
-    //         '<h5 class="mb-0 fw-bold text-dark"><i class="fas fa-users-cog me-2"></i>' . Html::encode($this->title) . '</h5>' .
-    //         Html::a('<i class="fas fa-plus"></i> Tambah User', ['process'], ['class' => 'btn btn-primary']) .
-    //         '</div>',
-    //     'after' => false,
-    //     'footer' => false,
-    //     'options' => ['class' => 'card modern-grid-panel mb-4']
-    // ],
-    // 'toolbar' => [
-    //     '{export}',
-    //     '{toggleData}',
-    // ],
-    // 'export' => [
-    //     'fontAwesome' => true,
-    //     'showConfirmAlert' => false,
-    //     'target' => GridView::TARGET_BLANK,
-    // ],
-    // 'layout' => "{items}\n<div class='card-footer bg-white d-flex justify-content-between align-items-center border-top-0'>{summary}\n{pager}</div>",
 ]);
 ?>

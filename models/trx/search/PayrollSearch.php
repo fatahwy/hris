@@ -22,7 +22,8 @@ class PayrollSearch extends Payroll
     {
         return [
             [['id_payroll', 'id_company', 'id_user', 'basic_salary', 'overtime', 'dedection', 'tax', 'gross_salary', 'net_salary', 'id_user_generate', 'id_user_verify', 'id_user_approve'], 'integer'],
-            [['period_start', 'period_end', 'status', 'user_verify_at', 'user_approve_at', 'created_at', 'updated_at'], 'safe'],
+            [['bpjs_kesehatan', 'bpjs_jht', 'bpjs_jp'], 'number'],
+            [['period_start', 'period_end', 'status', 'dedection_description', 'user_verify_at', 'user_approve_at', 'created_at', 'updated_at'], 'safe'],
             [['allowance'], 'safe'],
             [['period_start_from', 'period_start_to', 'period_end_from', 'period_end_to', 'created_at_from', 'created_at_to'], 'safe'],
         ];

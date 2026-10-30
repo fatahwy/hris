@@ -28,6 +28,7 @@ $this->params['breadcrumbs'][] = $this->title;
         ['class' => 'yii\grid\SerialColumn'],
 
         'name',
+        'referensi',
         'expired_at:date',
         'email:email',
         [
@@ -51,4 +52,3 @@ $this->params['breadcrumbs'][] = $this->title;
         ],
     ],
 ]); ?>
-

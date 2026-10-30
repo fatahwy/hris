@@ -39,6 +39,14 @@ $(document).on('click', '[data-confirm]', function (e) {
     });
 });
 
+$(document).ajaxError(function (event, jqXHR) {
+    if (jqXHR.status === 401) {
+        var res = jqXHR.responseJSON;
+        var redirectUrl = (res && res.redirect) ? res.redirect : '/login';
+        window.location.href = redirectUrl;
+    }
+});
+
 init();
 function init() {
     btnSubmitLoding();

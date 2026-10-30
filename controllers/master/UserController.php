@@ -12,6 +12,7 @@ use app\models\master\search\AccountSearch;
 use yii\bootstrap5\Html;
 use yii\helpers\ArrayHelper;
 use yii\web\NotFoundHttpException;
+use yii\web\UploadedFile;
 
 /**
  * UserController implements the CRUD actions for Account model mapped to /master/user.
@@ -53,8 +54,7 @@ class UserController extends BaseController
             }
         }
 
-        return $this->render('@app/views/master/user/process', [
-            'title' => 'User',
+        return $this->render('view', [
             'model' => $model,
             'companyAllowances' => $companyAllowances,
         ]);
@@ -72,6 +72,15 @@ class UserController extends BaseController
         $company = Company::findOne($this->id_company);
         $companyAllowances = $company ? ($company->allowance ?? []) : [];
 
+        // Validasi batas kuota max_user untuk create user baru
+        if (!$id && $company && !$company->canAddUser()) {
+            $maxUser = $company->getMaxUser();
+            $paket = $company->getSubscriptionPaket();
+            $paketText = $paket ? " ({$paket->nama_paket})" : "";
+            GeneralHelper::flashFailed("Jumlah user telah mencapai batas maksimal paket subscription{$paketText} yaitu {$maxUser} user. Silakan upgrade paket langganan Anda untuk menambah user baru.");
+            return $this->redirect(['index']);
+        }
+
         $model = null;
         if ($id) {
             $model = $this->findModel($id);
@@ -87,6 +96,16 @@ class UserController extends BaseController
         if (!$model) {
             $model = new Account();
             $model->scenario = 'create';
+            $model->annual_leave_quota = 12;
+            $model->remaining_leave = 12;
+            $model->bpjs_kesehatan = 1;
+            $model->bpjs_jht = 1;
+            $model->bpjs_jp = 1;
+            $model->bpjs_jkk = 1;
+            $model->bpjs_jkm = 1;
+            $model->tax_method = 'Gross';
+            $model->is_domicile_same_ktp = 1;
+            $model->status = 1;
         }
 
         $modelAuthAssignment = $model->role ?? new AuthAssignment();
@@ -101,6 +120,14 @@ class UserController extends BaseController
             $model->id_client = $this->id_client;
             $model->id_company = $this->id_company;
 
+            if ($isNewRecord && $company && !$company->canAddUser()) {
+                $maxUser = $company->getMaxUser();
+                $paket = $company->getSubscriptionPaket();
+                $paketText = $paket ? " ({$paket->nama_paket})" : "";
+                GeneralHelper::flashFailed("Jumlah user telah mencapai batas maksimal paket subscription{$paketText} yaitu {$maxUser} user. Silakan upgrade paket langganan Anda.");
+                return $this->redirect(['index']);
+            }
+
             $transaction = Yii::$app->db->beginTransaction();
             try {
                 // Handle password hashing if a new password is provided
@@ -111,6 +138,23 @@ class UserController extends BaseController
                     // If updating and password is not provided, keep the old password
                     $oldModel = $this->findModel($id);
                     $model->password = $oldModel->password;
+                }
+
+                // Handle photo file upload
+                $photoFile = UploadedFile::getInstance($model, 'photo_file');
+                if ($photoFile) {
+                    $uploadDir = Yii::getAlias('@webroot/uploads/user');
+                    if (!is_dir($uploadDir)) {
+                        mkdir($uploadDir, 0755, true);
+                    }
+                    $fileName = 'user_' . time() . '_' . uniqid() . '.' . $photoFile->extension;
+                    $filePath = $uploadDir . '/' . $fileName;
+                    if ($photoFile->saveAs($filePath)) {
+                        $model->photo = 'uploads/user/' . $fileName;
+                    }
+                } elseif ($id && empty($model->photo)) {
+                    $oldModel = $this->findModel($id);
+                    $model->photo = $oldModel->photo;
                 }
 
                 // Handle allowance data

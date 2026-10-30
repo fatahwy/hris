@@ -70,12 +70,34 @@ if ($totalIncome <= 0 && !empty($incomes)) {
 // Deductions
 $deductions = [];
 if (!empty($model->dedection) && (float) $model->dedection > 0) {
-    $deductions[] = ['label' => 'Potongan Kehadiran / Terlambat', 'amount' => (float) $model->dedection];
+    $deductionLabel = !empty($model->dedection_description) ? $model->dedection_description : 'Potongan Kehadiran / Terlambat';
+    $deductions[] = ['label' => $deductionLabel, 'amount' => (float) $model->dedection];
 }
 if (!empty($model->tax) && (float) $model->tax > 0) {
     $deductions[] = ['label' => 'PPh 21', 'amount' => (float) $model->tax];
 }
-$totalDeduction = (float) $model->dedection + (float) $model->tax;
+$bpjsKesAmount = $model->getBpjsKesehatanAmount();
+if ($bpjsKesAmount > 0) {
+    $deductions[] = [
+        'label' => 'BPJS Kesehatan (' . $model->getBpjsKesehatanPercent() . '%)',
+        'amount' => $bpjsKesAmount,
+    ];
+}
+$bpjsJhtAmount = $model->getBpjsJhtAmount();
+if ($bpjsJhtAmount > 0) {
+    $deductions[] = [
+        'label' => 'BPJS Ketenagakerjaan - JHT (' . $model->getBpjsJhtPercent() . '%)',
+        'amount' => $bpjsJhtAmount,
+    ];
+}
+$bpjsJpAmount = $model->getBpjsJpAmount();
+if ($bpjsJpAmount > 0) {
+    $deductions[] = [
+        'label' => 'BPJS Ketenagakerjaan - JP (' . $model->getBpjsJpPercent() . '%)',
+        'amount' => $bpjsJpAmount,
+    ];
+}
+$totalDeduction = (float) $model->dedection + (float) $model->tax + $bpjsKesAmount + $bpjsJhtAmount + $bpjsJpAmount;
 
 // Terbilang
 $terbilangText = GeneralHelper::terbilang($model->net_salary) . ' rupiah';

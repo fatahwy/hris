@@ -868,55 +868,63 @@
                     <button id="bM" aria-pressed="true">Bulanan</button>
                     <button id="bY" aria-pressed="false">Tahunan<small>gratis 2 bulan</small></button>
                 </div>
+                <?php
+use app\models\master\Paket;
+use yii\helpers\Url;
+
+$pakets = $pakets ?? Paket::find()->where(['status' => 1])->orderBy(['max_user' => SORT_ASC, 'durasi_hari' => SORT_ASC])->all();
+
+// Kelompokkan berdasarkan tier (selain Trial)
+$tiers = [];
+$prevMaxUser = 0;
+foreach ($pakets as $p) {
+    if (strtolower($p->tier) === 'trial') {
+        continue;
+    }
+    $tierName = $p->tier;
+    if (!isset($tiers[$tierName])) {
+        $tiers[$tierName] = [
+            'name' => $tierName,
+            'max_user' => $p->max_user,
+            'range' => ($prevMaxUser + 1) . '–' . $p->max_user . ' karyawan',
+            'm_price' => 0,
+            'y_price' => 0,
+            'm_id' => null,
+            'y_id' => null,
+        ];
+        $prevMaxUser = $p->max_user;
+    }
+    if ($p->durasi_satuan === 'bulan' || $p->durasi_hari <= 31) {
+        $tiers[$tierName]['m_price'] = (float)$p->price;
+        $tiers[$tierName]['m_id'] = $p->id_paket;
+    } elseif ($p->durasi_satuan === 'tahun' || $p->durasi_hari > 31) {
+        $tiers[$tierName]['y_price'] = (float)$p->price;
+        $tiers[$tierName]['y_id'] = $p->id_paket;
+    }
+}
+?>
                 <div class="plans" style="text-align:left">
-                    <div class="plan">
-                        <h3>Mikro</h3>
-                        <p class="who">1–10 karyawan</p>
-                        <div class="price"><span class="p" data-m="Rp 199.000" data-y="Rp 1.990.000"></span><small class="u"></small></div>
-                        <p class="sub" data-y="Setara Rp 165.833 per bulan"></p>
-                        <ul>
-                            <li>Absensi</li>
-                            <li>Izin &amp; cuti</li>
-                            <li>Payroll, PPh 21, BPJS</li>
-                        </ul>
-                        <a class="btn wa" href="#" data-msg="Halo, saya tertarik paket Mikro Pranata HR (1-10 karyawan).">Pilih Mikro</a>
-                    </div>
-                    <div class="plan rec">
-                        <h3>Kecil</h3>
-                        <p class="who">11–25 karyawan</p>
-                        <div class="price"><span class="p" data-m="Rp 399.000" data-y="Rp 3.990.000"></span><small class="u"></small></div>
-                        <p class="sub" data-y="Setara Rp 332.500 per bulan"></p>
-                        <ul>
-                            <li>Absensi</li>
-                            <li>Izin &amp; cuti</li>
-                            <li>Payroll, PPh 21, BPJS</li>
-                        </ul>
-                        <a class="btn wa" href="#" data-msg="Halo, saya tertarik paket Kecil Pranata HR (11-25 karyawan).">Pilih Kecil</a>
-                    </div>
-                    <div class="plan">
-                        <h3>Menengah</h3>
-                        <p class="who">26–50 karyawan</p>
-                        <div class="price"><span class="p" data-m="Rp 649.000" data-y="Rp 6.490.000"></span><small class="u"></small></div>
-                        <p class="sub" data-y="Setara Rp 540.833 per bulan"></p>
-                        <ul>
-                            <li>Absensi</li>
-                            <li>Izin &amp; cuti</li>
-                            <li>Payroll, PPh 21, BPJS</li>
-                        </ul>
-                        <a class="btn wa" href="#" data-msg="Halo, saya tertarik paket Menengah Pranata HR (26-50 karyawan).">Pilih Menengah</a>
-                    </div>
-                    <div class="plan">
-                        <h3>Bisnis</h3>
-                        <p class="who">51–100 karyawan</p>
-                        <div class="price"><span class="p" data-m="Rp 999.000" data-y="Rp 9.990.000"></span><small class="u"></small></div>
-                        <p class="sub" data-y="Setara Rp 832.500 per bulan"></p>
-                        <ul>
-                            <li>Absensi</li>
-                            <li>Izin &amp; cuti</li>
-                            <li>Payroll, PPh 21, BPJS</li>
-                        </ul>
-                        <a class="btn wa" href="#" data-msg="Halo, saya tertarik paket Bisnis Pranata HR (51-100 karyawan).">Pilih Bisnis</a>
-                    </div>
+                    <?php foreach ($tiers as $tierKey => $item):
+                        $isRec = (strtolower($tierKey) === 'kecil');
+                        $mPriceFormatted = 'Rp ' . number_format($item['m_price'], 0, ',', '.');
+                        $yPriceFormatted = 'Rp ' . number_format($item['y_price'], 0, ',', '.');
+                        $perMonthIfYear = $item['y_price'] > 0 ? 'Setara Rp ' . number_format(round($item['y_price'] / 12), 0, ',', '.') . ' per bulan' : '';
+                        $mUrl = Url::to(['/site/register', 'id_paket' => $item['m_id']]);
+                        $yUrl = Url::to(['/site/register', 'id_paket' => $item['y_id'] ?: $item['m_id']]);
+                    ?>
+                        <div class="plan<?= $isRec ? ' rec' : '' ?>">
+                            <h3><?= htmlspecialchars($item['name']) ?></h3>
+                            <p class="who"><?= htmlspecialchars($item['range']) ?></p>
+                            <div class="price"><span class="p" data-m="<?= $mPriceFormatted ?>" data-y="<?= $yPriceFormatted ?>"></span><small class="u"></small></div>
+                            <p class="sub" data-y="<?= htmlspecialchars($perMonthIfYear) ?>"></p>
+                            <ul>
+                                <li>Absensi</li>
+                                <li>Izin &amp; cuti</li>
+                                <li>Payroll, PPh 21, BPJS</li>
+                            </ul>
+                            <a class="btn btn-pilih-paket" href="<?= htmlspecialchars($mUrl) ?>" data-m-href="<?= htmlspecialchars($mUrl) ?>" data-y-href="<?= htmlspecialchars($yUrl) ?>">Pilih <?= htmlspecialchars($item['name']) ?></a>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
                 <!-- <p class="big-co">Lebih dari 100 karyawan? Rp 8.500 per karyawan per bulan. <a class="wa" href="#" data-msg="Halo, saya punya lebih dari 100 karyawan dan ingin tanya harga Pranata HR.">Hubungi kami</a>.</p> -->
                 <div class="inc" style="text-align:left"><b>Coba dulu 14 hari, tanpa kartu kredit.</b>Biaya setup untuk bantu impor data mulai Rp 500.000, dan gratis untuk paket tahunan.</div>
@@ -986,6 +994,9 @@
             });
             document.querySelectorAll(".sub").forEach(function(e) {
                 e.textContent = y ? e.dataset.y : "";
+            });
+            document.querySelectorAll(".btn-pilih-paket").forEach(function(e) {
+                e.href = y ? e.dataset.yHref : e.dataset.mHref;
             });
         }
         bM.onclick = function() {

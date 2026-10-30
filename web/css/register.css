@@ -23,25 +23,52 @@
 /* ===== Main Container ===== */
 .register-container {
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
+    max-height: 100vh;
     width: 100%;
+    overflow: hidden;
 }
 
 /* ===== Left Panel (Form) ===== */
 .register-left {
     flex: 1;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: flex-start;
     padding: 40px 60px;
     background: var(--register-bg);
     position: relative;
     overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+    max-height: 100vh;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(212, 169, 78, 0.5) transparent;
+}
+
+.register-left::-webkit-scrollbar {
+    width: 6px;
+}
+
+.register-left::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.register-left::-webkit-scrollbar-thumb {
+    background: rgba(212, 169, 78, 0.4);
+    border-radius: 4px;
+}
+
+.register-left::-webkit-scrollbar-thumb:hover {
+    background: var(--register-accent);
 }
 
 .register-form-wrapper {
     width: 100%;
     max-width: 580px;
+    margin: auto 0;
+    padding: 20px 0;
 }
 
 /* ===== Title ===== */
@@ -225,6 +252,9 @@
 @media (max-width: 991px) {
     .register-container {
         flex-direction: column;
+        height: auto;
+        max-height: none;
+        overflow: visible;
     }
 
     .register-right {
@@ -233,10 +263,20 @@
 
     .register-left {
         padding: 40px 24px;
+        height: auto;
+        max-height: none;
+        overflow-y: visible;
     }
 
     .auth-body {
         overflow-y: auto;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .register-form-wrapper {
+        margin: 0 auto;
+        padding: 10px 0;
     }
 }
 
@@ -244,6 +284,10 @@
     .register-form-grid {
         grid-template-columns: 1fr;
         gap: 16px;
+    }
+
+    .register-form-grid > .register-form-group {
+        grid-column: span 1 !important;
     }
 
     .register-title {

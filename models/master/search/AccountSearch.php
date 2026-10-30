@@ -18,8 +18,8 @@ class AccountSearch extends Account
     public function rules()
     {
         return [
-            [['id_user', 'id_client', 'id_company', 'status', 'id_department', 'id_position', 'basic_salary', 'is_online'], 'integer'],
-            [['name', 'email', 'join_date', 'employee_code', 'phone', 'created_at', 'updated_at'], 'safe'],
+            [['id_user', 'id_client', 'id_company', 'status', 'id_department', 'id_position', 'id_manager', 'basic_salary', 'is_online'], 'integer'],
+            [['name', 'email', 'join_date', 'employee_code', 'phone', 'nik', 'employment_status', 'work_location', 'created_at', 'updated_at'], 'safe'],
         ];
     }
 
@@ -42,16 +42,12 @@ class AccountSearch extends Account
     public function search($params)
     {
         $query = self::getQueryByCompany('user')
-            ->with(['department', 'position']);
+            ->with(['department', 'position', 'manager']);
 
         if (!RoleHelper::isSuper()) {
             $query->innerJoinWith(['role'])
                 ->andWhere(['!=', 'LOWER(item_name)', 'super']);
         }
-
-        // add conditions that should always apply here
-        // If we want to filter by client based on session, we can do it in the controller and pass it or handle it here if required.
-        // Assuming controller sets the condition via `$searchModel->id_client = ...`
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
@@ -61,8 +57,6 @@ class AccountSearch extends Account
         $this->load($params);
 
         if (!$this->validate()) {
-            // uncomment the following line if you do not want to return any records when validation fails
-            // $query->where('0=1');
             return $dataProvider;
         }
 
@@ -72,6 +66,8 @@ class AccountSearch extends Account
             'status' => $this->status,
             'id_department' => $this->id_department,
             'id_position' => $this->id_position,
+            'id_manager' => $this->id_manager,
+            'employment_status' => $this->employment_status,
             'basic_salary' => $this->basic_salary,
             'is_online' => $this->is_online,
         ]);
@@ -80,6 +76,8 @@ class AccountSearch extends Account
             ->andFilterWhere(['like', 'email', $this->email])
             ->andFilterWhere(['like', 'employee_code', $this->employee_code])
             ->andFilterWhere(['like', 'phone', $this->phone])
+            ->andFilterWhere(['like', 'nik', $this->nik])
+            ->andFilterWhere(['like', 'work_location', $this->work_location])
             ->andFilterWhere(['like', 'join_date', $this->join_date])
             ->andFilterWhere(['like', 'date(user.created_at)', $this->created_at])
             ->andFilterWhere(['like', 'date(user.updated_at)', $this->updated_at]);

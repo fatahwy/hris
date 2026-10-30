@@ -19,6 +19,46 @@ $config = [
     'bootstrap' => ['log', 'admin', 'queue'],
     'language' => 'id',
     'timezone' => 'Asia/Jakarta',
+    'on beforeAction' => function ($event) {
+        if (!Yii::$app->user->isGuest) {
+            $action = $event->action;
+            $controller = $action->controller;
+            if ($controller->id === 'site' && in_array($action->id, ['logout', 'error', 'captcha'])) {
+                return;
+            }
+
+            $user = Yii::$app->user->identity;
+            if ($user) {
+                $company = $user->company ?? null;
+                if (!$company && !empty($user->id_company)) {
+                    $company = \app\models\master\Company::findOne($user->id_company);
+                }
+
+                if ($company && $company->isExpired()) {
+                    if ($controller->id === 'site' && $action->id === 'login') {
+                        Yii::$app->user->logout();
+                        Yii::$app->session->setFlash('error', 'Akun perusahaan Anda telah berakhir. Silakan hubungi admin untuk perpanjangan.');
+                        return;
+                    }
+
+                    Yii::$app->user->logout();
+                    Yii::$app->session->setFlash('error', 'Akun perusahaan Anda telah berakhir. Silakan hubungi admin untuk perpanjangan.');
+                    if (Yii::$app->request->isAjax) {
+                        Yii::$app->response->statusCode = 401;
+                        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+                        Yii::$app->response->data = [
+                            'status' => 'expired',
+                            'message' => 'Akun perusahaan Anda telah berakhir. Silakan hubungi admin untuk perpanjangan.',
+                            'redirect' => \yii\helpers\Url::to(['/site/login']),
+                        ];
+                    } else {
+                        Yii::$app->response->redirect(['/site/login']);
+                    }
+                    $event->isValid = false;
+                }
+            }
+        }
+    },
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm' => '@vendor/npm-asset',

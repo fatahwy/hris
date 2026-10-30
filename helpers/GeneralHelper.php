@@ -25,6 +25,20 @@ class GeneralHelper extends \mdm\admin\components\Helper
     const DIV_HOURLY_RATE = 173;
     const ID_OVERTIME = 1;
 
+    // BPJS
+    const BPJS_KESEHATAN_PERCENT = 1;
+    const BPJS_JHT_PERCENT = 2;
+    const BPJS_JP_PERCENT = 1;
+    const BPJS_KESEHATAN_MAX_SALARY = 12000000;
+    const BPJS_KESEHATAN_RATE = 0.01;
+    const BPJS_JHT_RATE = 0.02;
+    const BPJS_JP_RATE = 0.01;
+
+    const ADMIN_NO_PHONE = '087821738123';
+    const BANK_NAME = 'Mandiri';
+    const BANK_ACCOUNT_NUMBER = '123123123';
+    const BANK_ACCOUNT_NAME = 'John Doe';
+
     //    GENERAL HELPER =========
 
     public static function isGuest()

@@ -28,6 +28,8 @@ if ($isNewRecord) {
 
         <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
 
+        <?= $form->field($model, 'referensi')->textInput(['maxlength' => true]) ?>
+
         <?= $form->field($model, 'expired_at')->textInput(['type' => 'date']) ?>
 
         <?= $form->field($model, 'email')->textInput(['type' => 'email']) ?>
