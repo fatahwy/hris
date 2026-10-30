@@ -35,10 +35,10 @@
         return;
     }
 
-    // 1. Register Service Worker
+    // 1. Register Service Worker (requires HTTPS or localhost in modern browsers)
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            let swPath = 'sw.js';
+            let swPath = '/sw.js';
             const manifestLink = document.querySelector('link[rel="manifest"]');
             if (manifestLink) {
                 const href = manifestLink.getAttribute('href');
@@ -47,7 +47,6 @@
 
             navigator.serviceWorker.register(swPath)
                 .then((registration) => {
-                    // Check for updates
                     registration.onupdatefound = () => {
                         const installingWorker = registration.installing;
                         if (installingWorker) {
@@ -60,7 +59,7 @@
                     };
                 })
                 .catch((err) => {
-                    console.warn('PWA: Registrasi Service Worker gagal:', err);
+                    console.warn('PWA: ServiceWorker note (Requires HTTPS or localhost):', err);
                 });
         });
     }
@@ -73,69 +72,86 @@
     function setupInstallUI() {
         const banner = document.getElementById('pwaInstallBanner');
         const iosModal = document.getElementById('pwaIosModal');
-        const installBtns = document.querySelectorAll('.pwa-install-trigger');
+        const androidModal = document.getElementById('pwaAndroidModal');
         const sidebarBtn = document.querySelector('.pwa-sidebar-btn');
 
         // Check if banner was recently dismissed
         const dismissedUntil = localStorage.getItem(DISMISS_KEY);
         const isDismissed = dismissedUntil && (Date.now() < parseInt(dismissedUntil, 10));
 
-        // Setup install buttons (in banner and custom triggers)
+        // Always show install triggers on mobile
+        if (isMobile) {
+            document.querySelectorAll('.pwa-install-trigger').forEach(el => {
+                el.style.display = '';
+            });
+            if (sidebarBtn) {
+                sidebarBtn.style.display = 'flex';
+            }
+
+            // Show floating bottom banner after 1.2s on mobile if not dismissed
+            if (banner && !isDismissed) {
+                setTimeout(() => {
+                    banner.style.display = 'flex';
+                }, 1200);
+            }
+        }
+
+        // Global click listener for PWA buttons
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.pwa-install-trigger');
             if (btn) {
                 e.preventDefault();
                 triggerInstall();
+                return;
             }
 
             const closeBtn = e.target.closest('.pwa-dismiss-btn');
             if (closeBtn) {
                 e.preventDefault();
                 dismissBanner();
+                return;
             }
 
             const closeIosBtn = e.target.closest('.pwa-close-ios');
             if (closeIosBtn) {
                 e.preventDefault();
-                closeIosInstructions();
+                closeModal(iosModal);
+                return;
+            }
+
+            const closeAndroidBtn = e.target.closest('.pwa-close-android');
+            if (closeAndroidBtn) {
+                e.preventDefault();
+                closeModal(androidModal);
+                return;
             }
         });
 
-        // Close iOS modal if clicking backdrop
+        // Close modals on backdrop click
         if (iosModal) {
             iosModal.addEventListener('click', (e) => {
                 if (e.target === iosModal) {
-                    closeIosInstructions();
+                    closeModal(iosModal);
                 }
             });
         }
-
-        // Show sidebar button always if mobile or installable
-        if (sidebarBtn) {
-            sidebarBtn.style.display = 'flex';
-        }
-
-        // iOS Safari Handling
-        if (isIOS && !isStandalone) {
-            if (sidebarBtn) {
-                sidebarBtn.style.display = 'flex';
-            }
-            if (banner && !isDismissed && isMobile) {
-                setTimeout(() => {
-                    banner.style.display = 'flex';
-                }, 1500);
-            }
+        if (androidModal) {
+            androidModal.addEventListener('click', (e) => {
+                if (e.target === androidModal) {
+                    closeModal(androidModal);
+                }
+            });
         }
     }
 
-    // 3. Listen to beforeinstallprompt (Android Chrome / Edge / etc.)
+    // 3. Listen to beforeinstallprompt (Fired on Android / Chrome HTTPS / localhost)
     window.addEventListener('beforeinstallprompt', (e) => {
-        // Prevent default mini-infobar
+        // Prevent Chrome mini-infobar
         e.preventDefault();
         deferredPrompt = e;
         window.deferredPWAInstallPrompt = e;
 
-        // Make install triggers visible
+        // Show install button & banner
         document.querySelectorAll('.pwa-install-trigger').forEach(el => {
             el.style.display = '';
         });
@@ -144,15 +160,12 @@
             sidebarBtn.style.display = 'flex';
         }
 
-        // Show the banner on mobile if not recently dismissed
         const banner = document.getElementById('pwaInstallBanner');
         const dismissedUntil = localStorage.getItem(DISMISS_KEY);
         const isDismissed = dismissedUntil && (Date.now() < parseInt(dismissedUntil, 10));
 
         if (banner && !isDismissed) {
-            setTimeout(() => {
-                banner.style.display = 'flex';
-            }, 1000);
+            banner.style.display = 'flex';
         }
     });
 
@@ -160,24 +173,24 @@
     window.triggerPWAInstall = triggerInstall;
     function triggerInstall() {
         if (deferredPrompt) {
-            // Android / Chromium native install dialog
+            // Native Android / Chromium prompt
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === 'accepted') {
-                    console.log('User accepted PWA installation');
+                    console.log('User accepted PWA install');
                     hideBanner();
                 } else {
-                    console.log('User dismissed PWA installation');
+                    console.log('User dismissed PWA install');
                 }
                 deferredPrompt = null;
                 window.deferredPWAInstallPrompt = null;
             });
         } else if (isIOS) {
-            // Show iOS guide
-            showIosInstructions();
+            // Show iOS guide modal
+            openModal(document.getElementById('pwaIosModal'));
         } else {
-            // Other browsers instructions or already installed
-            showGenericInstructions();
+            // Chrome on HTTP / fallback guide modal
+            openModal(document.getElementById('pwaAndroidModal'));
         }
     }
 
@@ -200,40 +213,15 @@
         }
     }
 
-    function showIosInstructions() {
-        const iosModal = document.getElementById('pwaIosModal');
-        if (iosModal) {
-            iosModal.style.display = 'flex';
+    function openModal(modal) {
+        if (modal) {
+            modal.style.display = 'flex';
         }
     }
 
-    function closeIosInstructions() {
-        const iosModal = document.getElementById('pwaIosModal');
-        if (iosModal) {
-            iosModal.style.display = 'none';
-        }
-    }
-
-    function showGenericInstructions() {
-        // Fallback for browsers when beforeinstallprompt hasn't fired yet
-        if (window.Swal) {
-            Swal.fire({
-                title: 'Install PRANATA HR',
-                html: `
-                    <div class="text-start fs-6" style="line-height: 1.6;">
-                        <p class="mb-2">Untuk menginstal aplikasi di browser Anda:</p>
-                        <ol class="ps-3 mb-0">
-                            <li>Buka menu opsi browser Anda (ikon <b>titik tiga ⋮</b> di kanan atas).</li>
-                            <li>Pilih <b>"Install Aplikasi"</b> atau <b>"Tambahkan ke Layar Utama"</b>.</li>
-                        </ol>
-                    </div>
-                `,
-                icon: 'info',
-                confirmButtonText: 'Mengerti',
-                confirmButtonColor: '#2b5fe1'
-            });
-        } else {
-            alert('Untuk menginstal aplikasi: Buka menu titik tiga di browser Anda, lalu pilih "Install Aplikasi" atau "Tambahkan ke Layar Utama".');
+    function closeModal(modal) {
+        if (modal) {
+            modal.style.display = 'none';
         }
     }
 
@@ -249,7 +237,6 @@
             sidebarBtn.style.display = 'none';
         }
 
-        // Show brief success toast
         showInstalledToast();
     });
 
