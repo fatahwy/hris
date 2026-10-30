@@ -1,3 +1,8 @@
+<?php
+use app\models\master\Paket;
+use yii\helpers\Url;
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 
@@ -340,26 +345,33 @@
             .desktop-nav {
                 display: none;
             }
+
             .mobile-nav-triggers {
                 display: flex;
             }
+
             .logo {
                 font-size: 1.15rem;
             }
+
             .logo img {
                 height: 32px;
             }
+
             .wrap {
                 padding: 0 16px;
             }
+
             .hero {
                 padding: 40px 0 50px;
             }
+
             .cta-row {
                 display: flex;
                 flex-direction: column;
                 gap: 12px;
             }
+
             .cta-row .btn {
                 text-align: center;
                 width: 100%;
@@ -371,11 +383,13 @@
                 width: 100%;
                 display: flex;
             }
+
             .toggle button {
                 flex: 1;
                 padding: 8px 10px;
                 font-size: 0.85rem;
             }
+
             .plan.rec {
                 transform: none;
                 margin-top: 14px;
@@ -931,7 +945,7 @@
     <header>
         <div class="wrap">
             <a class="logo" href="#"><img src="data:image/webp;base64,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" alt="" width="41" height="38"><span>Pranata HR</span></a>
-            
+
             <div class="header-right">
                 <nav class="desktop-nav">
                     <a href="#fitur">Fitur</a>
@@ -962,23 +976,38 @@
         <div class="mobile-menu" id="mobileMenu">
             <div class="mobile-menu-inner">
                 <a href="#fitur" class="mobile-menu-link">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
                     <span>Fitur Unggulan</span>
                 </a>
                 <a href="#harga" class="mobile-menu-link">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
                     <span>Paket &amp; Harga</span>
                 </a>
                 <a href="#faq" class="mobile-menu-link">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
                     <span>Tanya Jawab</span>
                 </a>
-                
+
                 <div class="mobile-menu-divider"></div>
-                
+
                 <?php if (Yii::$app->user->isGuest): ?>
                     <a href="/login" class="mobile-menu-link mobile-menu-login">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                            <polyline points="10 17 15 12 10 7"></polyline>
+                            <line x1="15" y1="12" x2="3" y2="12"></line>
+                        </svg>
                         <span>Masuk ke Akun</span>
                     </a>
                     <a class="btn mobile-menu-cta" href="/register">Coba Gratis 14 Hari</a>
@@ -1124,40 +1153,38 @@
                     <button id="bY" aria-pressed="false">Tahunan<small>gratis 2 bulan</small></button>
                 </div>
                 <?php
-use app\models\master\Paket;
-use yii\helpers\Url;
 
-$pakets = $pakets ?? Paket::find()->where(['status' => 1])->orderBy(['max_user' => SORT_ASC, 'durasi_hari' => SORT_ASC])->all();
+                $pakets = $pakets ?? Paket::find()->where(['status' => 1])->orderBy(['max_user' => SORT_ASC, 'durasi_hari' => SORT_ASC])->all();
 
-// Kelompokkan berdasarkan tier (selain Trial)
-$tiers = [];
-$prevMaxUser = 0;
-foreach ($pakets as $p) {
-    if (strtolower($p->tier) === 'trial') {
-        continue;
-    }
-    $tierName = $p->tier;
-    if (!isset($tiers[$tierName])) {
-        $tiers[$tierName] = [
-            'name' => $tierName,
-            'max_user' => $p->max_user,
-            'range' => ($prevMaxUser + 1) . '–' . $p->max_user . ' karyawan',
-            'm_price' => 0,
-            'y_price' => 0,
-            'm_id' => null,
-            'y_id' => null,
-        ];
-        $prevMaxUser = $p->max_user;
-    }
-    if ($p->durasi_satuan === 'bulan' || $p->durasi_hari <= 31) {
-        $tiers[$tierName]['m_price'] = (float)$p->price;
-        $tiers[$tierName]['m_id'] = $p->id_paket;
-    } elseif ($p->durasi_satuan === 'tahun' || $p->durasi_hari > 31) {
-        $tiers[$tierName]['y_price'] = (float)$p->price;
-        $tiers[$tierName]['y_id'] = $p->id_paket;
-    }
-}
-?>
+                // Kelompokkan berdasarkan tier (selain Trial)
+                $tiers = [];
+                $prevMaxUser = 0;
+                foreach ($pakets as $p) {
+                    if (strtolower($p->tier) === 'trial') {
+                        continue;
+                    }
+                    $tierName = $p->tier;
+                    if (!isset($tiers[$tierName])) {
+                        $tiers[$tierName] = [
+                            'name' => $tierName,
+                            'max_user' => $p->max_user,
+                            'range' => ($prevMaxUser + 1) . '–' . $p->max_user . ' karyawan',
+                            'm_price' => 0,
+                            'y_price' => 0,
+                            'm_id' => null,
+                            'y_id' => null,
+                        ];
+                        $prevMaxUser = $p->max_user;
+                    }
+                    if ($p->durasi_satuan === 'bulan' || $p->durasi_hari <= 31) {
+                        $tiers[$tierName]['m_price'] = (float)$p->price;
+                        $tiers[$tierName]['m_id'] = $p->id_paket;
+                    } elseif ($p->durasi_satuan === 'tahun' || $p->durasi_hari > 31) {
+                        $tiers[$tierName]['y_price'] = (float)$p->price;
+                        $tiers[$tierName]['y_id'] = $p->id_paket;
+                    }
+                }
+                ?>
                 <div class="plans" style="text-align:left">
                     <?php foreach ($tiers as $tierKey => $item):
                         $isRec = (strtolower($tierKey) === 'kecil');
