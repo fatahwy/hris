@@ -277,8 +277,6 @@ $gridColumns[] = [
                                 'name' => 'month',
                                 'value' => (string)$month,
                                 'data' => GeneralHelper::getMonths(),
-                                'theme' => Select2::THEME_BOOTSTRAP,
-                                'size' => Select2::SMALL,
                                 'options' => [
                                     'placeholder' => 'Pilih Bulan...',
                                 ],
@@ -300,8 +298,6 @@ $gridColumns[] = [
                                 'name' => 'year',
                                 'value' => (string)$year,
                                 'data' => $years,
-                                'theme' => Select2::THEME_BOOTSTRAP,
-                                'size' => Select2::SMALL,
                                 'options' => [
                                     'placeholder' => 'Pilih Tahun...',
                                 ],
