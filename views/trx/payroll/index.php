@@ -268,7 +268,7 @@ $gridColumns[] = [
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3 mb-4">
                 <div class="d-flex flex-column flex-sm-row gap-2 align-items-stretch align-items-sm-center flex-grow-1">
                     <form id="form-payroll-filter" action="<?= Url::to(['index']) ?>" method="get" class="d-flex flex-grow-1 gap-2 align-items-center">
-                        <div class="flex-grow-1" style="min-width: 130px;">
+                        <div style="min-width: 130px;">
                             <?= Select2::widget([
                                 'id' => 'payroll-month',
                                 'name' => 'month',
@@ -283,7 +283,7 @@ $gridColumns[] = [
                                 ],
                             ]) ?>
                         </div>
-                        <div style="min-width: 100px; max-width: 140px;" class="flex-grow-1">
+                        <div style="min-width: 100px; max-width: 140px;">
                             <?php
                             $years = [];
                             for ($y = date('Y') - 2; $y <= date('Y') + 1; $y++) {

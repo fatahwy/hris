@@ -55,6 +55,13 @@ $shifts = Shift::getList();
                     <?= Html::a(GeneralHelper::faAdd('Lembur'), ['overtime'], ['class' => 'btn btn-primary px-4 shadow-sm w-100 w-md-auto text-center']) ?>
                 </div>
             </div>
+
+            <div class="alert alert-info d-flex align-items-center mb-0 mt-3 py-2 px-3 border-0 rounded-2" role="alert">
+                <i class="bi bi-info-circle-fill me-2 fs-5 flex-shrink-0"></i>
+                <div class="small">
+                    <strong>Catatan:</strong> Silakan pilih <strong>Pegawai</strong> dan <strong>Shift</strong> terlebih dahulu, kemudian pilih tanggal pada kalender untuk assign jadwal kerja.
+                </div>
+            </div>
         </div>
     </div>
 

@@ -19,7 +19,7 @@ $formatter = Yii::$app->formatter;
         <h2 class="h4 mb-0 text-primary fw-bold d-flex align-items-center gap-2">
             Dashboard
         </h2>
-        <div class="bg-white p-2 rounded-3 shadow-sm border border-light w-100 w-sm-auto" style="min-width: 0; max-width: 100%;">
+        <div class="bg-white p-2 rounded-3 shadow-sm border border-light w-sm-auto" style="min-width: 0; max-width: 100%;">
             <form action="<?= \yii\helpers\Url::to(['dashboard/index']) ?>" method="get" id="date-filter-form">
                 <?php
                 echo DateRangePicker::widget([

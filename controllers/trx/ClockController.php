@@ -25,7 +25,7 @@ class ClockController extends BaseController
             } else {
                 Yii::$app->session->setFlash('error', 'Anda tidak punya jadwal kerja.');
             }
-            return $this->redirect(['/']);
+            return $this->redirect(['/dashboard']);
         }
 
         $checkinStart = $model->checkin_start;
@@ -33,24 +33,24 @@ class ClockController extends BaseController
 
         if ($model->checkout_datetime !== null) {
             Yii::$app->session->setFlash('warning', 'Anda sudah clock out.');
-            return $this->redirect(['/']);
+            return $this->redirect(['/dashboard']);
         }
 
         if ($type === 'in') {
             // if ($model->checkin_datetime !== null) {
             //     Yii::$app->session->setFlash('warning', 'Anda sudah clock in.');
-            //     return $this->redirect(['/']);
+            //     return $this->redirect(['/dashboard']);
             // }
 
             $nowStr = DBHelper::now();
             if ($nowStr < $checkinStart || $nowStr > $workhourEnd) {
                 Yii::$app->session->setFlash('error', 'Anda tidak bisa clock in saat ini. Clock in bisa dilakukan dari ' . $checkinStart . ' and ' . $workhourEnd);
-                return $this->redirect(['/']);
+                return $this->redirect(['/dashboard']);
             }
         } else {
             // if ($model->checkin_datetime === null) {
             //     Yii::$app->session->setFlash('error', 'Anda belum clock in.');
-            //     return $this->redirect(['/']);
+            //     return $this->redirect(['/dashboard']);
             // }
         }
 

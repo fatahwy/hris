@@ -281,6 +281,7 @@ class Schedule extends BaseModel
                 $badgeClass = 'bg-info text-dark';
                 break;
             case 'Absent':
+                $statusName = 'Absen';
                 $badgeClass = 'bg-danger';
                 break;
             case 'Done':
