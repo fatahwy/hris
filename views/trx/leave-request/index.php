@@ -20,15 +20,21 @@ $this->params['breadcrumbs'][] = $this->title;
 $currentUser = GeneralHelper::identity();
 $remainingLeavesHtml = '';
 if ($currentUser) {
-    $leaveTypes = \app\models\master\LeaveType::find()
-        ->where(['id_company' => GeneralHelper::session('id_company')])
-        ->andWhere(['is not', 'max_day', null])
+    $leaveTypes = \app\models\master\LeaveType::getQueryByCompany()
+        ->andWhere(['category' => \app\models\master\LeaveType::CATEGORY_LEAVE])
         ->all();
     $remainingLeaves = [];
     foreach ($leaveTypes as $lt) {
         $rem = LeaveRequest::getRemainingDays($currentUser, $lt->id_leave_type);
         if ($rem !== null) {
-            $remainingLeaves[] = Html::tag('span', Html::encode($lt->name) . ': ' . Html::tag('strong', $rem . ' Hari'), ['class' => 'badge bg-info text-dark me-2']);
+            $extraNote = '';
+            if ((int) $lt->id_leave_type === \app\models\master\LeaveType::L_YEARLY) {
+                $today = date('Y-m-d');
+                if (empty($currentUser->leave_entitlement_date) || $today < $currentUser->leave_entitlement_date) {
+                    $extraNote = ' <span class="badge bg-warning text-dark ms-1">Belum Aktif</span>';
+                }
+            }
+            $remainingLeaves[] = Html::tag('span', Html::encode($lt->name) . ': ' . Html::tag('strong', $rem . ' Hari') . $extraNote, ['class' => 'badge bg-info text-dark me-2']);
         }
     }
     if (!empty($remainingLeaves)) {

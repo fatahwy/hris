@@ -186,15 +186,19 @@ class GeneralHelper extends \mdm\admin\components\Helper
 
     public static function countDay($start_date, $end_date)
     {
-        $start = strtotime($start_date);
-        $end = strtotime($end_date);
+        $start = strtotime(date('Y-m-d', strtotime($start_date)));
+        $end = strtotime(date('Y-m-d', strtotime($end_date)));
+
+        if ($end < $start) {
+            return 0;
+        }
 
         // Hitung beda hari dalam detik
         $diff_secs = $end - $start;
 
         // Konversi ke hari (bagi 86400 detik dalam sehari)
         // Tambah 1 agar tanggal mulai ikut dihitung
-        $days = ($diff_secs / 86400) + 1;
+        $days = (int) round(($diff_secs / 86400) + 1);
 
         return $days;
     }

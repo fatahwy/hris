@@ -1,7 +1,9 @@
 <?php
 
+use app\helpers\RoleHelper;
 use app\models\AuthItem;
 use app\models\master\Account;
+use app\models\master\Company;
 use app\models\master\Department;
 use app\models\master\Position;
 use kartik\form\ActiveForm;
@@ -36,7 +38,13 @@ if ($isProfile) {
     $this->params['breadcrumbs'][] = $this->title;
 }
 
-$controllerIdCompany = $this->context->id_company ?? $this->context->user->id_company;
+$clientId = $this->context->id_client ?? (Yii::$app->user->identity->id_client ?? null) ?? $model->id_client;
+$companies = Company::getList($clientId);
+if (empty($companies) && RoleHelper::isSuper()) {
+    $companies = ArrayHelper::map(Company::find()->all(), 'id_company', 'name');
+}
+
+$controllerIdCompany = $model->id_company ?: ($this->context->id_company ?? $this->context->user->id_company);
 $departments = ArrayHelper::map(Department::find()->where(['id_company' => $controllerIdCompany])->all(), 'id_department', 'name');
 $positions = ArrayHelper::map(Position::find()->where(['id_company' => $controllerIdCompany])->all(), 'id_position', 'name');
 
@@ -141,6 +149,7 @@ $this->registerCss("
 
         <?php $form = ActiveForm::begin([
             'id' => 'form-karyawan',
+            'type' => ActiveForm::TYPE_VERTICAL,
             'options' => ['enctype' => 'multipart/form-data'],
         ]); ?>
 
@@ -324,7 +333,14 @@ $this->registerCss("
                         <?= $form->field($model, 'id_manager')->dropDownList($managers, ['prompt' => '- Pilih Atasan Langsung -', 'disabled' => $isProfile]) ?>
                     </div>
                     <div class="col-md-6">
-                        <?= $form->field($model, 'work_location')->textInput(['placeholder' => 'Lokasi / Cabang Kerja', 'disabled' => $isProfile]) ?>
+                        <?= $isProfile ?
+                            $form->field($model, 'id_company')->textInput([
+                                'value' => $model->company->name ?? ($companies[$model->id_company] ?? '-'),
+                                'disabled' => true,
+                            ])
+                            : $form->field($model, 'id_company')->widget(Select2::classname(), [
+                                'data' => $companies,
+                            ]) ?>
                     </div>
                     <div class="col-md-6">
                         <?= $form->field($model, 'join_date')->textInput([
@@ -599,7 +615,7 @@ $this->registerCss("
 
         <?php if (!$isProfile): ?>
             <!-- ACTION BAR -->
-            <div class="action-bar">
+            <div class="text-end">
                 <?= Html::a('<i class="fas fa-times me-1"></i> Batal', ['index'], ['class' => 'btn btn-light px-4 border']) ?>
                 <?= Html::submitButton('<i class="fas fa-save me-1"></i> Simpan', ['class' => 'btn btn-primary px-5 shadow-sm']) ?>
             </div>

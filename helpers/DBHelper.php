@@ -172,7 +172,7 @@ class DBHelper
             '/master/company/*' => "Master|Perusahaan",
             '/master/department/*' => "Master|Departemen",
             '/master/position/*' => "Master|Jabatan",
-            '/master/leave-type/*' => "Master|Cuti",
+            // '/master/leave-type/*' => "Master|Cuti",
             '/master/shift/*' => "Master|Shift",
             '/master/role/*' => "Master|Role",
             '/master/allowance/*' => "Master|Tunjangan",

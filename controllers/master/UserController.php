@@ -96,6 +96,7 @@ class UserController extends BaseController
         if (!$model) {
             $model = new Account();
             $model->scenario = 'create';
+            $model->id_company = $this->id_company;
             $model->annual_leave_quota = 12;
             $model->remaining_leave = 12;
             $model->bpjs_kesehatan = 1;
@@ -118,11 +119,15 @@ class UserController extends BaseController
 
         if ($model->load($this->request->post()) && $tempModelAuthAssignment->load($this->request->post())) {
             $model->id_client = $this->id_client;
-            $model->id_company = $this->id_company;
+            $model->id_company = !empty($model->id_company) ? $model->id_company : $this->id_company;
+            if ($model->id_company && ($selectedCompany = Company::findOne($model->id_company))) {
+                $model->work_location = $selectedCompany->name;
+            }
 
-            if ($isNewRecord && $company && !$company->canAddUser()) {
-                $maxUser = $company->getMaxUser();
-                $paket = $company->getSubscriptionPaket();
+            $targetCompany = Company::findOne($model->id_company);
+            if ($isNewRecord && $targetCompany && !$targetCompany->canAddUser()) {
+                $maxUser = $targetCompany->getMaxUser();
+                $paket = $targetCompany->getSubscriptionPaket();
                 $paketText = $paket ? " ({$paket->nama_paket})" : "";
                 GeneralHelper::flashFailed("Jumlah user telah mencapai batas maksimal paket subscription{$paketText} yaitu {$maxUser} user. Silakan upgrade paket langganan Anda.");
                 return $this->redirect(['index']);

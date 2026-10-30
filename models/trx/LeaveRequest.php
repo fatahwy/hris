@@ -79,6 +79,14 @@ class LeaveRequest extends BaseModel
             [['id_schedule'], 'exist', 'skipOnError' => true, 'targetClass' => Schedule::class, 'targetAttribute' => ['id_schedule' => 'id_schedule']],
             [['id_user'], 'exist', 'skipOnError' => true, 'targetClass' => Account::class, 'targetAttribute' => ['id_user' => 'id_user']],
             [['id_approver'], 'exist', 'skipOnError' => true, 'targetClass' => Account::class, 'targetAttribute' => ['id_approver' => 'id_user']],
+            [
+                'end_date',
+                'compare',
+                'compareAttribute' => 'start_date',
+                'operator' => '>=',
+                'enableClientValidation' => false,
+                'message' => 'Tanggal Selesai harus setelah atau sama dengan Tanggal Mulai.'
+            ],
             ['total_day', 'validateMaxDay'],
         ];
     }
@@ -87,7 +95,15 @@ class LeaveRequest extends BaseModel
     {
         if ($this->isNewRecord) {
             $this->status = self::STATUS_PENDING;
-            $this->total_day = 0;
+        }
+
+        $leaveType = $this->leaveType;
+        if ($leaveType && $leaveType->isCategoryLeave()) {
+            if ($this->start_date && $this->end_date) {
+                $this->total_day = GeneralHelper::countDay($this->start_date, $this->end_date);
+            } else {
+                $this->total_day = 0;
+            }
         }
 
         return parent::beforeValidate();
@@ -95,6 +111,10 @@ class LeaveRequest extends BaseModel
 
     public function beforeSave($insert)
     {
+        if ($this->isNewRecord && empty($this->status)) {
+            $this->status = self::STATUS_PENDING;
+        }
+
         $leaveType = $this->leaveType;
         if ($leaveType && $leaveType->isCategoryLeave()) {
             $this->total_day = GeneralHelper::countDay($this->start_date, $this->end_date);
@@ -104,17 +124,50 @@ class LeaveRequest extends BaseModel
     }
 
     /**
-     * Custom validation to check max_day of selected LeaveType
+     * Custom validation to check max_day or user remaining_leave
      */
     public function validateMaxDay($attribute, $params)
     {
         if (!$this->hasErrors()) {
             $leaveType = $this->leaveType;
-            if ($leaveType && $leaveType->isCategoryLeave() && $leaveType->max_day !== null) {
+            if ($leaveType && $leaveType->isCategoryLeave()) {
                 $user = Account::findOne($this->id_user);
-                $remaining = self::getRemainingDays($user, $this->id_leave_type, $this->start_date ?: date('Y-m-d'), $this->id_leave_request);
-                if ($this->$attribute > $remaining) {
-                    $this->addError($attribute, 'Total hari cuti melebihi kuota (' . $leaveType->max_day . ' hari). Sisa cuti Anda (' . $remaining . ' hari).');
+                if (!$user) {
+                    return;
+                }
+
+                // Khusus cuti tahunan (L_YEARLY)
+                if ((int) $this->id_leave_type === LeaveType::L_YEARLY) {
+                    $today = date('Y-m-d');
+
+                    // 1. Pastikan user.leave_entitlement_date sudah aktif (sekarang >= leave_entitlement_date)
+                    if (empty($user->leave_entitlement_date)) {
+                        $this->addError('id_leave_type', 'Pengajuan cuti tahunan gagal. Anda belum memiliki Mulai Hak Cuti.');
+                        return;
+                    }
+
+                    if ($today < $user->leave_entitlement_date) {
+                        $formattedDate = Yii::$app->formatter->asDate($user->leave_entitlement_date, 'php:d F Y');
+                        $this->addError('id_leave_type', 'Pengajuan cuti tahunan belum dapat dilakukan. Hak cuti tahunan Anda baru mulai aktif pada tanggal ' . $formattedDate . '.');
+                        return;
+                    }
+
+                    // 2. Kuota diambil dari user.remaining_leave
+                    $remaining = self::getRemainingDays($user, $this->id_leave_type, $this->start_date ?: $today, $this->id_leave_request);
+                    if ($remaining <= 0) {
+                        $this->addError($attribute, 'Pengajuan cuti tahunan gagal. Sisa kuota cuti tahunan Anda sudah habis (0 hari).');
+                        return;
+                    }
+
+                    if ($this->$attribute > $remaining) {
+                        $this->addError($attribute, 'Total hari cuti (' . $this->$attribute . ' hari) melebihi sisa cuti tahunan Anda yang tersedia (' . $remaining . ' hari).');
+                        return;
+                    }
+                } elseif ($leaveType->max_day !== null) {
+                    $remaining = self::getRemainingDays($user, $this->id_leave_type, $this->start_date ?: date('Y-m-d'), $this->id_leave_request);
+                    if ($this->$attribute > $remaining) {
+                        $this->addError($attribute, 'Total hari cuti melebihi kuota (' . $leaveType->max_day . ' hari). Sisa cuti Anda (' . $remaining . ' hari).');
+                    }
                 }
             }
         }
@@ -123,7 +176,7 @@ class LeaveRequest extends BaseModel
     /**
      * Get the remaining leave days for a user and leave type at a given reference date.
      *
-     * @param Account $user
+     * @param Account|int $user
      * @param int $id_leave_type
      * @param string|null $reference_date
      * @param int|null $exclude_id
@@ -135,12 +188,35 @@ class LeaveRequest extends BaseModel
             $reference_date = date('Y-m-d');
         }
 
+        if (!$user instanceof Account) {
+            $user = Account::findOne($user);
+        }
+        if (!$user) {
+            return null;
+        }
+
         $leaveType = LeaveType::find()
             ->where(['id_leave_type' => $id_leave_type])
             ->andWhere(['category' => LeaveType::CATEGORY_LEAVE])
             ->cache(10)
             ->one();
-        if (!$leaveType || $leaveType->max_day === null) {
+        if (!$leaveType) {
+            return null;
+        }
+
+        // Khusus cuti tahunan (L_YEARLY), kuota diambil dari user.remaining_leave
+        if ((int) $id_leave_type === LeaveType::L_YEARLY) {
+            $baseRemaining = (int) ($user->remaining_leave ?? 0);
+            if ($exclude_id !== null) {
+                $existing = self::findOne($exclude_id);
+                if ($existing && (int) $existing->id_leave_type === LeaveType::L_YEARLY && $existing->status !== self::STATUS_REJECT) {
+                    $baseRemaining += (int) $existing->total_day;
+                }
+            }
+            return max(0, $baseRemaining);
+        }
+
+        if ($leaveType->max_day === null) {
             return null;
         }
 
@@ -350,5 +426,52 @@ class LeaveRequest extends BaseModel
     public function setStatusToApprove()
     {
         $this->status = self::STATUS_APPROVE;
+    }
+
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
+
+        if ((int) $this->id_leave_type === LeaveType::L_YEARLY) {
+            if ($insert) {
+                // Pemotongan kuota ketika mengajukan cuti
+                if ($this->status !== self::STATUS_REJECT) {
+                    Account::updateAllCounters(['remaining_leave' => -$this->total_day], ['id_user' => $this->id_user]);
+                }
+            } else {
+                $statusChanged = array_key_exists('status', $changedAttributes);
+                $totalDayChanged = array_key_exists('total_day', $changedAttributes);
+                $oldStatus = $statusChanged ? $changedAttributes['status'] : $this->status;
+                $newStatus = $this->status;
+                $oldTotalDay = $totalDayChanged ? (int) $changedAttributes['total_day'] : $this->total_day;
+                $newTotalDay = (int) $this->total_day;
+
+                // 1. Pengembalian kuota ketika status reject / pemotongan kembali jika batal reject
+                if ($statusChanged) {
+                    if ($oldStatus !== self::STATUS_REJECT && $newStatus === self::STATUS_REJECT) {
+                        Account::updateAllCounters(['remaining_leave' => $oldTotalDay], ['id_user' => $this->id_user]);
+                    } elseif ($oldStatus === self::STATUS_REJECT && $newStatus !== self::STATUS_REJECT) {
+                        Account::updateAllCounters(['remaining_leave' => -$newTotalDay], ['id_user' => $this->id_user]);
+                    }
+                }
+
+                // 2. Perubahan durasi hari (total_day) pada permohonan aktif
+                if ($totalDayChanged && $newStatus !== self::STATUS_REJECT && (!$statusChanged || $oldStatus !== self::STATUS_REJECT)) {
+                    $diff = $newTotalDay - $oldTotalDay;
+                    if ($diff !== 0) {
+                        Account::updateAllCounters(['remaining_leave' => -$diff], ['id_user' => $this->id_user]);
+                    }
+                }
+            }
+        }
+    }
+
+    public function afterDelete()
+    {
+        parent::afterDelete();
+        // Pengembalian kuota ketika dihapus (kecuali jika sudah berstatus REJECT karena sudah dikembalikan saat reject)
+        if ((int) $this->id_leave_type === LeaveType::L_YEARLY && $this->status !== self::STATUS_REJECT) {
+            Account::updateAllCounters(['remaining_leave' => $this->total_day], ['id_user' => $this->id_user]);
+        }
     }
 }

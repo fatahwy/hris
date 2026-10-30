@@ -29,6 +29,7 @@ if ($model->id_schedule && $model->schedule) {
     $workEnd = date('H:i', strtotime($s->workhour_end));
     $initScheduleText = $s->date . ' - ' . $s->shift_name . ' (' . $workStart . ' - ' . $workEnd . ')';
 }
+$enableButton = true;
 ?>
 
 <div class="card modern-form-card">
@@ -50,35 +51,84 @@ if ($model->id_schedule && $model->schedule) {
             'options' => ['placeholder' => '- Pilih Tipe Cuti -', 'disabled' => $isApproval],
         ]) ?>
 
+        <?php if ((int) $model->id_leave_type === LeaveType::L_YEARLY): ?>
+            <?php
+            $today = date('Y-m-d');
+            $applicant = $isApproval ? $model->user : ($model->isNewRecord ? $this->context->user : $model->user);
+            $entitlementDate = $applicant ? $applicant->leave_entitlement_date : null;
+            $remaining = $applicant ? \app\models\trx\LeaveRequest::getRemainingDays($applicant, LeaveType::L_YEARLY, $today, $model->id_leave_request) : 0;
+            $enableButton = false;
+            ?>
+            <?php if (!$isApproval): ?>
+                <?php
+                if (empty($entitlementDate)):
+                    $enableButton = false;
+                ?>
+                    <div class="alert alert-danger d-flex align-items-center mb-3" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
+                        <div>
+                            <strong>Perhatian:</strong> Mulai Hak Cuti Anda belum ditentukan oleh HR/Admin. Anda belum dapat mengajukan Cuti Tahunan.
+                        </div>
+                    </div>
+                <?php
+                elseif ($today < $entitlementDate):
+                    $enableButton = false;
+                ?>
+                    <div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
+                        <i class="fas fa-clock me-2 fs-5"></i>
+                        <div>
+                            <strong>Perhatian:</strong> Hak cuti tahunan Anda baru mulai aktif pada tanggal <strong><?= Yii::$app->formatter->asDate($entitlementDate, 'php:d F Y') ?></strong>. Anda belum dapat mengajukan Cuti Tahunan.
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="alert alert-info d-flex align-items-center mb-3" role="alert">
+                        <i class="fas fa-info-circle me-2 fs-5"></i>
+                        <div>
+                            Sisa kuota Cuti Tahunan yang tersedia: <strong><?= $remaining ?> Hari</strong>
+                            <small class="text-muted d-block">(Mulai Hak Cuti: <?= Yii::$app->formatter->asDate($entitlementDate, 'php:d F Y') ?>)</small>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            <?php else: ?>
+                <div class="alert alert-secondary d-flex align-items-center mb-3" role="alert">
+                    <i class="fas fa-user-clock me-2 fs-5"></i>
+                    <div>
+                        Sisa Kuota Cuti Tahunan Pegawai: <strong><?= $applicant->remaining_leave ?? 0 ?> Hari</strong> |
+                        Mulai Hak Cuti: <strong><?= $entitlementDate ? Yii::$app->formatter->asDate($entitlementDate, 'php:d F Y') : 'Belum ditentukan' ?></strong>
+                    </div>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
+
         <?= $form->field($model, 'id_schedule', [
             'options' => [
                 'id' => 'container-id-schedule',
                 'style' => $permissionOnDuty ? '' : 'display: none;',
             ],
         ])->widget(Select2::classname(), [
-                    'initValueText' => $initScheduleText,
-                    'options' => ['placeholder' => '- Pilih Jadwal -', 'disabled' => $isApproval, 'id' => 'select-id-schedule'],
-                    'pluginOptions' => [
-                        'allowClear' => true,
-                        'minimumInputLength' => 0,
-                        'ajax' => [
-                            'url' => Url::to(['/json/schedule/list']),
-                            'dataType' => 'json',
-                            'data' => new JsExpression('function(params) { return {q: params.term}; }'),
-                        ],
-                        'escapeMarkup' => new JsExpression('function (markup) { return markup; }'),
-                        'templateResult' => new JsExpression('function(s) { return s.text; }'),
-                        'templateSelection' => new JsExpression('function(s) { return s.text; }'),
-                    ],
-                    'pluginEvents' => [
-                        'select2:select' => 'function(e) {
+            'initValueText' => $initScheduleText,
+            'options' => ['placeholder' => '- Pilih Jadwal -', 'disabled' => $isApproval, 'id' => 'select-id-schedule'],
+            'pluginOptions' => [
+                'allowClear' => true,
+                'minimumInputLength' => 0,
+                'ajax' => [
+                    'url' => Url::to(['/json/schedule/list']),
+                    'dataType' => 'json',
+                    'data' => new JsExpression('function(params) { return {q: params.term}; }'),
+                ],
+                'escapeMarkup' => new JsExpression('function (markup) { return markup; }'),
+                'templateResult' => new JsExpression('function(s) { return s.text; }'),
+                'templateSelection' => new JsExpression('function(s) { return s.text; }'),
+            ],
+            'pluginEvents' => [
+                'select2:select' => 'function(e) {
                     if (e.params && e.params.data && e.params.data.date) {
                         $("#' . Html::getInputId($model, 'start_date') . '").val(e.params.data.date);
                         $("#' . Html::getInputId($model, 'end_date') . '").val(e.params.data.date);
                     }
                 }',
-                    ],
-                ]) ?>
+            ],
+        ]) ?>
 
         <div class="row">
             <div class="col-md-6">
@@ -107,7 +157,7 @@ if ($model->id_schedule && $model->schedule) {
 
         <div class="form-group text-end mt-5 pt-3 border-top">
             <?= Html::a('<i class="fas fa-times me-1"></i> Batal', ['index'], ['class' => 'btn btn-light px-4 me-2 border']) ?>
-            <?= Html::submitButton('<i class="fas fa-save me-1"></i> Simpan', ['class' => 'btn btn-primary px-5 shadow-sm']) ?>
+            <?= Html::submitButton('<i class="fas fa-save me-1"></i> Simpan', ['class' => 'btn btn-primary px-5 shadow-sm  ' . ($enableButton ? "" : "disabled")]) ?>
         </div>
 
         <?php ActiveForm::end(); ?>
