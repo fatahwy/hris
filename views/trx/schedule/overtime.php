@@ -16,34 +16,39 @@ $this->params['breadcrumbs'][] = $this->title;
 $userList = ArrayHelper::map($users, 'id_user', 'name');
 ?>
 
-<div class="card shadow-sm border-0">
-    <div class="card-body">
+<div class="card modern-form-card shadow-sm border-0">
+    <div class="card-header bg-white py-3 px-4 border-bottom">
+        <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+            <i class="bi bi-clock-history text-primary"></i> Form Penugasan Lembur (Overtime)
+        </h5>
+        <span class="text-muted small">Atur penugasan lembur pegawai pada hari libur maupun lembur per jam di hari kerja</span>
+    </div>
+    <div class="card-body p-4">
         <?php $form = ActiveForm::begin([
             'id' => 'overtime-form',
             'options' => ['class' => 'needs-validation'],
         ]); ?>
 
-        <div class="row mb-3">
-            <div class="col-md-12">
-                <div class="form-check form-switch">
-                    <?= Html::checkbox('is_long_shift', true, [
-                        'id' => 'is_long_shift',
-                        'class' => 'form-check-input',
-                        'checked' => true,
-                    ]) ?>
-                    <?= Html::label('Hari Libur/Weekend', 'is_long_shift', ['class' => 'form-check-label fw-bold']) ?>
-                </div>
+        <div class="card bg-light border-0 rounded-3 p-3 mb-3">
+            <div class="form-check form-switch m-0">
+                <?= Html::checkbox('is_long_shift', true, [
+                    'id' => 'is_long_shift',
+                    'class' => 'form-check-input',
+                    'checked' => true,
+                ]) ?>
+                <?= Html::label('Lembur Hari Libur / Weekend (Long Shift)', 'is_long_shift', ['class' => 'form-check-label fw-bold text-dark']) ?>
+                <small class="text-muted d-block mt-0.5">Nonaktifkan switch ini jika lembur dihitung berdasarkan jam tambahan (Overtime per jam)</small>
             </div>
         </div>
 
-        <div class="row mb-3">
-            <div class="col-md-6">
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6">
                 <?= $form->field($model, 'date')->textInput([
                     'type' => 'date',
                     'class' => 'form-control',
-                ])->label('Tanggal') ?>
+                ])->label('Tanggal Lembur') ?>
             </div>
-            <div class="col-md-6">
+            <div class="col-12 col-md-6">
                 <?= $form->field($model, 'id_user')->widget(Select2::class, [
                     'data' => $userList,
                     'options' => ['placeholder' => 'Pilih Pegawai'],
@@ -56,36 +61,36 @@ $userList = ArrayHelper::map($users, 'id_user', 'name');
 
         <!-- Long Shift Fields -->
         <div id="long-shift-fields">
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <?= $form->field($model, 'id_shift')->dropDownList($shifts) ?>
+            <div class="row g-3 mb-3">
+                <div class="col-12 col-md-6">
+                    <?= $form->field($model, 'id_shift')->dropDownList($shifts)->label('Pilihan Shift Lembur') ?>
                 </div>
             </div>
         </div>
 
         <!-- Per Jam Fields -->
         <div id="per-jam-fields" style="display: none;">
-            <div class="row mb-3">
-                <div class="col-md-6">
+            <div class="row g-3 mb-3">
+                <div class="col-12 col-md-6">
                     <?= $form->field($model, 'workhour_start')->textInput([
                         'type' => 'time',
                         'class' => 'form-control',
-                    ])->label('Jam Mulai') ?>
+                    ])->label('Jam Mulai Lembur') ?>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <?= $form->field($model, 'workhour_end')->textInput([
                         'type' => 'number',
                         'step' => '0.5',
                         'min' => '0.5',
                         'class' => 'form-control',
-                    ])->label('Estimasi (Jam)') ?>
+                    ])->label('Estimasi Durasi (Jam)') ?>
                 </div>
             </div>
         </div>
 
         <div class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 mt-4 pt-3 border-top">
-            <?= Html::a('Cancel', ['index'], ['class' => 'btn btn-secondary px-4 text-center']) ?>
-            <?= Html::submitButton('Save', ['class' => 'btn btn-primary px-5 shadow-sm text-center']) ?>
+            <?= Html::a('<i class="bi bi-x-lg me-1"></i> Batal', ['index'], ['class' => 'btn btn-outline-secondary px-4 text-center']) ?>
+            <?= Html::submitButton('<i class="bi bi-check-lg me-1"></i> Simpan Penugasan', ['class' => 'btn btn-primary px-5 shadow-sm text-center']) ?>
         </div>
 
         <?php ActiveForm::end(); ?>

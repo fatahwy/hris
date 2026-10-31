@@ -95,67 +95,107 @@ $js->end();
 
 // Add custom CSS for a more modern grid view
 $this->registerCss("
-    .modern-grid-panel {
-        border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-        border: none;
+    .modern-grid-card, .modern-grid-panel {
+        background: #ffffff;
+        border-radius: 14px;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+        border: 1px solid #e2e8f0;
         overflow: hidden;
+        margin-bottom: 1.5rem;
     }
-    .modern-grid-panel .card-header {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-bottom: 1px solid rgba(0,0,0,0.05);
+    .modern-grid-card .card-header, .modern-grid-panel .card-header {
+        background: #ffffff;
+        border-bottom: 1px solid #f1f5f9;
         padding: 1rem 1.25rem;
     }
-    .modern-grid-panel .card-header .kv-panel-before .btn {
+    .modern-grid-panel .card-header .kv-panel-before .btn,
+    .modern-grid-card .btn {
         border-radius: 8px;
         font-weight: 500;
-        padding: 0.5rem 1rem;
         transition: all 0.2s ease;
     }
     .modern-grid-panel .card-header .kv-panel-before .btn:hover {
         transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }
-    .table-modern th {
-        background-color: #f8f9fa !important;
-        color: #495057;
+    .table-modern, .kv-grid-table {
+        margin-bottom: 0 !important;
+    }
+    .table-modern th, .kv-grid-table th, .table thead th {
+        background-color: #f8fafc !important;
+        color: #475569 !important;
         font-weight: 600;
+        font-size: 0.8rem;
+        letter-spacing: 0.03em;
         text-transform: uppercase;
-        font-size: 0.85rem;
-        letter-spacing: 0.5px;
-        padding-top: 1rem;
-        padding-bottom: 1rem;
-    }
-    .table-modern td {
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding: 0.85rem 1rem !important;
         vertical-align: middle;
-        padding: 1rem 0.75rem;
+    }
+    .table-modern td, .kv-grid-table td, .table tbody td {
+        vertical-align: middle;
+        padding: 0.85rem 1rem !important;
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.875rem;
+    }
+    .table-hover tbody tr:hover td {
+        background-color: #f8fafc !important;
+    }
+    .kv-grid-table .form-control, .kv-grid-table .form-select {
+        border-radius: 6px;
+        font-size: 0.82rem;
+        padding: 0.35rem 0.6rem;
+        border-color: #e2e8f0;
+    }
+    .kv-panel-pager .pagination, .pagination {
+        margin-bottom: 0;
+        gap: 4px;
+    }
+    .pagination .page-item .page-link {
+        border-radius: 8px !important;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.75rem;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #2b5fe1;
+        border-color: #2b5fe1;
+        color: #fff;
     }
 ");
 
 // form card
 $this->registerCss("
     .modern-form-card {
-        border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-        border: none;
+        background: #ffffff;
+        border-radius: 14px;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
     }
     .modern-form-card .card-header {
-        background: transparent;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
-        padding: 1.5rem 1.5rem 1rem;
+        background: #ffffff;
+        border-bottom: 1px solid #f1f5f9;
+        padding: 1.25rem 1.5rem;
     }
-    .modern-form-card .col-form-label {
+    .modern-form-card .col-form-label, .form-label {
         font-weight: 500;
-        color: #4a5568;
+        color: #334155;
+        font-size: 0.875rem;
     }
-    .modern-form-card .form-control, .modern-form-card .form-select {
+    .modern-form-card .form-control, .modern-form-card .form-select, .form-control, .form-select {
         border-radius: 8px;
-        padding: 0.6rem 1rem;
-        border: 1px solid #e2e8f0;
+        padding: 0.55rem 0.9rem;
+        border: 1px solid #cbd5e1;
+        font-size: 0.875rem;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
-    .modern-form-card .form-control:focus, .modern-form-card .form-select:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    .modern-form-card .form-control:focus, .modern-form-card .form-select:focus,
+    .form-control:focus, .form-select:focus {
+        border-color: #2b5fe1;
+        box-shadow: 0 0 0 3px rgba(43, 95, 225, 0.12);
     }
 ");
 
@@ -163,22 +203,25 @@ $this->registerCss("
 $this->registerCss("
     .table-modern-detail {
         margin-bottom: 0;
-        color: #4a5568;
+        color: #334155;
+        border: none;
     }
     .table-modern-detail th {
-        background-color: #f8f9fa;
-        color: #495057;
+        background-color: #f8fafc;
+        color: #64748b;
         font-weight: 600;
-        width: 30%;
+        width: 32%;
         vertical-align: middle;
-        padding: 1rem 1.25rem;
-        border-bottom: 1px solid #e2e8f0;
+        padding: 0.9rem 1.25rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.85rem;
     }
     .table-modern-detail td {
         vertical-align: middle;
-        padding: 1rem 1.25rem;
-        border-bottom: 1px solid #e2e8f0;
+        padding: 0.9rem 1.25rem;
+        border-bottom: 1px solid #f1f5f9;
         background-color: #ffffff;
+        font-size: 0.875rem;
     }
     .table-modern-detail tr:last-child th,
     .table-modern-detail tr:last-child td {
@@ -801,7 +844,8 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
                             ],
                             'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
                             'options' => [
-                                'class' => 'breadcrumb mb-0 py-1'
+                                'class' => 'breadcrumb mb-0 py-1',
+                                'style' => 'flex-wrap:wrap;',
                             ]
                         ]);
                         ?>

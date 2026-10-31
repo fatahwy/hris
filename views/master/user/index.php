@@ -40,19 +40,16 @@ $gridColumns = [
             $avatar = '';
             if (!empty($model->photo)) {
                 $avatar = Html::img(Yii::getAlias('@web/' . $model->photo), [
-                    'class' => 'rounded-circle me-2 border',
-                    'style' => 'width: 36px; height: 36px; object-fit: cover; flex-shrink: 0;',
+                    'class' => 'rounded-circle me-3 border shadow-sm',
+                    'style' => 'width: 40px; height: 40px; object-fit: cover; flex-shrink: 0;',
                 ]);
             } else {
-                $avatar = '<div class="rounded-circle bg-light border d-flex align-items-center justify-content-center text-muted me-2" style="width: 36px; height: 36px; flex-shrink: 0;"><i class="fas fa-user small"></i></div>';
+                $avatar = '<div class="rounded-circle bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 d-flex align-items-center justify-content-center fw-bold me-3 shadow-sm" style="width: 40px; height: 40px; flex-shrink: 0; font-size: 0.95rem;">' . strtoupper(substr($model->name ?? 'U', 0, 1)) . '</div>';
             }
 
-            $info = Html::tag('strong', Html::encode($model->name)) . '<br>' . 
-                    Html::tag('span', '<i class="fas fa-envelope text-muted"></i> ' . Html::encode($model->email), ['class' => 'small text-muted']);
-            
-            if (!empty($model->employee_code)) {
-                $info .= ' &bull; ' . Html::tag('span', Html::encode($model->employee_code), ['class' => 'small text-muted']);
-            }
+            $info = Html::tag('div', Html::encode($model->name), ['class' => 'fw-semibold text-dark']) .
+                    Html::tag('div', '<i class="bi bi-envelope me-1 text-muted"></i>' . Html::encode($model->email) . 
+                    (!empty($model->employee_code) ? ' &bull; <span class="badge bg-light text-secondary border font-monospace py-0.5">' . Html::encode($model->employee_code) . '</span>' : ''), ['class' => 'small text-muted d-flex align-items-center flex-wrap gap-1 mt-0.5']);
 
             return '<div class="d-flex align-items-center">' . $avatar . '<div>' . $info . '</div></div>';
         }
@@ -67,13 +64,13 @@ $gridColumns = [
                 return '-';
             }
             $bg = match($m->employment_status) {
-                'Tetap' => 'bg-success',
-                'Kontrak' => 'bg-primary',
-                'Probation' => 'bg-warning text-dark',
-                'Magang' => 'bg-info text-dark',
-                default => 'bg-secondary',
+                'Tetap' => 'bg-success bg-opacity-10 text-success border border-success border-opacity-25',
+                'Kontrak' => 'bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25',
+                'Probation' => 'bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25',
+                'Magang' => 'bg-info bg-opacity-10 text-info border border-info border-opacity-25',
+                default => 'bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25',
             };
-            return Html::tag('span', Html::encode($m->employment_status), ['class' => 'badge ' . $bg]);
+            return Html::tag('span', Html::encode($m->employment_status), ['class' => 'badge px-2.5 py-1.5 ' . $bg]);
         },
         'contentOptions' => ['class' => 'text-center'],
         'headerOptions' => ['class' => 'text-center'],
@@ -101,24 +98,13 @@ $gridColumns = [
         'headerOptions' => ['class' => 'text-center'],
     ],
     [
-        'label' => 'Cuti',
+        'label' => 'Sisa Cuti',
         'format' => 'raw',
-        'value' => function ($m) use ($leaveTypes) {
-            return Html::tag('span', Html::tag('strong', $m->remaining_leave . ' Hari'), ['class' => 'badge bg-info text-dark me-2']);
-
-            $remainingLeaves = [];
-            foreach ($leaveTypes as $lt) {
-                $rem = LeaveRequest::getRemainingDays($m, $lt->id_leave_type);
-                if ($rem !== null) {
-                    $remainingLeaves[] = Html::tag('span', Html::encode($lt->name) . ': ' . Html::tag('strong', $rem . ' Hari'), ['class' => 'badge bg-info text-dark me-2']);
-                }
-            }
-            if (!empty($remainingLeaves)) {
-                return '<div class="d-flex align-items-center"><span class="me-2 text-secondary"></span> ' . implode(' ', $remainingLeaves) . '</div>';
-            } else {
-                return null;
-            }
-        }
+        'value' => function ($m) {
+            return '<span class="badge bg-light text-dark border px-2.5 py-1.5"><i class="bi bi-calendar2-check text-primary me-1"></i>' . (int)$m->remaining_leave . ' Hari</span>';
+        },
+        'contentOptions' => ['class' => 'text-center'],
+        'headerOptions' => ['class' => 'text-center'],
     ],
     [
         'class' => ButtonActionColumn::className(),
@@ -128,8 +114,7 @@ $gridColumns = [
         }
     ],
 ];
-?>
-<?php
+
 $company = Company::findOne($controllerIdCompany);
 $currentUserCount = $company ? $company->getUserCount() : 0;
 $maxUser = $company ? $company->getMaxUser() : 10;
@@ -137,29 +122,39 @@ $canAddUser = $company ? $company->canAddUser() : true;
 $paket = $company ? $company->getSubscriptionPaket() : null;
 $paketName = $paket ? $paket->nama_paket : ($company && $company->getActiveSubscription() ? 'Paket Kustom' : 'Standar');
 $percentage = $maxUser > 0 ? min(100, round(($currentUserCount / $maxUser) * 100)) : 0;
-$progressColor = $percentage >= 100 ? 'bg-danger' : ($percentage >= 80 ? 'bg-warning text-dark' : 'bg-primary');
+$progressColor = $percentage >= 100 ? 'bg-danger' : ($percentage >= 80 ? 'bg-warning' : 'bg-primary');
 ?>
 
-<div class="card mb-3 border-0 shadow-sm">
-    <div class="card-body py-2 px-3">
-        <div class="row align-items-center">
-            <div class="col-md-7 col-12 d-flex flex-wrap align-items-center gap-2">
-                <span class="badge bg-secondary px-2 py-1">
-                    <i class="fas fa-box-open me-1"></i> Paket: <strong><?= Html::encode($paketName) ?></strong>
-                </span>
-                <span class="badge <?= $canAddUser ? 'bg-info text-dark' : 'bg-danger' ?> px-2 py-1">
-                    <i class="fas fa-users me-1"></i> Penggunaan Kuota: <strong><?= $currentUserCount ?> / <?= $maxUser ?> User</strong>
-                </span>
-                <div class="progress flex-grow-1" style="height: 8px; min-width: 120px; max-width: 180px;" title="<?= $percentage ?>% terpakai">
-                    <div class="progress-bar <?= $progressColor ?>" role="progressbar" style="width: <?= $percentage ?>%;" aria-valuenow="<?= $percentage ?>" aria-valuemin="0" aria-valuemax="100"></div>
+<!-- Quota Info Banner -->
+<div class="card shadow-sm border-0 rounded-4 mb-3 bg-white">
+    <div class="card-body p-3 p-sm-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+            <div class="d-flex flex-wrap align-items-center gap-2 gap-sm-3">
+                <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                    style="width: 44px; height: 44px; background: rgba(43, 95, 225, 0.1); color: #2b5fe1;">
+                    <i class="bi bi-people-fill fs-5"></i>
+                </div>
+                <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="fw-bold text-dark">Kuota Akun Karyawan</span>
+                        <span class="badge bg-light text-secondary border px-2 py-1 small">
+                            Paket: <strong><?= Html::encode($paketName) ?></strong>
+                        </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mt-1">
+                        <div class="progress" style="height: 7px; width: 140px; border-radius: 10px;">
+                            <div class="progress-bar <?= $progressColor ?>" role="progressbar" style="width: <?= $percentage ?>%;" aria-valuenow="<?= $percentage ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <span class="small text-muted"><strong><?= $currentUserCount ?></strong> dari <strong><?= $maxUser ?></strong> user terpakai (<?= $percentage ?>%)</span>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-5 col-12 d-flex justify-content-start justify-content-md-end mt-2 mt-md-0">
+            <div class="w-100 w-md-auto d-flex justify-content-start justify-content-md-end">
                 <?php if ($canAddUser): ?>
-                    <?= Html::a(GeneralHelper::faAdd('User'), ['process'], ['class' => 'btn btn-primary']) ?>
+                    <?= Html::a(GeneralHelper::faAdd('Tambah Karyawan'), ['process'], ['class' => 'btn btn-primary px-3 shadow-sm w-100 w-md-auto']) ?>
                 <?php else: ?>
-                    <button type="button" class="btn btn-secondary disabled" title="Kuota user telah mencapai batas maksimal paket">
-                        <i class="fas fa-ban me-1"></i> Batas Kuota Tercapai (<?= $currentUserCount ?>/<?= $maxUser ?>)
+                    <button type="button" class="btn btn-secondary disabled w-100 w-md-auto" title="Kuota user telah mencapai batas maksimal paket">
+                        <i class="bi bi-slash-circle me-1"></i> Batas Kuota Tercapai
                     </button>
                 <?php endif; ?>
             </div>
@@ -168,20 +163,33 @@ $progressColor = $percentage >= 100 ? 'bg-danger' : ($percentage >= 80 ? 'bg-war
 </div>
 
 <?php if (!$canAddUser): ?>
-    <div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
-        <i class="fas fa-exclamation-triangle flex-shrink-0 me-2 fs-5"></i>
-        <div>
+    <div class="alert alert-warning d-flex align-items-center mb-3 rounded-3 shadow-sm border-0" role="alert">
+        <i class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2 fs-5 text-warning"></i>
+        <div class="small">
             <strong>Batas Kuota Tercapai:</strong> Perusahaan Anda telah menggunakan seluruh kuota maksimal (<strong><?= $currentUserCount ?> dari <?= $maxUser ?> user</strong>) untuk paket <strong><?= Html::encode($paketName) ?></strong>. Silakan upgrade paket langganan Anda untuk dapat menambahkan user baru.
         </div>
     </div>
 <?php endif; ?>
 
-<?= GridView::widget([
-    'dataProvider' => $dataProvider,
-    'filterModel' => $searchModel,
-    'columns' => $gridColumns,
-    'responsive' => true,
-    'responsiveWrap' => false,
-    'containerOptions' => ['style' => 'overflow-x: auto;'],
-]);
-?>
+<!-- Grid Table Card -->
+<div class="card modern-grid-card shadow-sm border-0">
+    <div class="card-header bg-white py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2 border-bottom">
+        <div>
+            <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                <i class="bi bi-person-lines-fill text-primary"></i> Daftar Karyawan
+            </h5>
+            <span class="text-muted small">Kelola data personal, status kepegawaian, jabatan, dan akun user</span>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <?= GridView::widget([
+            'dataProvider' => $dataProvider,
+            'filterModel' => $searchModel,
+            'columns' => $gridColumns,
+            'responsive' => true,
+            'responsiveWrap' => false,
+            'tableOptions' => ['class' => 'table table-hover align-middle mb-0 text-nowrap'],
+            'containerOptions' => ['style' => 'overflow-x: auto;'],
+        ]); ?>
+    </div>
+</div>

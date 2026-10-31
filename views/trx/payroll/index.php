@@ -262,13 +262,20 @@ $gridColumns[] = [
 ?>
 
 <div class="payroll-index">
-    <div class="card mb-4 shadow-sm border-0">
-        <div class="card-body">
-            <?php Pjax::begin(['id' => 'pjax-payroll-grid', 'enablePushState' => true, 'timeout' => 10000]); ?>
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3 mb-4">
-                <div class="d-flex flex-column flex-sm-row gap-2 align-items-stretch align-items-sm-center flex-grow-1">
-                    <form id="form-payroll-filter" action="<?= Url::to(['index']) ?>" method="get" class="d-flex flex-grow-1 gap-2 align-items-center">
-                        <div style="min-width: 130px;">
+    <div class="card modern-grid-card shadow-sm border-0 mb-4">
+        <?php Pjax::begin(['id' => 'pjax-payroll-grid', 'enablePushState' => true, 'timeout' => 10000]); ?>
+        <div class="card-header bg-white py-3 px-4 border-bottom">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-stretch align-items-lg-center gap-3">
+                <div>
+                    <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                        <i class="bi bi-cash-stack text-primary"></i> Penggajian &amp; Payroll Karyawan
+                    </h5>
+                    <span class="text-muted small">Kelola perhitungan gaji pokok, tunjangan, lembur, pajak PPh 21, dan BPJS</span>
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row gap-2 align-items-stretch align-items-sm-center">
+                    <form id="form-payroll-filter" action="<?= Url::to(['index']) ?>" method="get" class="d-flex gap-2 align-items-center m-0">
+                        <div style="min-width: 140px;">
                             <?= Select2::widget([
                                 'id' => 'payroll-month',
                                 'name' => 'month',
@@ -283,7 +290,7 @@ $gridColumns[] = [
                                 ],
                             ]) ?>
                         </div>
-                        <div style="min-width: 100px; max-width: 140px;">
+                        <div style="min-width: 110px;">
                             <?php
                             $years = [];
                             for ($y = date('Y') - 2; $y <= date('Y') + 1; $y++) {
@@ -309,24 +316,28 @@ $gridColumns[] = [
                         </div>
                     </form>
                     <?php if (empty($models)): ?>
-                        <a href="<?= Url::to(['generate', 'month' => $month, 'year' => $year]) ?>"
-                            class="btn btn-success btn-sm text-nowrap py-2" data-confirm="Apakah anda yakin akan generate payroll?" data-pjax="0">
+                        <a id="btn-payroll-generate" href="<?= Url::to(['generate', 'month' => $month, 'year' => $year]) ?>"
+                            class="btn btn-success px-3 shadow-sm text-nowrap" data-confirm="Apakah anda yakin akan generate payroll?" data-pjax="0">
                             <i class="bi bi-gear-fill me-1"></i> Generate Payroll
                         </a>
                     <?php else: ?>
-                        <a href="<?= Url::to(['regenerate', 'month' => $month, 'year' => $year]) ?>"
-                            class="btn btn-warning text-dark btn-sm text-nowrap py-2" data-confirm="Apakah anda yakin akan generate ulang payroll?" data-pjax="0">
+                        <a id="btn-payroll-generate" href="<?= Url::to(['regenerate', 'month' => $month, 'year' => $year]) ?>"
+                            class="btn btn-warning text-dark px-3 shadow-sm text-nowrap fw-semibold" data-confirm="Apakah anda yakin akan generate ulang payroll?" data-pjax="0">
                             <i class="bi bi-arrow-repeat me-1"></i> Generate Ulang
                         </a>
                     <?php endif; ?>
                 </div>
             </div>
+        </div>
 
+        <div class="card-body p-0">
             <?php if (!empty($models)): ?>
-                <div class="alert alert-light border d-flex align-items-start gap-2 mb-3 py-2 px-3 rounded-2" role="alert">
-                    <i class="bi bi-info-circle-fill text-warning fs-6 mt-1 flex-shrink-0"></i>
-                    <div class="small text-secondary">
-                        <strong class="text-dark">Catatan:</strong> Tombol <strong>Generate Ulang</strong> digunakan untuk me-reset / menghitung ulang payroll pegawai yang masih berstatus <span class="badge bg-secondary">PENDING</span> (menyesuaikan perubahan kehadiran, lembur, tunjangan, atau master gaji) serta otomatis menambahkan pegawai baru yang payroll-nya belum digenerate pada periode ini. Data payroll berstatus <span class="badge bg-info">DRAFT</span> dan <span class="badge bg-success">APPROVE</span> aman dan tidak akan diubah.
+                <div class="p-3 bg-light border-bottom">
+                    <div class="alert alert-white bg-white border d-flex align-items-start gap-2 mb-0 py-2 px-3 rounded-3 shadow-sm" role="alert">
+                        <i class="bi bi-info-circle-fill text-primary fs-5 mt-0.5 flex-shrink-0"></i>
+                        <div class="small text-secondary">
+                            <strong class="text-dark">Petunjuk:</strong> Tombol <strong>Generate Ulang</strong> digunakan untuk menghitung ulang payroll pegawai yang masih berstatus <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25">PENDING</span> (menyesuaikan perubahan kehadiran, lembur, tunjangan, atau master gaji) serta menyertakan pegawai baru. Data berstatus <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25">DRAFT</span> dan <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">APPROVE</span> dan tidak diubah.
+                        </div>
                     </div>
                 </div>
             <?php endif; ?>
@@ -354,12 +365,13 @@ $gridColumns[] = [
                     'hover' => true,
                     'bordered' => true,
                     'striped' => false,
+                    'tableOptions' => ['class' => 'table table-hover align-middle mb-0 text-nowrap'],
                     'showPageSummary' => false,
                     'emptyText' => 'Data tidak ditemukan untuk periode ini. Klik "Generate Payroll" untuk memulai.',
                 ]) ?>
             </div>
-            <?php Pjax::end(); ?>
         </div>
+        <?php Pjax::end(); ?>
     </div>
 </div>
 
@@ -422,13 +434,20 @@ function showPayrollLoading() {
     $('#payroll-grid-loader').removeClass('d-none').addClass('d-flex');
     $('#filter-spinner').removeClass('d-none');
     $('#payroll-month, #payroll-year').prop('disabled', true);
+    $('#btn-payroll-generate').addClass('disabled').attr('aria-disabled', 'true');
 }
 
 function hidePayrollLoading() {
     $('#payroll-grid-loader').removeClass('d-flex').addClass('d-none');
     $('#filter-spinner').addClass('d-none');
     $('#payroll-month, #payroll-year').prop('disabled', false);
+    $('#btn-payroll-generate').removeClass('disabled').removeAttr('aria-disabled');
 }
+
+$(document).on('click', '#btn-payroll-generate.disabled', function(e) {
+    e.preventDefault();
+    return false;
+});
 
 $(document).on('pjax:send', '#pjax-payroll-grid', function() {
     showPayrollLoading();

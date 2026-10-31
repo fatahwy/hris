@@ -9,7 +9,8 @@ use yii\web\View;
 /** @var string $type */
 
 $type = $type ?? 'in';
-$typeName = $type === 'in' ? 'Clock In' : 'Clock Out';
+$isClockIn = ($type === 'in');
+$typeName = $isClockIn ? 'Clock In' : 'Clock Out';
 $this->title = $typeName . ' - ' . date('d M Y', strtotime($model->date));
 $this->params['breadcrumbs'][] = ['label' => 'Presensi', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
@@ -18,28 +19,49 @@ $saveUrl = Url::to(['save']);
 $indexUrl = Url::to(['index']);
 ?>
 
-<div class="attendance-clock content-dashboard">
+<div class="attendance-clock content-dashboard pb-4">
     <div class="row justify-content-center">
         <div class="col-12 col-md-8 col-lg-5">
-            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
-                <div class="card-header bg-primary text-white text-center py-3">
-                    <h4 class="mb-0 fw-bold"><i class="fas fa-camera me-1"></i> <?= Html::encode($typeName) ?></h4>
-                    <small class="opacity-75">Shift: <?= Html::encode($model->shift_name) ?></small>
+            <div class="card shadow border-0 rounded-4 overflow-hidden bg-white">
+                <div class="card-header <?= $isClockIn ? 'bg-primary' : 'bg-warning' ?> <?= $isClockIn ? 'text-white' : 'text-dark' ?> text-center py-3 px-4">
+                    <div class="d-inline-flex align-items-center gap-2 mb-1">
+                        <i class="bi <?= $isClockIn ? 'bi-box-arrow-in-right' : 'bi-box-arrow-right' ?> fs-4"></i>
+                        <h4 class="mb-0 fw-bold"><?= Html::encode($typeName) ?></h4>
+                    </div>
+                    <div class="small opacity-90 d-flex justify-content-center align-items-center gap-2">
+                        <span class="badge <?= $isClockIn ? 'bg-white text-primary' : 'bg-dark text-white' ?> px-2 py-1 font-monospace">
+                            Shift: <?= Html::encode($model->shift_name) ?>
+                        </span>
+                        <span>&bull;</span>
+                        <span><?= date('d M Y', strtotime($model->date)) ?></span>
+                    </div>
                 </div>
                 <div class="card-body p-3 p-sm-4 text-center">
                     
-                    <div id="camera-container" class="position-relative mb-3 bg-light rounded-3" style="overflow: hidden; height: 300px; max-height: 48vh; display: flex; align-items: center; justify-content: center;">
+                    <!-- Camera Viewport with Scanner Overlay -->
+                    <div id="camera-container" class="position-relative mb-3 bg-dark rounded-4 shadow-inner" style="overflow: hidden; height: 320px; max-height: 50vh; display: flex; align-items: center; justify-content: center;">
                         <video id="videoElement" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
                         <canvas id="canvasElement" class="d-none" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; z-index: 10;"></canvas>
                         
+                        <!-- Scanner Frame Guide Overlay -->
+                        <div class="position-absolute border border-2 border-white rounded-4 pointer-events-none opacity-50"
+                            style="width: 70%; height: 75%; z-index: 4; border-style: dashed !important;">
+                        </div>
+
                         <div id="camera-loader" class="position-absolute d-flex flex-column align-items-center justify-content-center" style="z-index: 5;">
-                            <div class="spinner-border text-primary" role="status"></div>
-                            <span class="mt-2 text-muted small">Akses Kamera...</span>
+                            <div class="spinner-border text-light" role="status"></div>
+                            <span class="mt-2 text-white small opacity-75">Mengakses Kamera...</span>
                         </div>
                     </div>
 
-                    <div class="location-status mb-3 text-start bg-light p-2.5 rounded-3 border">
-                        <small class="d-block text-muted mb-1"><i class="fas fa-map-marker-alt text-danger me-1"></i> Lokasi Saat Ini:</small>
+                    <!-- Location Status Card -->
+                    <div class="location-status mb-3 text-start bg-light p-3 rounded-3 border">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <small class="text-muted fw-semibold d-flex align-items-center gap-1">
+                                <i class="bi bi-geo-alt-fill text-danger"></i> Deteksi Lokasi GPS:
+                            </small>
+                            <span class="badge bg-white text-secondary border px-2 py-0.5 small" id="loc-status-pill">GPS Aktif</span>
+                        </div>
                         <div id="location-text" class="small fw-bold placeholder-glow">
                             <span class="placeholder col-8"></span>
                         </div>
@@ -47,15 +69,16 @@ $indexUrl = Url::to(['index']);
                         <input type="hidden" id="lng" name="lng" value="">
                     </div>
 
+                    <!-- Action Buttons -->
                     <div class="d-grid gap-2">
                         <button type="button" id="btn-capture" class="btn btn-primary btn-lg rounded-3 py-2.5 fw-semibold shadow-sm">
-                            <i class="fas fa-camera me-1"></i> Ambil Foto
+                            <i class="bi bi-camera me-1"></i> Ambil Foto Wajah
                         </button>
                         <button type="button" id="btn-retake" class="btn btn-outline-secondary btn-lg rounded-3 py-2.5 fw-semibold d-none">
-                            <i class="fas fa-undo me-1"></i> Ulangi Foto
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Ulangi Foto
                         </button>
-                        <button type="button" id="btn-submit" class="btn btn-success btn-lg rounded-3 py-2.5 fw-semibold d-none shadow-sm" disabled>
-                            <i class="fas fa-check-circle me-1"></i> Konfirmasi <?= $typeName ?>
+                        <button type="button" id="btn-submit" class="btn <?= $isClockIn ? 'btn-success' : 'btn-warning text-dark' ?> btn-lg rounded-3 py-2.5 fw-bold d-none shadow-sm" disabled>
+                            <i class="bi bi-check-circle me-1"></i> Konfirmasi <?= $typeName ?> Sekarang
                         </button>
                     </div>
 
@@ -95,7 +118,7 @@ $(document).ready(function() {
             };
         } catch (err) {
             console.error("Camera Error: ", err);
-            loader.innerHTML = '<div class="alert alert-danger p-2 m-0 text-sm">Gagal mengakses kamera. Izinkan akses kamera pada browser Anda.</div>';
+            loader.innerHTML = '<div class="alert alert-danger p-2 m-2 small">Gagal mengakses kamera. Izinkan izin kamera pada browser Anda.</div>';
         }
     }
 
@@ -108,7 +131,7 @@ $(document).ready(function() {
                     const lng = position.coords.longitude;
                     latInput.value = lat;
                     lngInput.value = lng;
-                    locationText.innerHTML = '<span class="text-success"><i class="fas fa-check"></i> ' + parseFloat(lat).toFixed(5) + ', ' + parseFloat(lng).toFixed(5) + '</span>';
+                    locationText.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i> ' + parseFloat(lat).toFixed(5) + ', ' + parseFloat(lng).toFixed(5) + '</span>';
                     
                     // Enable submit if photo is already taken
                     if (photoData) {
@@ -117,7 +140,7 @@ $(document).ready(function() {
                 },
                 (error) => {
                     console.error("Geolocation Error: ", error);
-                    locationText.innerHTML = '<span class="text-danger"><i class="fas fa-times"></i> Gagal mendapatkan lokasi. Izinkan akses lokasi.</span>';
+                    locationText.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Gagal mendapatkan lokasi. Izinkan akses GPS.</span>';
                 },
                 { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
             );
@@ -170,7 +193,7 @@ $(document).ready(function() {
             return;
         }
         
-        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...';
+        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Menyimpan...';
         btnSubmit.setAttribute('disabled', 'disabled');
         btnRetake.setAttribute('disabled', 'disabled');
         
@@ -188,14 +211,14 @@ $(document).ready(function() {
                     window.location.href = '{$indexUrl}';
                 } else {
                     alert(response.message || 'Terjadi kesalahan saat menyimpan data.');
-                    btnSubmit.innerHTML = '<i class="fas fa-check-circle"></i> Konfirmasi {$typeName}';
+                    btnSubmit.innerHTML = '<i class="bi bi-check-circle me-1"></i> Konfirmasi {$typeName} Sekarang';
                     btnSubmit.removeAttribute('disabled');
                     btnRetake.removeAttribute('disabled');
                 }
             },
             error: function() {
                 alert('Terjadi kesalahan jaringan.');
-                btnSubmit.innerHTML = '<i class="fas fa-check-circle"></i> Konfirmasi {$typeName}';
+                btnSubmit.innerHTML = '<i class="bi bi-check-circle me-1"></i> Konfirmasi {$typeName} Sekarang';
                 btnSubmit.removeAttribute('disabled');
                 btnRetake.removeAttribute('disabled');
             }

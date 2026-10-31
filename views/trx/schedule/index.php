@@ -24,11 +24,22 @@ $shifts = Shift::getList();
 
 <div class="schedule-index">
 
-    <div class="card shadow-sm border-0 mb-4 rounded-3">
+    <div class="card modern-grid-card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                    <i class="bi bi-calendar3-week text-primary"></i> Penjadwalan Shift Kerja
+                </h5>
+                <span class="text-muted small">Pilih pegawai dan shift untuk menugaskan jadwal pada kalender kerja</span>
+            </div>
+            <div>
+                <?= Html::a(GeneralHelper::faAdd('Ajukan Lembur'), ['overtime'], ['class' => 'btn btn-primary px-3 shadow-sm']) ?>
+            </div>
+        </div>
         <div class="card-body p-3 p-sm-4">
             <div class="row g-3 align-items-end">
-                <div class="col-12 col-md-4">
-                    <label class="form-label fw-bold small text-muted">Pegawai</label>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold small text-muted">Pegawai</label>
                     <?= Select2::widget([
                         'name' => 'user_id',
                         'id' => 'select-user',
@@ -39,8 +50,8 @@ $shifts = Shift::getList();
                         ],
                     ]) ?>
                 </div>
-                <div class="col-12 col-md-4">
-                    <label class="form-label fw-bold small text-muted">Shift</label>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold small text-muted">Shift Kerja</label>
                     <?= Select2::widget([
                         'name' => 'shift_id',
                         'id' => 'select-shift',
@@ -51,22 +62,19 @@ $shifts = Shift::getList();
                         ],
                     ]) ?>
                 </div>
-                <div class="col-12 col-md-4 d-flex justify-content-start justify-content-md-end">
-                    <?= Html::a(GeneralHelper::faAdd('Lembur'), ['overtime'], ['class' => 'btn btn-primary px-4 shadow-sm w-100 w-md-auto text-center']) ?>
-                </div>
             </div>
 
-            <div class="alert alert-info d-flex align-items-center mb-0 mt-3 py-2 px-3 border-0 rounded-2" role="alert">
-                <i class="bi bi-info-circle-fill me-2 fs-5 flex-shrink-0"></i>
+            <div class="alert alert-info d-flex align-items-center mb-0 mt-3 py-2.5 px-3 rounded-3 shadow-sm border-0" role="alert">
+                <i class="bi bi-info-circle-fill me-2 fs-5 flex-shrink-0 text-info"></i>
                 <div class="small">
-                    <strong>Catatan:</strong> Silakan pilih <strong>Pegawai</strong> dan <strong>Shift</strong> terlebih dahulu, kemudian pilih tanggal pada kalender untuk assign jadwal kerja.
+                    <strong>Panduan:</strong> Silakan pilih <strong>Pegawai</strong> dan <strong>Shift</strong> di atas, lalu klik pada tanggal kalender di bawah untuk menerapkan shift kerja secara instan.
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-body p-2 p-sm-4">
+    <div class="card modern-grid-card shadow-sm border-0">
+        <div class="card-body p-3 p-sm-4">
             <div id="calendar" style="min-height: 550px;"></div>
         </div>
     </div>

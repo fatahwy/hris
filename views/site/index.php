@@ -986,7 +986,7 @@ $trialDayDuration = $mTrial->durasi_hari ?? 1;
                     <a href="#harga">Harga</a>
                     <a href="#faq">Tanya jawab</a>
                     <?php if (Yii::$app->user->isGuest): ?>
-                        <a href="/login" class="nav-login">Masuk</a>
+                        <a href="/login" class="nav-login" style="text-decoration: underline">Masuk</a>
                         <a class="btn" href="/register">Coba gratis</a>
                     <?php else: ?>
                         <a class="btn" href="/dashboard">Dashboard</a>
