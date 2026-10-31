@@ -270,12 +270,28 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
     <style>
         body,
         html {
-            height: 100%;
+            min-height: 100%;
             background-color: #fbfcff;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            overflow: hidden;
             margin: 0;
             padding: 0;
+        }
+
+        @media (max-width: 767.98px) {
+            html,
+            body {
+                height: auto !important;
+                min-height: 100%;
+                overflow-x: hidden;
+            }
+        }
+
+        @media (min-width: 768px) {
+            body,
+            html {
+                height: 100%;
+                overflow: hidden;
+            }
         }
 
         .sidebar-wrapper {
@@ -421,7 +437,7 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
             /* No margin on mobile */
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            min-height: 100vh;
             min-width: 0;
             width: 100%;
             transition: margin-left 0.3s ease;
@@ -431,6 +447,7 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
             .main-wrapper {
                 margin-left: 250px;
                 width: calc(100% - 250px);
+                height: 100vh;
             }
         }
 
@@ -601,15 +618,15 @@ $this->registerLinkTag(['rel' => 'apple-touch-icon', 'href' => Yii::getAlias('@w
         .content-area {
             flex-grow: 1;
             padding: 12px 14px 24px 14px;
-            overflow-y: auto;
-            overflow-x: hidden;
             min-width: 0;
-            -webkit-overflow-scrolling: touch;
         }
 
         @media (min-width: 768px) {
             .content-area {
                 padding: 10px 40px 40px 40px;
+                overflow-y: auto;
+                overflow-x: hidden;
+                -webkit-overflow-scrolling: touch;
             }
         }
 
