@@ -66,6 +66,17 @@ $this->params['breadcrumbs'][] = $this->title;
                     'headerOptions' => ['class' => 'text-center'],
                 ],
                 [
+                    'attribute' => 'payroll_cutoff_date',
+                    'label' => 'Cut Off Payroll',
+                    'format' => 'raw',
+                    'value' => function ($m) {
+                        $day = (int)($m->payroll_cutoff_date ?: 20);
+                        return '<span class="badge bg-light text-dark border px-2.5 py-1.5"><i class="bi bi-calendar-event me-1 text-primary"></i> Tgl ' . $day . '</span>';
+                    },
+                    'contentOptions' => ['class' => 'text-center'],
+                    'headerOptions' => ['class' => 'text-center'],
+                ],
+                [
                     'attribute' => 'created_at',
                     'format' => 'datetime',
                     'contentOptions' => ['class' => 'text-muted small'],

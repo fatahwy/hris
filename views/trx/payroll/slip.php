@@ -18,7 +18,8 @@ $userName = $user ? $user->name : '-';
 $companyName = $company ? $company->name : 'Perusahaan';
 
 // Periode label: e.g. "Oktober 2026"
-$monthYearLabel = date('F Y', strtotime($model->period_start));
+$monthYearLabel = date('F Y', strtotime($model->period_end));
+$periodRangeLabel = date('d/m/Y', strtotime($model->period_start)) . ' - ' . date('d/m/Y', strtotime($model->period_end));
 $bulanIndo = [
     'January' => 'Januari',
     'February' => 'Februari',
@@ -177,7 +178,7 @@ if (count($companyWords) >= 2) {
                         SLIP GAJI
                     </div>
                     <div style="font-size: 13px; color: #64748b; line-height: 1.2; margin: 0;">
-                        Periode <?= Html::encode($periodLabel) ?>
+                        Periode <?= Html::encode($periodLabel) ?> <span style="font-size: 11.5px; color: #94a3b8;">(<?= Html::encode($periodRangeLabel) ?>)</span>
                     </div>
                 </td>
             </tr>

@@ -235,7 +235,7 @@ if (YII_ENV_DEV) {
 }
 
 Yii::$container->set(ActiveForm::class, [
-    'type' => ActiveForm::TYPE_HORIZONTAL,
+    // 'type' => ActiveForm::TYPE_HORIZONTAL,
     'formConfig' => ['labelSpan' => 3, 'deviceSize' => ActiveForm::SIZE_SMALL]
 ]);
 

@@ -44,14 +44,25 @@ class GeneralController extends BaseController
         $statuses = Schedule::optsStatusPresent();
 
         if (Yii::$app->request->isPost) {
+            // Simpan tanggal cut off payroll pada table company
+            if (Yii::$app->request->post('payroll_cutoff_date') !== null) {
+                $cutoffDate = (int) Yii::$app->request->post('payroll_cutoff_date', 20);
+                if ($cutoffDate < 1) {
+                    $cutoffDate = 1;
+                } else if ($cutoffDate > 28) {
+                    $cutoffDate = 28;
+                }
+                $company->payroll_cutoff_date = $cutoffDate;
+                $company->save(false);
+            }
             $postDeductions = Yii::$app->request->post('deductions', []);
-            
+
             $cleanDeductions = [];
             foreach ($statuses as $statusKey => $statusLabel) {
                 $statusData = $postDeductions[$statusKey] ?? [];
                 $source = trim($statusData['source'] ?? '');
-                $minutes = isset($statusData['minutes']) ? max(0, (int)$statusData['minutes']) : 0;
-                $amount = isset($statusData['amount']) ? (float)str_replace(['.', ','], ['', '.'], $statusData['amount']) : 0;
+                $minutes = isset($statusData['minutes']) ? max(0, (int) $statusData['minutes']) : 0;
+                $amount = isset($statusData['amount']) ? (float) str_replace(['.', ','], ['', '.'], $statusData['amount']) : 0;
 
                 $cleanDeductions[$statusKey] = [
                     'source' => $source,
@@ -64,7 +75,7 @@ class GeneralController extends BaseController
             $currentSetting['deductions'] = $cleanDeductions;
 
             if ($company->saveSetting($currentSetting)) {
-                GeneralHelper::flashSucceed('Setting pemotongan gaji berhasil disimpan.');
+                GeneralHelper::flashSucceed('Pengaturan berhasil disimpan.');
                 return $this->redirect(['index']);
             } else {
                 GeneralHelper::flashFailed('Gagal menyimpan setting pemotongan gaji.');

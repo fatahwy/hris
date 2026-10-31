@@ -28,12 +28,22 @@ class PayrollController extends BaseController
         $periodStart = date('Y-m-d', strtotime("$year-$month-01"));
         $periodEnd = date('Y-m-t', strtotime($periodStart));
 
-        $models = Payroll::find()->where(['id_company' => $this->id_company])
+        $models = Payroll::find()
+            ->joinWith(['user'])
+            ->where(['payroll.id_company' => $this->id_company])
             ->andWhere(['period_start' => $periodStart, 'period_end' => $periodEnd])
+            ->orderBy(['user.name' => SORT_ASC])
             ->all();
 
         // Get company allowance structure for display
         $company = Company::findOne($this->id_company);
+        $period = $company ? $company->getPayrollPeriod($month, $year) : Company::calculatePayrollPeriod(20, $month, $year);
+        $periodStart = $period['start'];
+        $periodEnd = $period['end'];
+        if(!empty($models[0])) {
+            $periodStart = date('d F Y', strtotime($models[0]->period_start));
+            $periodEnd = date('d F Y', strtotime($models[0]->period_end));
+        }
         $companyAllowances = $company ? ($company->allowance ?? []) : [];
 
         return $this->render('index', [
@@ -41,16 +51,20 @@ class PayrollController extends BaseController
             'month' => $month,
             'year' => $year,
             'companyAllowances' => $companyAllowances,
+            'company' => $company,
+            'periodStart' => $periodStart,
+            'periodEnd' => $periodEnd,
         ]);
     }
 
     public function actionGenerate($month, $year)
     {
-        $periodStart = "$year-$month-01";
-        $periodEnd = date('Y-m-t', strtotime($periodStart));
+        $company = Company::findOne($this->id_company);
+        $period = $company ? $company->getPayrollPeriod($month, $year) : Company::calculatePayrollPeriod(20, $month, $year);
+        $periodStart = $period['start'];
+        $periodEnd = $period['end'];
 
         $users = Account::find()->where(['id_company' => $this->id_company, 'status' => 1])->all();
-        $company = Company::findOne($this->id_company);
         $companyAllowances = $company ? ($company->allowance ?? []) : [];
 
         // $cutoffSalary = 28;
@@ -122,11 +136,12 @@ class PayrollController extends BaseController
 
     public function actionRegenerate($month, $year)
     {
-        $periodStart = "$year-$month-01";
-        $periodEnd = date('Y-m-t', strtotime($periodStart));
+        $company = Company::findOne($this->id_company);
+        $period = $company ? $company->getPayrollPeriod($month, $year) : Company::calculatePayrollPeriod(20, $month, $year);
+        $periodStart = $period['start'];
+        $periodEnd = $period['end'];
 
         $users = Account::find()->where(['id_company' => $this->id_company, 'status' => 1])->all();
-        $company = Company::findOne($this->id_company);
         $companyAllowances = $company ? ($company->allowance ?? []) : [];
 
         $modelOvertime = Schedule::find()
@@ -308,7 +323,7 @@ class PayrollController extends BaseController
                 } else {
                     GeneralHelper::flashFailed(Html::errorSummary($model));
                 }
-                $strtotime = strtotime($model->period_start);
+                $strtotime = strtotime($model->period_end);
                 return $this->redirect(['index', 'month' => date('n', $strtotime), 'year' => date('Y', $strtotime)]);
             }
         }
@@ -330,7 +345,7 @@ class PayrollController extends BaseController
                 } else {
                     GeneralHelper::flashFailed(Html::errorSummary($model));
                 }
-                $strtotime = strtotime($model->period_start);
+                $strtotime = strtotime($model->period_end);
                 return $this->redirect(['index', 'month' => date('n', $strtotime), 'year' => date('Y', $strtotime)]);
             }
         }
@@ -356,7 +371,7 @@ class PayrollController extends BaseController
                 } else {
                     GeneralHelper::flashFailed(Html::errorSummary($model));
                 }
-                $strtotime = strtotime($model->period_start);
+                $strtotime = strtotime($model->period_end);
                 return $this->redirect(['index', 'month' => date('n', $strtotime), 'year' => date('Y', $strtotime)]);
             }
         }
@@ -382,7 +397,7 @@ class PayrollController extends BaseController
                 } else {
                     GeneralHelper::flashFailed(Html::errorSummary($model));
                 }
-                $strtotime = strtotime($model->period_start);
+                $strtotime = strtotime($model->period_end);
                 return $this->redirect(['index', 'month' => date('n', $strtotime), 'year' => date('Y', $strtotime)]);
             }
         }
@@ -403,8 +418,8 @@ class PayrollController extends BaseController
                 ];
             }
             GeneralHelper::flashFailed('Potongan gaji hanya dapat diubah saat status Pending.');
-            $month = date('n', strtotime($model->period_start));
-            $year = date('Y', strtotime($model->period_start));
+            $month = date('n', strtotime($model->period_end));
+            $year = date('Y', strtotime($model->period_end));
             return $this->redirect(['index', 'month' => $month, 'year' => $year]);
         }
 
@@ -445,8 +460,8 @@ class PayrollController extends BaseController
             }
         }
 
-        $month = date('n', strtotime($model->period_start));
-        $year = date('Y', strtotime($model->period_start));
+        $month = date('n', strtotime($model->period_end));
+        $year = date('Y', strtotime($model->period_end));
         return $this->redirect(['index', 'month' => $month, 'year' => $year]);
     }
 

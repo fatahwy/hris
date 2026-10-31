@@ -10,6 +10,9 @@ use yii\helpers\Html;
 
 $isNewRecord = $model->isNewRecord;
 if ($isNewRecord) {
+    if (empty($model->payroll_cutoff_date)) {
+        $model->payroll_cutoff_date = 20;
+    }
     $this->title = 'Tambah Perusahaan';
     $this->params['breadcrumbs'][] = ['label' => 'Perusahaan', 'url' => ['index']];
     $this->params['breadcrumbs'][] = $this->title;
@@ -44,6 +47,14 @@ if ($isNewRecord) {
             </div>
             <div class="col-12 col-md-6">
                 <?= $form->field($model, 'max_user')->textInput(['type' => 'number', 'placeholder' => 'Jumlah maksimum karyawan']) ?>
+            </div>
+            <div class="col-12 col-md-6">
+                <?= $form->field($model, 'payroll_cutoff_date')->textInput([
+                    'type' => 'number',
+                    'min' => 1,
+                    'max' => 28,
+                    'placeholder' => '20',
+                ])->hint('Tanggal cut off payroll bulanan (1 - 28, default: 20). Periode dihitung dari tanggal setelah cut off bulan lalu s/d tanggal cut off bulan ini.') ?>
             </div>
         </div>
 

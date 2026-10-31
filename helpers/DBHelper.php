@@ -100,7 +100,7 @@ class DBHelper
             ['Jadwal kerja', $presensi, '/trx/schedule/index', 1, $defIcon],
             ['Kehadiran', $presensi, '/trx/attendance/index', 1, $defIcon],
             // Setting
-            // ['Umum', $setting, '/setting/general/index', 1, $defIcon],
+            ['Umum', $setting, '/setting/general/index', 1, $defIcon],
             ['Hak Akses Menu', $setting, '/setting/access-rule/index', 1, $defIcon],
         ];
 

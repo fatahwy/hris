@@ -13,6 +13,9 @@ use yii\widgets\Pjax;
 /** @var integer $month */
 /** @var integer $year */
 /** @var array $companyAllowances */
+/** @var \app\models\master\Company|null $company */
+/** @var string|null $periodStart */
+/** @var string|null $periodEnd */
 /** @var Payroll $models */
 
 $this->title = 'Payroll';
@@ -270,7 +273,14 @@ $gridColumns[] = [
                     <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
                         <i class="bi bi-cash-stack text-primary"></i> Penggajian &amp; Payroll Karyawan
                     </h5>
-                    <span class="text-muted small">Kelola perhitungan gaji pokok, tunjangan, lembur, pajak PPh 21, dan BPJS</span>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mt-1">
+                        <span class="text-muted small">Kelola perhitungan gaji pokok, tunjangan, lembur, pajak PPh 21, dan BPJS</span>
+                        <?php if (!empty($periodStart) && !empty($periodEnd)): ?>
+                            <span class="badge bg-light text-secondary border px-2 py-1 small">
+                                <i class="bi bi-calendar-range text-primary me-1"></i> Periode: <?= date('d M Y', strtotime($periodStart)) ?> &ndash; <?= date('d M Y', strtotime($periodEnd)) ?>
+                            </span>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
                 <div class="d-flex flex-column flex-sm-row gap-2 align-items-stretch align-items-sm-center">

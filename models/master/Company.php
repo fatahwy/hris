@@ -22,6 +22,7 @@ use app\models\master\Account;
  * @property string|null $address
  * @property int $status
  * @property int $max_user
+ * @property int $payroll_cutoff_date
  * @property string|null $expired_at
  * @property string|null $created_at
  * @property string|null $updated_at
@@ -58,8 +59,10 @@ class Company extends BaseModel
             [['address'], 'default', 'value' => null],
             [['status'], 'default', 'value' => 1],
             [['max_user'], 'default', 'value' => 10],
+            [['payroll_cutoff_date'], 'default', 'value' => 20],
             [['id_client', 'name'], 'required'],
-            [['id_client', 'status', 'max_user'], 'integer'],
+            [['id_client', 'status', 'max_user', 'payroll_cutoff_date'], 'integer'],
+            [['payroll_cutoff_date'], 'integer', 'min' => 1, 'max' => 28],
             [['allowance', 'setting'], 'default', 'value' => []],
             [['allowance', 'setting', 'expired_at', 'created_at', 'updated_at'], 'safe'],
             [['name', 'address'], 'string', 'max' => 255],
@@ -79,6 +82,7 @@ class Company extends BaseModel
             'address' => 'Alamat',
             'status' => 'Status',
             'max_user' => 'Maximal User',
+            'payroll_cutoff_date' => 'Tanggal Cut Off Payroll',
             'expired_at' => 'Tgl Kadaluarsa',
             'allowance' => 'Tunjangan',
             'created_at' => 'Tgl Buat',
@@ -300,12 +304,73 @@ class Company extends BaseModel
     public function saveSetting($data)
     {
         $company = Company::findOne($this->id_company);
-        if($company) {
+        if ($company) {
             $company->setting = $data;
             $company->save(false);
         }
 
         return true;
+    }
+
+    /**
+     * Menghitung rentang tanggal periode payroll berdasarkan tanggal cut off.
+     * Alur: Ketika diatur tanggal cut off (default: 20), maka payroll dihitung
+     * dari tanggal setelah tanggal cut off bulan sebelumnya (contoh: tanggal 21 bulan lalu)
+     * sampai tanggal cut off bulan filter/berjalan (contoh: tanggal 20 bulan ini).
+     *
+     * @param int|null $cutoffDay Tanggal cut off (1 - 28), default 20
+     * @param int|string|null $month Bulan filter (1 - 12)
+     * @param int|string|null $year Tahun filter (contoh: 2026)
+     * @return array ['start' => 'YYYY-MM-DD', 'end' => 'YYYY-MM-DD']
+     */
+    public static function calculatePayrollPeriod($cutoffDay = 20, $month = null, $year = null)
+    {
+        $month = (int) ($month ?: date('n'));
+        $year = (int) ($year ?: date('Y'));
+        $cutoff = (int) ($cutoffDay ?: 20);
+        if ($cutoff < 1) {
+            $cutoff = 1;
+        } else if ($cutoff > 28) {
+            $cutoff = 28;
+        }
+
+        // Bulan sebelumnya
+        if ($month === 1) {
+            $prevMonth = 12;
+            $prevYear = $year - 1;
+        } else {
+            $prevMonth = $month - 1;
+            $prevYear = $year;
+        }
+
+        // Tanggal cut off bulan sebelumnya
+        $daysInPrevMonth = (int) date('t', strtotime(sprintf('%04d-%02d-01', $prevYear, $prevMonth)));
+        $prevCutoffDay = min($cutoff, $daysInPrevMonth);
+        $prevCutoffDate = sprintf('%04d-%02d-%02d', $prevYear, $prevMonth, $prevCutoffDay);
+        // Periode awal adalah 1 hari setelah cut off bulan sebelumnya
+        $periodStart = date('Y-m-d', strtotime("$prevCutoffDate +1 day"));
+
+        // Tanggal cut off bulan filter/berjalan
+        $daysInCurMonth = (int) date('t', strtotime(sprintf('%04d-%02d-01', $year, $month)));
+        $curCutoffDay = min($cutoff, $daysInCurMonth);
+        $periodEnd = sprintf('%04d-%02d-%02d', $year, $month, $curCutoffDay);
+
+        return [
+            'start' => $periodStart,
+            'end' => $periodEnd,
+        ];
+    }
+
+    /**
+     * Mendapatkan periode tanggal payroll untuk company ini.
+     *
+     * @param int|string|null $month
+     * @param int|string|null $year
+     * @return array ['start' => 'YYYY-MM-DD', 'end' => 'YYYY-MM-DD']
+     */
+    public function getPayrollPeriod($month = null, $year = null)
+    {
+        return self::calculatePayrollPeriod($this->payroll_cutoff_date ?: 20, $month, $year);
     }
 
 }
