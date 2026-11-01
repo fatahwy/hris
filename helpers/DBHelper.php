@@ -187,6 +187,7 @@ class DBHelper
             // '/trx/clock/*' => "Pegawai|Presensi",
             '/trx/leave-request/*' => "Pegawai|Izin & Cuti",
             // Setting
+            '/setting/general/*' => "Setting|Umum",
             '/setting/access-rule/*' => "Setting|Hak Akses Menu",
         ];
 

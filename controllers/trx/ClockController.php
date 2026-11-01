@@ -5,6 +5,7 @@ namespace app\controllers\trx;
 use app\helpers\DBHelper;
 use Yii;
 use app\controllers\BaseController;
+use app\helpers\GeneralHelper;
 use app\models\trx\Schedule;
 use yii\web\Response;
 
@@ -23,7 +24,7 @@ class ClockController extends BaseController
             if ($model) {
                 Yii::$app->session->setFlash('warning', 'Anda sudah clock in. Jadwal kerja anda dari ' . $formatter->asDatetime($model->workhour_start) . ' sampai ' . $formatter->asDatetime($model->workhour_end));
             } else {
-                Yii::$app->session->setFlash('error', 'Anda tidak punya jadwal kerja.');
+                GeneralHelper::flashFailed('Anda tidak punya jadwal kerja.');
             }
             return $this->redirect(['/dashboard']);
         }
@@ -44,12 +45,16 @@ class ClockController extends BaseController
 
             $nowStr = DBHelper::now();
             if ($nowStr < $checkinStart || $nowStr > $workhourEnd) {
-                Yii::$app->session->setFlash('error', 'Anda tidak bisa clock in saat ini. Clock in bisa dilakukan dari ' . $checkinStart . ' and ' . $workhourEnd);
+                if (date('Y-m-d 00:00:00') < $checkinStart && date('Y-m-d 23:59:59') > $checkinStart) {
+                    GeneralHelper::flashFailed('Anda tidak bisa clock in saat ini. Clock in bisa dilakukan dari ' . $checkinStart . ' and ' . $workhourEnd);
+                } else {
+                    GeneralHelper::flashFailed('Anda tidak punya jadwal kerja.');
+                }
                 return $this->redirect(['/dashboard']);
             }
         } else {
             // if ($model->checkin_datetime === null) {
-            //     Yii::$app->session->setFlash('error', 'Anda belum clock in.');
+            //     GeneralHelper::flashFailed('Anda belum clock in.');
             //     return $this->redirect(['/dashboard']);
             // }
         }
@@ -69,7 +74,7 @@ class ClockController extends BaseController
         $type = $get['type'];
 
         if (!$model) {
-            Yii::$app->session->setFlash('error', 'Anda tidak punya jadwal kerja');
+            GeneralHelper::flashFailed('Anda tidak punya jadwal kerja');
             return ['success' => false];
         }
 

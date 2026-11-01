@@ -88,7 +88,7 @@ class GeneralHelper extends \mdm\admin\components\Helper
 
     public static function flashFailed($msg = '')
     {
-        return self::setFlash('danger', (empty($msg) ? 'Proses gagal!' : $msg));
+        return self::setFlash('error', (empty($msg) ? 'Proses gagal!' : $msg));
     }
 
     public static function encode($string)
@@ -609,6 +609,16 @@ class GeneralHelper extends \mdm\admin\components\Helper
             return Yii::$app->formatter->asDecimal($input);
         } else {
             return Yii::$app->formatter->asInteger($input);
+        }
+    }
+
+    public static function formatDate($input)
+    {
+        $formatter = Yii::$app->formatter;
+        if (strlen(trim($input) <= 10)) {
+            return $formatter->asDate($input);
+        } else {
+            return $formatter->asDatetime($input);
         }
     }
 
