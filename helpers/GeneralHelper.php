@@ -43,12 +43,12 @@ class GeneralHelper extends \mdm\admin\components\Helper
 
     public static function isGuest()
     {
-        return Yii::$app->user ? Yii::$app->user->isGuest : true;
+        return (Yii::$app && Yii::$app->has('user') && Yii::$app->user) ? Yii::$app->user->isGuest : true;
     }
 
     public static function identity()
     {
-        return self::isGuest() ? NULL : Yii::$app->user->identity;
+        return self::isGuest() ? NULL : (Yii::$app->has('user') ? Yii::$app->user->identity : NULL);
     }
 
     public static function getBaseUrl($file = NULL)
@@ -68,6 +68,9 @@ class GeneralHelper extends \mdm\admin\components\Helper
 
     public static function session($key, $set = NULL)
     {
+        if (!Yii::$app || !Yii::$app->has('session')) {
+            return null;
+        }
         return $set !== null ? Yii::$app->session->set($key, $set) : Yii::$app->session->get($key);
     }
 

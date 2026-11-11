@@ -5,6 +5,8 @@ namespace app\controllers;
 use app\helpers\DBHelper;
 use app\helpers\GeneralHelper;
 use app\helpers\RoleHelper;
+use app\models\AuthItem;
+use app\models\master\Client;
 use app\models\master\Company;
 use app\models\master\Paket;
 use Yii;
@@ -13,9 +15,6 @@ use yii\web\Response;
 use app\models\LoginForm;
 use app\models\RegisterForm;
 use app\models\master\Account;
-use app\models\trx\LeaveRequest;
-use app\models\trx\Payroll;
-use app\models\trx\Schedule;
 
 class SiteController extends BaseController
 {
@@ -187,8 +186,8 @@ class SiteController extends BaseController
             if ($model->register()) {
 
                 // Find client and paket
-                $client = $model->client ?: \app\models\master\Client::findOne(['email' => $model->email]);
-                $paket = $model->paket ?: \app\models\master\Paket::findOne($model->id_paket);
+                $client = $model->client ?: Client::findOne(['email' => $model->email]);
+                $paket = $model->paket ?: Paket::findOne($model->id_paket);
 
                 if ($client) {
                     $isTrial = $paket && strtoupper($paket->kode) === 'TRIAL';
@@ -199,6 +198,7 @@ class SiteController extends BaseController
                         $this->sendPaymentEmail($client, $paket);
                         GeneralHelper::flashSucceed('Registrasi berhasil! Silakan cek email Anda untuk instruksi pembayaran paket ' . ($paket ? Html::encode($paket->nama_paket) : '') . ' dan konfirmasi bukti bayar ke admin.');
                     }
+                    AuthItem::createRoleKaryawan($client->id_client);
                 } else {
                     GeneralHelper::flashSucceed('Registrasi berhasil! Silakan login.');
                 }
@@ -207,17 +207,17 @@ class SiteController extends BaseController
             GeneralHelper::flashFailed(Html::errorSummary($model));
         } else {
             $idPaketParam = Yii::$app->request->get('id_paket');
-            if ($idPaketParam && \app\models\master\Paket::find()->where(['id_paket' => $idPaketParam, 'status' => 1])->exists()) {
-                $model->id_paket = (int)$idPaketParam;
+            if ($idPaketParam && Paket::find()->where(['id_paket' => $idPaketParam, 'status' => 1])->exists()) {
+                $model->id_paket = (int) $idPaketParam;
             } else {
-                $trial = \app\models\master\Paket::findOne(['kode' => 'TRIAL']);
+                $trial = Paket::findOne(['kode' => 'TRIAL']);
                 if ($trial) {
                     $model->id_paket = $trial->id_paket;
                 }
             }
             $refParam = Yii::$app->request->get('referensi') ?: Yii::$app->request->get('ref');
             if ($refParam) {
-                $model->referensi = (string)$refParam;
+                $model->referensi = (string) $refParam;
             }
         }
 
@@ -296,13 +296,13 @@ class SiteController extends BaseController
 
     public function actionActivate($token)
     {
-        $client = \app\models\master\Client::findOne(['token' => $token]);
+        $client = Client::findOne(['token' => $token]);
         if (!$client) {
             GeneralHelper::flashFailed('Token aktivasi tidak valid atau sudah kadaluarsa.');
             return $this->redirect(['login']);
         }
 
-        Company::updateAll(['status' => 1], ['id_client' => $client->id_client ?: $client->id]);
+        Company::updateAll(['status' => 1], ['id_client' => $client->id_client]);
         $client->is_active = 1;
         $client->token = null;
         $client->confirm_at = date('Y-m-d H:i:s');
@@ -311,6 +311,7 @@ class SiteController extends BaseController
         } else {
             GeneralHelper::flashFailed('Gagal mengaktifkan akun perusahaan.');
         }
+
         return $this->redirect(['login']);
     }
 
@@ -392,7 +393,7 @@ class SiteController extends BaseController
                     $status = opcache_get_status();
                     if ($status && $status['opcache_enabled']) {
                         echo "OPcache aktif<br>";
-                        echo "Memory used: " . (int)$status['memory_usage']['used_memory'] . " bytes";
+                        echo "Memory used: " . (int) $status['memory_usage']['used_memory'] . " bytes";
                     } else {
                         echo "OPcache tidak aktif";
                     }

@@ -133,6 +133,28 @@ class UserController extends BaseController
                 return $this->redirect(['index']);
             }
 
+            // Validasi: ketika user saat ini role Owner dan mau pindah ke role lain,
+            // pastikan ada user lain yang role Owner. Jika hanya dia yang role Owner maka tidak bisa pindah ke role lain.
+            $currentRole = ($modelAuthAssignment && !empty($modelAuthAssignment->item_name))
+                ? strtolower(trim($modelAuthAssignment->item_name))
+                : '';
+            $newRole = strtolower(trim((string) $tempModelAuthAssignment->item_name));
+
+            if (!$isNewRecord && $currentRole === 'owner' && $newRole !== 'owner') {
+                $targetClientId = !empty($model->id_client) ? $model->id_client : $this->id_client;
+                if (!Account::hasOtherOwner($targetClientId, $model->id_user)) {
+                    $errorMsg = 'Tidak dapat memindahkan role. User ini adalah satu-satunya Owner. Pastikan ada user lain yang memiliki role Owner terlebih dahulu.';
+                    $modelAuthAssignment->addError('item_name', $errorMsg);
+                    GeneralHelper::flashFailed($errorMsg);
+                    $model->password = '';
+                    return $this->render('process', [
+                        'model' => $model,
+                        'modelAuthAssignment' => $modelAuthAssignment,
+                        'companyAllowances' => $companyAllowances,
+                    ]);
+                }
+            }
+
             $transaction = Yii::$app->db->beginTransaction();
             try {
                 // Handle password hashing if a new password is provided
@@ -234,7 +256,12 @@ class UserController extends BaseController
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $model = $this->findModel($id);
+        if ($model->isSoleOwner()) {
+            GeneralHelper::flashFailed('Tidak dapat menghapus user ini karena merupakan satu-satunya Owner.');
+            return $this->redirect(['index']);
+        }
+        $model->delete();
         GeneralHelper::flashSucceed('Berhasil dihapus.');
         return $this->redirect(['index']);
     }

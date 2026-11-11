@@ -443,6 +443,52 @@ class Account extends BaseModel
         return $this->hasOne(AuthAssignment::class, ['user_id' => 'id_user']);
     }
 
+    /**
+     * Check if another active user with role Owner exists in the specified client
+     *
+     * @param int|string $clientId
+     * @param int|string|null $excludeUserId
+     * @return bool
+     */
+    public static function hasOtherOwner($clientId, $excludeUserId = null)
+    {
+        if (empty($clientId)) {
+            return false;
+        }
+
+        $query = self::find()
+            ->alias('u')
+            ->innerJoin('auth_assignment a', 'a.user_id = u.id_user')
+            ->where(['u.id_client' => $clientId])
+            ->andWhere(['LOWER(a.item_name)' => 'owner'])
+            ->andWhere(['u.status' => 1]);
+
+        if (!empty($excludeUserId)) {
+            $query->andWhere(['!=', 'u.id_user', $excludeUserId]);
+        }
+
+        return $query->exists();
+    }
+
+    /**
+     * Check if this user is the only active Owner in their client
+     *
+     * @return bool
+     */
+    public function isSoleOwner()
+    {
+        if ($this->isNewRecord) {
+            return false;
+        }
+
+        $currentRole = $this->role ? strtolower(trim($this->role->item_name)) : '';
+        if ($currentRole !== 'owner') {
+            return false;
+        }
+
+        return !self::hasOtherOwner($this->id_client, $this->id_user);
+    }
+
     public static function isUserSubmit($model)
     {
         $identity = GeneralHelper::identity();

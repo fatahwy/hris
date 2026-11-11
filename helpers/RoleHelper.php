@@ -28,6 +28,11 @@ class RoleHelper
         return self::isRole('super');
     }
 
+    public static function isOwner()
+    {
+        return self::isRole('owner');
+    }
+
     public static function allCompany()
     {
         return Yii::$app->user->can('all_company') || self::isSuper();

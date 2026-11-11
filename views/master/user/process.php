@@ -203,11 +203,21 @@ $this->registerCss("
                         <?= $isProfile ?
                             $form->field($model, 'role')->textInput(['value' => $model->role->item_name ?? '-', 'disabled' => true])
                             : $form->field($modelAuthAssignment, 'item_name')->widget(Select2::classname(), [
-                                'data' => AuthItem::getList(),
+                                'data' => AuthItem::getList(null, $clientId),
+                                'options' => [
+                                    'id' => 'authassignment-item_name',
+                                    'placeholder' => '- Pilih Role -',
+                                ],
                                 // 'options' => ['placeholder' => '- Pilih Role -'],
                                 // 'pluginOptions' => ['allowClear' => true],
                             ])
                             ?>
+                        <?php if (!$model->isNewRecord && $model->isSoleOwner()): ?>
+                            <div class="small text-warning mt-1 d-flex align-items-center gap-1">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <span>User ini adalah satu-satunya <strong>Owner</strong>. Pastikan ada user lain yang role Owner jika ingin memindahkan role user ini.</span>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -632,6 +642,7 @@ $this->registerCss("
 </div>
 
 <?php
+$isSoleOwnerJs = (!$model->isNewRecord && $model->isSoleOwner()) ? 'true' : 'false';
 $js = <<<JS
 // Tab Switching logic
 document.querySelectorAll('#employeeTabs .nav-link-custom').forEach(function(button) {
@@ -700,6 +711,53 @@ if (inputJoinDate && inputLeaveEntitlement) {
     inputJoinDate.addEventListener('change', function() {
         if (!inputLeaveEntitlement.value) {
             inputLeaveEntitlement.value = this.value;
+        }
+    });
+}
+
+// Proteksi role untuk satu-satunya Owner
+var isSoleOwner = {$isSoleOwnerJs};
+if (isSoleOwner) {
+    var isResettingRole = false;
+    var soleOwnerWarning = 'User ini adalah satu-satunya Owner. Pastikan ada user lain yang role Owner, jika hanya dia yang role Owner maka tidak bisa pindah ke role lain.';
+
+    jQuery('#authassignment-item_name').on('change', function() {
+        if (isResettingRole) return;
+        var selectedVal = (jQuery(this).val() || '').toLowerCase();
+        if (selectedVal !== 'owner') {
+            isResettingRole = true;
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Tidak Dapat Memindahkan Role',
+                    text: soleOwnerWarning,
+                    confirmButtonColor: '#2b5fe1',
+                    confirmButtonText: 'Mengerti'
+                });
+            } else {
+                alert(soleOwnerWarning);
+            }
+            jQuery(this).val('Owner').trigger('change.select2');
+            isResettingRole = false;
+        }
+    });
+
+    jQuery('form').on('submit', function(e) {
+        var currentRoleVal = (jQuery('#authassignment-item_name').val() || '').toLowerCase();
+        if (currentRoleVal && currentRoleVal !== 'owner') {
+            e.preventDefault();
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Tidak Dapat Memindahkan Role',
+                    text: soleOwnerWarning,
+                    confirmButtonColor: '#2b5fe1',
+                    confirmButtonText: 'Mengerti'
+                });
+            } else {
+                alert(soleOwnerWarning);
+            }
+            return false;
         }
     });
 }

@@ -153,9 +153,28 @@ class AuthItem extends ActiveRecord
         return $query;
     }
 
-    public static function getList($role = null)
+    public static function getList($role = null, $clientId = null)
     {
-        $models = self::getQuery()
+        $clientId = $clientId ?: GeneralHelper::session('id_client');
+        $query = self::find()->where(['type' => 1]);
+
+        if (RoleHelper::isSuper()) {
+            $query->andWhere([
+                'OR',
+                ['id_client' => $clientId],
+                ['LOWER(name)' => ['super', 'owner']]
+            ]);
+        } else {
+            // Non-super can assign Owner and client-specific roles, but NOT Super
+            $query->andWhere(['not', ['LOWER(name)' => 'super']])
+                ->andWhere([
+                    'OR',
+                    ['id_client' => $clientId],
+                    ['LOWER(name)' => 'owner']
+                ]);
+        }
+
+        $models = $query
             ->all();
 
         $listRole = ArrayHelper::map($models, 'name', 'label');
@@ -167,4 +186,47 @@ class AuthItem extends ActiveRecord
         return $listRole;
     }
 
+    public static function createRole($id_client, $label)
+    {
+        $roleName = $label . $id_client;
+        $model = self::findOne(['name' => $roleName]);
+        if (!$model) {
+            $model = new AuthItem();
+            $model->label = $label;
+            $model->name = $roleName;
+            $model->type = 1;
+            $model->id_client = $id_client;
+
+            if (!$model->save()) {
+                return null;
+            }
+        }
+
+        return $model;
+    }
+
+    public static function createRoleKaryawan($id_client)
+    {
+        $model = self::createRole($id_client, 'Karyawan');
+        if (!$model) {
+            return null;
+        }
+
+        $exists = AuthItemChild::find()
+            ->where(['parent' => $model->name, 'child' => 'dashboard'])
+            ->exists();
+
+        if (!$exists) {
+            $m = new AuthItemChild();
+            $m->parent = $model->name;
+            $m->child = 'dashboard';
+
+            if ($m->save()) {
+                return $m;
+            }
+            return null;
+        }
+
+        return $model;
+    }
 }
