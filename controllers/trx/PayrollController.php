@@ -31,7 +31,7 @@ class PayrollController extends BaseController
         $models = Payroll::find()
             ->joinWith(['user'])
             ->where(['payroll.id_company' => $this->id_company])
-            ->andWhere(['period_start' => $periodStart, 'period_end' => $periodEnd])
+            ->andWhere(['EXTRACT(MONTH FROM period_end)' => $month, 'EXTRACT(YEAR FROM period_end)' => $year])
             ->orderBy(['user.name' => SORT_ASC])
             ->all();
 
@@ -40,7 +40,7 @@ class PayrollController extends BaseController
         $period = $company ? $company->getPayrollPeriod($month, $year) : Company::calculatePayrollPeriod(20, $month, $year);
         $periodStart = $period['start'];
         $periodEnd = $period['end'];
-        if(!empty($models[0])) {
+        if (!empty($models[0])) {
             $periodStart = date('d F Y', strtotime($models[0]->period_start));
             $periodEnd = date('d F Y', strtotime($models[0]->period_end));
         }
@@ -103,11 +103,10 @@ class PayrollController extends BaseController
         try {
             $flag = true;
             foreach ($users as $user) {
-                $exists = Payroll::find()->where([
-                    'id_user' => $user->id_user,
-                    'period_start' => $periodStart,
-                    'period_end' => $periodEnd
-                ])->exists();
+                $exists = Payroll::find()
+                    ->where(['id_user' => $user->id_user])
+                    ->andWhere(['EXTRACT(MONTH FROM period_end)' => $month, 'EXTRACT(YEAR FROM period_end)' => $year])
+                    ->exists();
 
                 if (!$exists) {
                     $payroll = new Payroll();
@@ -172,11 +171,10 @@ class PayrollController extends BaseController
             $scheduleList[$m->id_user][] = $m;
         }
 
-        $existingPayrolls = Payroll::find()->where([
-            'id_company' => $this->id_company,
-            'period_start' => $periodStart,
-            'period_end' => $periodEnd,
-        ])->indexBy('id_user')->all();
+        $existingPayrolls = Payroll::find()
+            ->where(['id_company' => $this->id_company])
+            ->andWhere(['EXTRACT(MONTH FROM period_end)' => $month, 'EXTRACT(YEAR FROM period_end)' => $year])
+            ->indexBy('id_user')->all();
 
         $transaction = Yii::$app->db->beginTransaction();
         try {
