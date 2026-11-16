@@ -68,13 +68,35 @@ $this->params['breadcrumbs'][] = $this->title;
                 [
                     'attribute' => 'payroll_cutoff_date',
                     'label' => 'Cut Off Payroll',
-                    'format' => 'raw',
                     'value' => function ($m) {
                         $day = (int)($m->payroll_cutoff_date ?: 20);
                         return '<span class="badge bg-light text-dark border px-2.5 py-1.5"><i class="bi bi-calendar-event me-1 text-primary"></i> Tgl ' . $day . '</span>';
                     },
+                    'format' => 'raw',
                     'contentOptions' => ['class' => 'text-center'],
                     'headerOptions' => ['class' => 'text-center'],
+                ],
+                [
+                    'attribute' => 'expired_at',
+                    'format' => 'raw',
+                    'value' => function ($m) {
+                        if (empty($m->expired_at)) {
+                            return '<span class="text-muted small">-</span>';
+                        }
+                        $formattedDate = Yii::$app->formatter->asDatetime($m->expired_at);
+                        if ($m->isExpired()) {
+                            return '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2.5 py-1.5" title="Kadaluarsa"><i class="bi bi-exclamation-triangle me-1"></i>' . Html::encode($formattedDate) . '</span>';
+                        }
+                        return '<span class="text-muted small"><i class="bi bi-calendar-check me-1 text-primary"></i>' . Html::encode($formattedDate) . '</span>';
+                    },
+                    'filterType' => GridView::FILTER_DATE,
+                    'filterWidgetOptions' => [
+                        'options' => ['prompt' => 'Pilih'],
+                        'pluginOptions' => [
+                            'autoclose' => true,
+                            'format' => 'yyyy-mm-dd',
+                        ],
+                    ],
                 ],
                 [
                     'attribute' => 'created_at',

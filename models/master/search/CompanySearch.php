@@ -20,7 +20,7 @@ class CompanySearch extends Company
     {
         return [
             [['id_company', 'id_client', 'status', 'max_user'], 'integer'],
-            [['name', 'address', 'created_at', 'updated_at'], 'safe'],
+            [['name', 'address', 'expired_at', 'created_at', 'updated_at'], 'safe'],
         ];
     }
 
@@ -63,6 +63,7 @@ class CompanySearch extends Company
         $query->andFilterWhere([
             'status' => $this->status,
             'max_user' => $this->max_user,
+            'DATE(expired_at)' => $this->expired_at,
             'DATE(created_at)' => $this->created_at,
             'DATE(updated_at)' => $this->updated_at,
         ]);

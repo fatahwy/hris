@@ -6,6 +6,7 @@
 /** @var Exception $exception */
 
 use yii\helpers\Html;
+use yii\helpers\Url;
 
 $this->title = $name;
 ?>
@@ -23,7 +24,7 @@ $this->title = $name;
                 Terjadi kesalahan saat server memproses permintaan Anda.<br>
                 Jika Anda merasa ini adalah kesalahan sistem, silakan hubungi tim administrator.
             </p>
-            <a href="<?= ['/dashboard'] ?>" class="btn btn-primary px-4 mt-2">
+            <a href="<?= Url::to(['/dashboard']) ?>" class="btn btn-primary px-4 mt-2">
                 <i class="fas fa-home me-1"></i> Kembali ke Dashboard
             </a>
         </div>

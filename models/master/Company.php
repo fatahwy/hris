@@ -56,7 +56,7 @@ class Company extends BaseModel
     public function rules()
     {
         return [
-            [['address'], 'default', 'value' => null],
+            [['address', 'expired_at'], 'default', 'value' => null],
             [['status'], 'default', 'value' => 1],
             [['max_user'], 'default', 'value' => 10],
             [['payroll_cutoff_date'], 'default', 'value' => 20],

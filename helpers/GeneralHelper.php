@@ -34,10 +34,10 @@ class GeneralHelper extends \mdm\admin\components\Helper
     const BPJS_JHT_RATE = 0.02;
     const BPJS_JP_RATE = 0.01;
 
-    const ADMIN_NO_PHONE = '087821738123';
-    const BANK_NAME = 'Mandiri';
-    const BANK_ACCOUNT_NUMBER = '123123123';
-    const BANK_ACCOUNT_NAME = 'John Doe';
+    const ADMIN_NO_PHONE = '085878108084';
+    const BANK_NAME = 'Bank Syariah Nasional (BSN)';
+    const BANK_ACCOUNT_NUMBER = '2004709912 ';
+    const BANK_ACCOUNT_NAME = 'Aristya Aji T';
 
     //    GENERAL HELPER =========
 

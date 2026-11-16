@@ -49,6 +49,12 @@ if ($isNewRecord) {
                 <?= $form->field($model, 'max_user')->textInput(['type' => 'number', 'placeholder' => 'Jumlah maksimum karyawan']) ?>
             </div>
             <div class="col-12 col-md-6">
+                <?= $form->field($model, 'expired_at')->textInput([
+                    'type' => 'datetime-local',
+                    'value' => !empty($model->expired_at) ? date('Y-m-d\TH:i', strtotime($model->expired_at)) : null,
+                ])->hint('Batas tanggal dan jam masa berlaku perusahaan (kosongkan jika tanpa batas waktu)') ?>
+            </div>
+            <div class="col-12">
                 <?= $form->field($model, 'payroll_cutoff_date')->textInput([
                     'type' => 'number',
                     'min' => 1,

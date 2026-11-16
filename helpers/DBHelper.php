@@ -67,6 +67,7 @@ class DBHelper
         $izin = 7;
         $setting = 8;
         $log = 9;
+        $subscription = 10;
 
         $defIcon = 'bi-border-width';
         // name, parent, route, stat
@@ -79,6 +80,7 @@ class DBHelper
         $menu[$izin] = ['Izin', null, '/trx/leave-request/index', 1, 'bi-door-open'];
         $menu[$setting] = ['Setting', null, null, 1, 'bi-gear'];
         $menu[$log] = ['Log', null, '/log', 1, 'bi-hdd-stack'];
+        $menu[$subscription] = ['Subscription', null, '/trx/subscription/index', 1, 'bi-credit-card'];
 
         $submenu = [
             // Laporan
@@ -189,6 +191,8 @@ class DBHelper
             // Setting
             '/setting/general/*' => "Setting|Umum",
             '/setting/access-rule/*' => "Setting|Hak Akses Menu",
+            // Subscription
+            '/trx/subscription/*' => "Subscription|Subscription",
         ];
 
         $authItemChilds = [

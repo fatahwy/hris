@@ -30,6 +30,10 @@ use yii\widgets\ActiveForm;
 
     <?php // echo $form->field($model, 'max_user') ?>
 
+    <?php // echo $form->field($model, 'payroll_cutoff_date') ?>
+
+    <?php // echo $form->field($model, 'expired_at') ?>
+
     <?php // echo $form->field($model, 'created_at') ?>
 
     <?php // echo $form->field($model, 'updated_at') ?>
