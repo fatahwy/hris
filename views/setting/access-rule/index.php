@@ -111,12 +111,13 @@ JSRegister::begin();
                                             $model->child = !empty($listRuleAccess[$authItem->name]);
                                             echo $form->field($model, "[{$authItem->name}]child", [
                                                 'options' => ['class' => 'm-0 w-100'],
-                                                'labelOptions' => ['class' => 'small fw-medium text-dark m-0 d-block cursor-pointer']
+                                                'showRequiredIndicator' => false,
+                                                'labelOptions' => ['class' => 'small fw-medium text-dark m-0 d-flex align-items-center cursor-pointer w-100', 'style' => 'user-select: none;']
                                             ])->checkbox([
-                                                'class' => 'form-check-input me-2',
+                                                'class' => 'form-check-input me-2 mt-0',
                                                 'label' => Html::encode($authItem->description ?: $authItem->name),
                                                 'custom' => true,
-                                            ]);
+                                            ], true);
                                             ?>
                                         </div>
                                     </div>

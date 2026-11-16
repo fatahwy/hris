@@ -53,8 +53,12 @@ class AccessRuleController extends BaseController
         $modelAuthItems = AuthItem::find()
             ->where(['not', ['description' => '']])
             ->andWhere(['type' => 2]) // route
-            ->orderBy(['order_val' => SORT_ASC])
-            ->all();
+            ->orderBy(['order_val' => SORT_ASC]);
+
+        if (!RoleHelper::isSuper()) {
+            $modelAuthItems->andWhere(['not', ['name' => ['all_access', '/master/client/*', '/master/company/*']]]);
+        }
+        $modelAuthItems = $modelAuthItems->all();
 
         $replaceRule = '_';
         $authItems = $listAuthItems = [];

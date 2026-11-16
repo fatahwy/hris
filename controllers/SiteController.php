@@ -199,6 +199,7 @@ class SiteController extends BaseController
                         GeneralHelper::flashSucceed('Registrasi berhasil! Silakan cek email Anda untuk instruksi pembayaran paket ' . ($paket ? Html::encode($paket->nama_paket) : '') . ' dan konfirmasi bukti bayar ke admin.');
                     }
                     AuthItem::createRoleKaryawan($client->id_client);
+                    GeneralHelper::cacheFlush();
                 } else {
                     GeneralHelper::flashSucceed('Registrasi berhasil! Silakan login.');
                 }

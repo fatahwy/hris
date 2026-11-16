@@ -203,6 +203,7 @@ class DBHelper
                 "/dashboard/*",
                 "/profile/*",
                 "/trx/clock/*",
+                "/trx/leave-request/*",
             ],
             'all_access' => [
                 "/*",
